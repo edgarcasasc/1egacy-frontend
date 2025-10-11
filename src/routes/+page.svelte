@@ -1,3 +1,33 @@
+<script>
+  import { fade } from 'svelte/transition';
+  import { onMount } from 'svelte';
+
+  let animate = false; // Creamos una variable para controlar la animación
+
+  onMount(() => {
+    // Cuando el componente está listo en el navegador...
+    animate = true; // ...activamos la animación.
+  });
+</script>
+
+{#if animate}
+  <div class="hero-container">
+    <h1 in:fade={{ delay: 250, duration: 1000 }}>
+      Tu apellido no es el final de tu historia. Es el comienzo de tu legado.
+    </h1>
+
+    <p in:fade={{ delay: 750, duration: 1000 }}>
+      En 1egacy, desenterramos la historia de tus ancestros, la decodificamos y la
+      transformamos en arte. Porque tu identidad es un tesoro y tu legado, la
+      herencia más valiosa. Contamos las historias que merecen ser recordadas.
+    </p>
+
+    <button in:fade={{ delay: 1250, duration: 1000 }}>
+      Descubre tu Origen
+    </button>
+  </div>
+{/if}
+
 <style>
   /* :global(body) selecciona el cuerpo de toda la página */
   :global(body) {
@@ -7,7 +37,7 @@
   }
 
   /* El 'div' invisible que centrará nuestro contenido */
-  div {
+  .hero-container {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -52,14 +82,3 @@
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
   }
 </style>
-
-<div>
-  <h1>Tu apellido no es el final de tu historia. Es el comienzo de tu legado.</h1>
-  <p>
-    En 1egacy, desenterramos la historia de tus ancestros, la decodificamos y la
-    transformamos en arte. Porque tu identidad es un tesoro y tu legado, la
-    herencia más valiosa. Contamos las historias que merecen ser recordadas.
-  </p>
-  <button>Descubre tu Origen</button>
-</div>
-
