@@ -1,11 +1,18 @@
-<script lang="ts">
-	import favicon from '$lib/assets/favicon.svg';
-
-	let { children } = $props();
+<script>
+  import Navbar from '../components/Navbar.svelte';
 </script>
 
-<svelte:head>
-	<link rel="icon" href={favicon} />
-</svelte:head>
+<Navbar />
 
-{@render children?.()}
+<main>
+  <slot />
+</main>
+
+<style>
+  main {
+    /* Esto es opcional, pero ayuda a asegurar que el layout principal
+       no tenga márgenes o paddings extraños por defecto. */
+    padding: 0;
+    margin: 0;
+  }
+</style>

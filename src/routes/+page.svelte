@@ -63,10 +63,3 @@
   <button>Descubre tu Origen</button>
 </div>
 
-<h1>Tu apellido no es el final de tu historia. Es el comienzo de tu legado.</h1>
-<p>
-  En 1egacy, desenterramos la historia de tus ancestros, la decodificamos y la
-  transformamos en arte. Porque tu identidad es un tesoro y tu legado, la
-  herencia más valiosa. Contamos las historias que merecen ser recordadas.
-</p>
-<button>Descubre tu Origen</button>
