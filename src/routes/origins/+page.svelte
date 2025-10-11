@@ -1,5 +1,79 @@
 <script>
-  // Este script es para una futura animación, por ahora lo dejamos vacío.
+  import { onMount } from 'svelte';
+  import * as d3 from 'd3';
+  import LinajeModal from '../../components/LinajeModal.svelte'; // Importamos el componente del modal
+
+  // --- Variables de estado para controlar el modal ---
+  let mostrarModal = false;
+  let apellidoSeleccionado = '';
+
+  // --- Datos de los linajes ---
+  const linajes = [
+    { id: 'Garza' },
+    { id: 'Martínez' },
+    { id: 'Treviño' },
+    { id: 'Villarreal' },
+    { id: 'González' },
+    { id: 'De la Garza' },
+    { id: 'Elizondo' },
+  ];
+
+  // --- Funciones para abrir y cerrar el modal ---
+  function abrirModal(apellido) {
+    apellidoSeleccionado = apellido;
+    mostrarModal = true;
+  }
+
+  function cerrarModal() {
+    mostrarModal = false;
+  }
+  
+  onMount(() => {
+    const svg = d3.select('#constelacion-svg');
+    const width = 1200;
+    const height = 600;
+
+    const simulation = d3.forceSimulation(linajes)
+      .force('charge', d3.forceManyBody().strength(-150))
+      .force('center', d3.forceCenter(width / 2, height / 2));
+
+    const nodes = svg.append('g')
+      .selectAll('circle')
+      .data(linajes)
+      .enter()
+      .append('circle')
+      .attr('r', 8)
+      .attr('fill', '#c0a062')
+      .style('cursor', 'pointer')
+      .on('mouseover', handleMouseOver)
+      .on('mouseout', handleMouseOut)
+      .on('click', (event, d) => abrirModal(d.id)); // <-- EVENTO CLICK AÑADIDO
+
+    const labels = svg.append('g')
+      .selectAll('text')
+      .data(linajes)
+      .enter()
+      .append('text')
+      .text(d => d.id)
+      .attr('font-size', '12px')
+      .attr('fill', '#e0e0e0')
+      .style('pointer-events', 'none');
+
+    function handleMouseOver(event, d) {
+      d3.select(this).transition().duration(200).attr('r', 12).attr('fill', '#ffffff');
+      labels.filter(ld => ld.id === d.id).transition().duration(200).attr('font-size', '16px').attr('font-weight', 'bold');
+    }
+
+    function handleMouseOut(event, d) {
+      d3.select(this).transition().duration(200).attr('r', 8).attr('fill', '#c0a062');
+      labels.filter(ld => ld.id === d.id).transition().duration(200).attr('font-size', '12px').attr('font-weight', 'normal');
+    }
+
+    simulation.on('tick', () => {
+      nodes.attr('cx', d => d.x).attr('cy', d => d.y);
+      labels.attr('x', d => d.x + 18).attr('y', d => d.y + 5);
+    });
+  });
 </script>
 
 <div class="origins-container">
@@ -8,48 +82,22 @@
     <p>
       Tu apellido es la clave de un universo de historias no contadas. En 1egacy
       ORIGINS, nos dedicamos a la arqueología de la identidad, rastreando los
-      orígenes de linajes para revelar las sagas que te dieron forma. No se
-      trata solo de árboles genealógicos; se trata de comprender el carácter,
-      las luchas y los triunfos codificados en tu nombre.
+      orígenes de linajes para revelar las sagas que te dieron forma.
     </p>
   </div>
 
-  <div class="servicios-grid">
-    <div class="servicio-card">
-      <h3>Estudio de Origen de Apellido</h3>
-      <p>
-        El punto de partida de tu viaje. Investigamos el origen etimológico,
-        geográfico e histórico de tu apellido, revelando su significado y las
-        primeras familias que lo portaron.
-      </p>
-      <button>Solicitar un Estudio</button>
-    </div>
-
-    <div class="servicio-card">
-      <h3>Investigación Genealógica Profunda</h3>
-      <p>
-        Para quienes buscan respuestas concretas. Trazamos tu linaje familiar
-        directo tan atrás como los registros lo permitan, documentando nombres,
-        fechas y lugares.
-      </p>
-      <button>Iniciar Investigación</button>
-    </div>
-
-    <div class="servicio-card">
-      <h3>Rediseño Heráldico</h3>
-      <p>
-        Transformamos la heráldica de tu familia en una obra de arte
-        contemporánea. Respetamos la simbología original y la elevamos con un
-        diseño digno de tu legado.
-      </p>
-      <button>Consultar Diseño</button>
-    </div>
+  <div class="constelacion-wrapper">
+    <svg id="constelacion-svg"></svg>
   </div>
 </div>
 
+{#if mostrarModal}
+  <LinajeModal apellido={apellidoSeleccionado} onCerrar={cerrarModal} />
+{/if}
+
 <style>
   .origins-container {
-    padding-top: 120px; /* ¡AQUÍ ESTÁ LA SOLUCIÓN! Este padding empuja el contenido hacia abajo para que no choque con la Navbar */
+    padding-top: 120px;
     padding-bottom: 60px;
     display: flex;
     flex-direction: column;
@@ -74,53 +122,16 @@
     line-height: 1.6;
   }
 
-  .servicios-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr); /* Crea 3 columnas */
-    gap: 2rem; /* Espacio entre las tarjetas */
+  .constelacion-wrapper {
     width: 100%;
     max-width: 1200px;
-    padding: 0 2rem;
-  }
-
-  .servicio-card {
-    background-color: #1a1a1a; /* Un poco más claro que el fondo para destacar */
-    padding: 2rem;
+    height: 600px;
     border: 1px solid #333;
-    text-align: center;
-    transition: all 0.3s ease;
+    margin-top: 2rem;
   }
 
-  .servicio-card:hover {
-    transform: translateY(-10px);
-    border-color: #c0a062; /* Borde dorado al pasar el mouse */
-  }
-
-  .servicio-card h3 {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-    color: #c0a062;
-  }
-
-  .servicio-card p {
-    margin-bottom: 2rem;
-  }
-
-  /* Usamos el mismo estilo de botón que en la página de inicio */
-  button {
-    background-color: #c0a062;
-    color: #121212;
-    border: none;
-    padding: 0.8rem 1.5rem;
-    font-size: 0.9rem;
-    font-weight: bold;
-    cursor: pointer;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    transition: background-color 0.3s ease;
-  }
-
-  button:hover {
-    background-color: #ffffff;
+  #constelacion-svg {
+    width: 100%;
+    height: 100%;
   }
 </style>

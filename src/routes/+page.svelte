@@ -29,12 +29,7 @@
 {/if}
 
 <style>
-  /* :global(body) selecciona el cuerpo de toda la página */
-  :global(body) {
-    background-color: #121212; /* Un fondo oscuro y elegante */
-    color: #e0e0e0; /* Un color de texto casi blanco, fácil de leer */
-    font-family: sans-serif; /* Una fuente simple y moderna para empezar */
-  }
+
 
   /* El 'div' invisible que centrará nuestro contenido */
   .hero-container {
