@@ -38,7 +38,7 @@
     }
 
     // --- ¡MUY IMPORTANTE! REEMPLAZA LA IP DE ABAJO CON LA DE TU SERVIDOR ---
-    const apiUrl = 'http://134.209.48.133:8000/capture-lead';
+    const apiUrl = 'https://api.somos1egacy.com/capture-lead';
 
     try {
       const response = await fetch(apiUrl, {
