@@ -1,25 +1,7 @@
 <script>
-  // Datos de ejemplo. Más adelante, vendrán de una base de datos.
-  const posts = [
-    {
-      slug: 'el-arte-perdido-de-la-forja',
-      title: 'El Arte Perdido de la Forja: El Legado Martínez',
-      date: '10 de Octubre, 2025',
-      snippet: 'Un viaje al siglo XVIII para descubrir cómo un maestro herrero dio forma no solo al metal, sino al carácter de un linaje...'
-    },
-    {
-      slug: 'isabel-martinez-la-matriarca',
-      title: 'Isabel Martínez: La Matriarca que Financió una Revolución Silenciosa',
-      date: '3 de Octubre, 2025',
-      snippet: 'Pocos conocen la historia de la mujer que, desde las sombras, utilizó su fortuna para construir una de las redes comerciales más importantes del norte de México...'
-    },
-    {
-      slug: 'los-garza-y-la-fundacion',
-      title: 'Los Garza y la Fundación de Monterrey',
-      date: '28 de Septiembre, 2025',
-      snippet: 'Más allá de los mitos, exploramos los documentos originales que narran el papel crucial del linaje Garza en los primeros días de la ciudad.'
-    }
-  ];
+  // La variable 'data' contiene los 'posts' que cargamos desde Sanity.
+  // Este script no necesita cambios.
+  export let data;
 </script>
 
 <div class="blog-container">
@@ -29,60 +11,112 @@
   </div>
 
   <div class="posts-list">
-    {#each posts as post}
-      <a href="/blog/{post.slug}" class="post-card">
-        <h2>{post.title}</h2>
-        <p>{post.snippet}</p>
-        <span>Leer más &rarr;</span>
-      </a>
-    {/each}
+    {#if data.posts && data.posts.length > 0}
+      {#each data.posts as post}
+        <a href="/blog/{post.slug}" class="post-card">
+          <div class="post-image-wrapper">
+            {#if post.mainImageUrl}
+              <img src={post.mainImageUrl} alt={post.title} />
+            {:else}
+              <div class="image-placeholder"></div>
+            {/if}
+          </div>
+          
+          <div class="post-info">
+            <h2>{post.title}</h2>
+            {#if post.subtitle}
+              <p class="subtitle">{post.subtitle}</p>
+            {/if}
+            <p class="snippet">{post.snippet}</p>
+            <span>Leer más &rarr;</span>
+          </div>
+        </a>
+      {/each}
+    {/if}
   </div>
 </div>
 
 <style>
   .blog-container {
-    max-width: 800px;
+    max-width: 900px; /* Un poco más ancho para el nuevo diseño */
     margin: 0 auto;
-    padding: 120px 2rem 60px 2rem; /* Padding superior para dejar espacio a la Navbar */
+    padding: 120px 2rem 60px 2rem;
   }
 
-  .blog-header {
+.blog-header {
     text-align: center;
     margin-bottom: 4rem;
   }
 
+  /* --- AÑADE ESTA NUEVA REGLA --- */
+  .blog-header p {
+    /* Centra el bloque del párrafo dentro de su contenedor */
+    margin-left: auto;
+    margin-right: auto;
+  }
+  /* --- FIN DE LA NUEVA REGLA --- */
+
+  .posts-list {
+    display: grid;
+    gap: 2.5rem;
+  }
+
   .blog-header h1 {
     font-size: 3.5rem;
-    font-weight: 300;
-    color: #c0a062;
   }
 
   .posts-list {
     display: grid;
-    gap: 2rem;
+    gap: 2.5rem; /* Más espacio entre tarjetas */
   }
 
   .post-card {
-    display: block;
-    padding: 2rem;
+    display: grid;
+    grid-template-columns: 1fr 2fr; /* Divide la tarjeta en 1/3 para imagen, 2/3 para texto */
+    gap: 2rem;
+    padding: 1.5rem;
     border: 1px solid #333;
     text-decoration: none;
     color: #e0e0e0;
     transition: all 0.3s ease;
+    border-radius: 8px; /* Bordes redondeados */
   }
 
   .post-card:hover {
     border-color: #c0a062;
-    transform: translateY(-5px);
+    background-color: #1a1a1a;
   }
 
-  .post-card h2 {
+  .post-image-wrapper img, .image-placeholder {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Asegura que la imagen llene el espacio sin deformarse */
+    border-radius: 4px;
+  }
+  
+  .image-placeholder {
+    background-color: #222;
+  }
+
+  .post-info h2 {
     font-size: 1.8rem;
-    font-weight: 300;
-    margin: 0 0 1rem 0;
+    font-weight: 700; /* Hacemos el título un poco más pesado */
+    margin: 0 0 0.5rem 0;
+    color: #ffffff; /* Título en blanco para más contraste */
+  }
+  
+  .post-info .subtitle {
+    font-size: 1rem;
+    color: #aaa;
+    margin-bottom: 1rem;
   }
 
-  .post-card span {
+  .post-info .snippet {
+    font-size: 1rem;
+    color: #b0b0b0;
+  }
+
+  .post-info span {
     display: inline-block;
     margin-top: 1rem;
     font-weight: bold;

@@ -3,63 +3,40 @@
   import * as d3 from 'd3';
   import LinajeModal from '../../components/LinajeModal.svelte';
 
-  // --- VARIABLES DE ESTADO ---
+  export let data;
+
   let mostrarModal = false;
   let linajeSeleccionado = null;
   let terminoBusqueda = '';
   let svgElement;
 
-  // --- LA MINI-BASE DE DATOS ---
-  const todosLosLinajes = [
-    { id: 'Garza', introduccion: 'El linaje Garza, arraigado en la nobleza...', articulos: [{ titulo: 'Los Garza y la Fundación de Monterrey', url: '/blog/garza-1' }] },
-    { id: 'Martínez', introduccion: 'Descubre la historia de los Martínez...', articulos: [{ titulo: 'El Arte Perdido de la Forja', url: '/blog/martinez-1' }, { titulo: 'Isabel Martínez: La Matriarca', url: '/blog/martinez-2' }] },
-    { id: 'Treviño', introduccion: 'De origen Cántabro, el apellido Treviño...', articulos: [{ titulo: 'Diego de Treviño y el Camino Real', url: '/blog/trevino-1' }] },
+  // Usamos el nombre 'linajes' como decidiste
+  const linajes = [
+    { id: 'Garza', introduccion: 'El linaje Garza, arraigado en la nobleza...', articulos: [] },
+    { id: 'Martínez', introduccion: 'Descubre la historia de los Martínez...', articulos: [] },
+    { id: 'Treviño', introduccion: 'De origen Cántabro...', articulos: [] },
     { id: 'Villarreal', introduccion: 'Información sobre Villarreal próximamente.', articulos: [] },
     { id: 'González', introduccion: 'Información sobre González próximamente.', articulos: [] },
     { id: 'De la Garza', introduccion: 'Información sobre De la Garza próximamente.', articulos: [] },
     { id: 'Elizondo', introduccion: 'Información sobre Elizondo próximamente.', articulos: [] },
   ];
 
-  // --- LÓGICA DE BÚSQUEDA ---
+  // La variable reactiva ahora filtra los datos que vienen de Sanity
   $: linajesFiltrados = terminoBusqueda === ''
-    ? todosLosLinajes
-    : todosLosLinajes.filter(l => l.id.toLowerCase().includes(terminoBusqueda.toLowerCase()));
+    ? data.linajes
+    : data.linajes.filter(l => l.id.toLowerCase().includes(terminoBusqueda.toLowerCase()));
 
-  // --- FUNCIONES DEL MODAL ---
+  // Las funciones del modal y de D3 no necesitan grandes cambios
   function abrirModal(linaje) { linajeSeleccionado = linaje; mostrarModal = true; }
   function cerrarModal() { mostrarModal = false; }
+  
 
-  // --- FUNCIÓN PARA ENVIAR DATOS A LA API ---
-  async function handleFormSubmit(event) {
-    const email = event.target.elements.email.value;
-    if (!email) {
-      alert('Por favor, ingresa un correo electrónico.');
-      return;
-    }
-
-    // --- ¡MUY IMPORTANTE! REEMPLAZA LA IP DE ABAJO CON LA DE TU SERVIDOR ---
-    const apiUrl = 'https://api.somos1egacy.com/capture-lead';
-
-    try {
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ apellido: terminoBusqueda, email: email }),
-      });
-      
-      if (response.ok) {
-        alert('¡Gracias! Te notificaremos en cuanto tengamos noticias.');
-        event.target.reset();
-      } else {
-        alert('Hubo un error al procesar la solicitud en el servidor.');
-      }
-    } catch (error) {
-      alert('Error de conexión con el servidor. Revisa la consola para más detalles.');
-      console.error('Error al enviar el formulario:', error);
-    }
+   // Esta lógica se simplifica
+  $: if (svgElement && data.linajes) {
+    dibujarConstelacion(linajesFiltrados);
   }
 
-  // --- CÓDIGO D3 PARA DIBUJAR LA CONSTELACIÓN ---
+  
   function dibujarConstelacion(datos) {
     if (!svgElement || !datos) return;
     const svg = d3.select(svgElement);
@@ -72,33 +49,24 @@
 
     function handleMouseOver(event, d) { d3.select(this).transition().duration(200).attr('r', 12).attr('fill', '#ffffff'); labels.filter(ld => ld.id === d.id).transition().duration(200).attr('font-size', '16px').attr('font-weight', 'bold'); }
     function handleMouseOut(event, d) { d3.select(this).transition().duration(200).attr('r', 8).attr('fill', '#c0a062'); labels.filter(ld => ld.id === d.id).transition().duration(200).attr('font-size', '12px').attr('font-weight', 'normal'); }
-
     simulation.on('tick', () => {
       nodes.attr('cx', d => d.x).attr('cy', d => d.y);
       labels.attr('x', d => d.x + 18).attr('y', d => d.y + 5);
     });
   }
 
-  onMount(() => { if (svgElement) dibujarConstelacion(todosLosLinajes); });
+  onMount(() => { if (svgElement) dibujarConstelacion(linajes); });
   $: if (svgElement) { dibujarConstelacion(linajesFiltrados); }
 </script>
 
 <div class="origins-container">
   <div class="manifesto">
     <h1>El Legado del Linaje</h1>
-    <p>
-      Tu apellido es la clave de un universo de historias no contadas.
-    </p>
+    <p>Tu apellido es la clave de un universo de historias no contadas.</p>
   </div>
-
   <div class="buscador-wrapper">
-    <input
-      type="text"
-      placeholder="Busca tu apellido..."
-      bind:value={terminoBusqueda}
-    />
+    <input type="text" placeholder="Busca tu apellido..." bind:value={terminoBusqueda} />
   </div>
-
   {#if linajesFiltrados.length > 0}
     <div class="constelacion-wrapper">
       <svg id="constelacion-svg" bind:this={svgElement}></svg>
@@ -106,9 +74,7 @@
   {:else if terminoBusqueda !== ''}
     <div class="no-resultados-wrapper">
       <h3>El apellido "{terminoBusqueda}" aún no está en nuestra constelación.</h3>
-      <p>
-        Somos un estudio en constante investigación. Déjanos tu correo y te notificaremos.
-      </p>
+      <p>Somos un estudio en constante investigación. Déjanos tu correo y te notificaremos.</p>
       <form class="formulario-interes" on:submit|preventDefault={handleFormSubmit}>
         <input type="email" name="email" placeholder="Tu correo electrónico" />
         <button type="submit">Notificarme</button>
@@ -118,9 +84,8 @@
 </div>
 
 {#if mostrarModal}
-  <LinajeModal {linajeSeleccionado} onCerrar={cerrarModal} />
+  <LinajeModal linaje={linajeSeleccionado} onCerrar={cerrarModal} />
 {/if}
-
 <style>
   .origins-container { padding-top: 120px; padding-bottom: 60px; display: flex; flex-direction: column; align-items: center; width: 100%; }
   .manifesto { text-align: center; max-width: 800px; margin-bottom: 2rem; }
@@ -140,4 +105,28 @@
   .formulario-interes input:focus { outline: none; border-color: #c0a062; }
   .formulario-interes button { background-color: #c0a062; color: #121212; border: 1px solid #c0a062; padding: 1rem 2rem; font-size: 1rem; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: background-color 0.3s ease; }
   .formulario-interes button:hover { background-color: #ffffff; }
+  /* ... (tus estilos existentes van aquí arriba) ... */
+
+.tooltip {
+  background-color: #1a1a1a;
+  border: 1px solid #c0a062;
+  border-radius: 4px;
+  padding: 1rem;
+  width: 250px;
+  pointer-events: none; /* Evita que el tooltip interfiera con el mouse */
+  transition: opacity 0.3s ease;
+  z-index: 10;
+}
+
+.tooltip h4 {
+  margin: 0 0 0.5rem 0;
+  color: #c0a062;
+  font-family: 'Playfair Display', serif;
+}
+
+.tooltip p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #b0b0b0;
+}
 </style>
