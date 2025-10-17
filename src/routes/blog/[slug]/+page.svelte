@@ -29,7 +29,9 @@
           <p class="subtitle">{post.subtitle}</p>
         {/if}
         <p class="meta">Publicado el {new Date(post.publishedAt).toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-        
+        {#if post.author?.name}
+   por {post.author.name}
+ {/if}
         {#if post.mainImageUrl}
           <img class="featured-image" src={post.mainImageUrl} alt={post.title} />
         {/if}
