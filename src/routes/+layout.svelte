@@ -1,7 +1,9 @@
 <script>
   import Navbar from '../components/Navbar.svelte';
 </script>
-
+<svelte:head>
+  <link rel="icon" href="/favicon.svg" />
+</svelte:head>
 <Navbar />
 
 <main>
