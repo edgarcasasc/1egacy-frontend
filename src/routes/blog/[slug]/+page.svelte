@@ -45,7 +45,7 @@
 						name: '1egacy',
 						logo: {
 							'@type': 'ImageObject',
-							url: 'https://somos1egacy.com/logo.png' // Asegúrate de que este logo exista
+							url: 'https://somos1egacy.com/logo1egacy.svg' // Asegúrate de que este logo exista
 						}
 					},
 					datePublished: postData.publishedAt,
