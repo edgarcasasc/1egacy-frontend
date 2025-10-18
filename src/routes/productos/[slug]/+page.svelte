@@ -8,7 +8,7 @@
   $: if (product?.gallery?.length > 0) {
     imagenActiva = product.gallery[0];
   }
-// --- Lógica para Variantes y Pre-orden ---
+  
   $: tallasUnicas = product?.variants ? [...new Set(product.variants.map(v => v.size).filter(Boolean))] : [];
   $: coloresUnicos = product?.variants ? [...new Set(product.variants.map(v => v.color).filter(Boolean))] : [];
   
@@ -21,7 +21,6 @@
       alert('Por favor, selecciona una talla y un color.');
       return;
     }
-
     const preorden = {
       tipo: 'Pre-orden de Producto',
       producto: product.title,
@@ -29,16 +28,13 @@
       color: colorSeleccionado,
       email: email
     };
-
     const apiUrl = 'https://api.somos1egacy.com/capture-lead'; 
-
     try {
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ apellido: product.title, email: email, ...preorden }),
+        body: JSON.stringify({ ...preorden }),
       });
-      
       if (response.ok) {
         alert('¡Pre-orden registrada con éxito! Gracias por ser un fundador.');
         mostrarModal = false;
@@ -47,13 +43,13 @@
       }
     } catch (error) {
       alert('Error de conexión. Inténtalo más tarde.');
-      console.error('Error en pre-orden:', error);
     }
   }
 </script>
 
 <div class="producto-container">
   {#if product}
+    <!-- Columna de Galería -->
     <div class="galeria-columna">
       {#if product.linajeInfo}
         <a href="/origins/{product.linajeInfo.slug}" class="enlace-regresar">
@@ -76,11 +72,11 @@
       </div>
     </div>
 
+    <!-- Columna de Detalles -->
     <div class="detalles-columna">
       <h1>{product.title}</h1>
       <p class="precio">${product.price || 'N/A'} MXN</p>
       <p class="descripcion">{product.description}</p>
-      
       <div class="selectores">
         <select bind:value={tallaSeleccionada} aria-label="Talla">
           <option value="" disabled>Elige una Talla</option>
@@ -91,7 +87,6 @@
           {#each coloresUnicos as color} <option value={color}>{color}</option> {/each}
         </select>
       </div>
-
       <button class="boton-compra" on:click={() => mostrarModal = true}>Pre-ordenar</button>
     </div>
   {:else}
@@ -117,8 +112,8 @@
   .thumbnail-wrapper { cursor: pointer; border: 2px solid #333; border-radius: 4px; overflow: hidden; transition: border-color 0.3s ease; }
   .thumbnail-wrapper:hover { border-color: #c0a062; }
   .thumbnail-wrapper img { width: 100%; height: auto; display: block; }
-  .detalles-columna h1 { font-size: 2.5rem; margin-bottom: 0.5rem; color: #ffffff; } /* Ajustado h1 */
-  .precio { font-size: 1.8rem; font-family: 'Playfair Display', serif; color: #c0a062; margin-bottom: 1.5rem; }
+  .detalles-columna h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+  .precio { font-size: 1.8rem; color: #c0a062; margin-bottom: 1.5rem; }
   .descripcion { margin-bottom: 2rem; color: #b0b0b0; }
   .selectores { display: flex; gap: 1rem; margin-bottom: 2rem; }
   select { width: 100%; padding: 0.8rem; background-color: #1a1a1a; border: 1px solid #333; color: #e0e0e0; font-size: 1rem; border-radius: 4px; }
