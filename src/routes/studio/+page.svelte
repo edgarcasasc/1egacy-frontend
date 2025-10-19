@@ -1,13 +1,24 @@
 <div class="studio-container">
 	<div class="manifesto">
-		<h1>El Legado Materializado</h1>
-		<p>
-			Una historia no contada es solo un eco. En 1egacy STUDIO, tomamos las investigaciones de
-			ORIGINS y las convertimos en obras de arte tangibles. Somos un taller creativo donde
-			historiadores, diseñadores y artesanos colaboran para forjar piezas que encapsulan la esencia
-			de un linaje. Cada objeto que creamos es un tótem: un ancla física a tu pasado y un faro
-			para las generaciones futuras.
-		</p>
+		<h1>EL ARTE DE HACER ETERNO TU LEGADO</h1>
+		
+
+<p>
+¿Alguna vez has sostenido un objeto —la pluma de tu abuelo, una fotografía gastada— y has sentido el peso de una vida entera en tus manos?
+</p>
+
+<p>
+Ese instante es sagrado. Es la prueba de que una historia vive en el alma, pero su eco necesita un lugar donde resonar. Esa es el alma de 1egacy STUDIO.
+</p>
+
+<p>
+Porque sabemos que un recuerdo es aire, es luz, es intangible. Pero un legado necesita un guardián. Algo que puedas tocar cuando necesites recordar. Algo que tus hijos puedan sostener para atreverse a preguntar.		</p>
+
+
+<p>
+Aquí, fusionamos la reverencia de un historiador con el pulso de un maestro artesano. No creamos objetos; forjamos guardianes. Piezas que no aprisionan la memoria, sino que la custodian y la invitan a conversar en silencio. Cada tótem es un ancla para tu presente, un puente hacia tu pasado y el juramento que le haces al futuro.
+</p>
+
 	</div>
 
 	<div class="productos-grid">
@@ -18,11 +29,9 @@
 			/>
 			<h3>El Códice del Legado</h3>
 			<p>
-				El alma de tu historia familiar, encuadernada. Un libro de archivo de calidad museística
-				que narra la saga de tu linaje, ilustrado con mapas, árboles genealógicos y el escudo
-				heráldico rediseñado.
+				No es un libro; es el testamento visual de tu linaje. Una obra de archivo, encuadernada a mano con calidad museística, destinada a ser la pieza central de tu biblioteca y el catalizador de historias para las futuras generaciones.
 			</p>
-			<a href="/productos/codice-del-legado" class="boton-tarjeta">Ver Detalles del Códice</a>
+			<a href="/productos/codice-del-legado" class="boton-tarjeta">Descubrir el Códice</a>
 		</div>
 
 		<div class="producto-card">
@@ -32,8 +41,7 @@
 			/>
 			<h3>Piezas de Legado Físico</h3>
 			<p>
-				Desde el escudo de tu apellido forjado en acero hasta playeras con bordados heráldicos de
-				alta definición. Creamos objetos que portan con orgullo el símbolo de tu linaje.
+				Transformamos el símbolo de tu linaje en un tótem personal. Desde un escudo forjado para presidir tu estudio, hasta textiles que susurran historias en cada hilo. Objetos diseñados no solo para ser poseídos, sino para ser portados con orgullo.
 			</p>
 			<a href="/productos" class="boton-tarjeta">Explorar Colección</a><br/><br/><br/><br/>
 		</div>
@@ -43,13 +51,11 @@
 				src="/articulos/proyectos.webp"
 				alt="Proyectos Especiales y Corporativos"
 			/>
-			<h3>Proyectos Especiales y Corporativos</h3>
+			<h3>Proyectos Especiales </h3>
 			<p>
-				Para familias o empresas que buscan inmortalizar su historia. Producimos archivos
-				digitales, documentales cortos o instalaciones que preservan un legado para futuras
-				generaciones.
+				Para las familias, empresas e instituciones que entienden que el futuro se construye sobre un pasado bien contado. Custodiamos la memoria corporativa o el alma familiar a través de documentales, archivos digitales o instalaciones artísticas.
 			</p>
-			<a href="/contacto" class="boton-tarjeta">Cotizar un Proyecto</a>
+			<a href="/contacto" class="boton-tarjeta">Iniciar un Proyecto</a>
 		</div>
 	</div>
 </div>
