@@ -1,153 +1,68 @@
 // src/routes/blog/[slug]/+page.server.js
-
 import { client } from '$lib/sanityClient.js';
-
 import { error } from '@sveltejs/kit';
 
-
-
-export async function load({ params }) {
-
+export async function load({ params, url }) {
   const { slug } = params;
+  const baseUrl = url.origin; // Para URLs dinámicas en el schema
 
-  console.log(`[DEBUG Load Start] Slug: ${slug}`); // LOG 1
-
-
-
+  // --- CONSULTA GROQ FINAL Y LIMPIA ---
+  // Pide todos los campos necesarios y expande las referencias de "linaje"
   const query = `*[_type == "post" && slug.current == $slug][0]{
-
-    // Pedimos todo como antes, incluyendo el autor y faq
-
     title,
-
     subtitle,
-
     publishedAt,
-
     _updatedAt,
-
     "mainImageUrl": mainImage.asset->url,
-
     body,
-
     seoTitle,
-
     seoDescription,
-
-    apellidosRelacionados,
-
-    author->{
-
-      name
-
+    slug { current },
+    author->{ 
+      name 
     },
-
-    faqSection
-
+    faqSection,
+    "apellidosRelacionados": coalesce(apellidosRelacionados, [])[defined(_ref)]->{ 
+      "slug": slug.current,
+      "nombre": title,
+      "escudoUrl": escudo.asset->url
+    }
   }`;
-
- 
-
-  let rawPostData = null; // Para guardar el resultado crudo
-
-
-
+  
   try {
-
-    console.log('[DEBUG] Fetching Sanity data...'); // LOG 2
-
-    rawPostData = await client.fetch(query, { slug });
-
-    console.log('[DEBUG] Raw Sanity Result:', JSON.stringify(rawPostData, null, 2)); // LOG 3
-
-
+    const rawPostData = await client.fetch(query, { slug });
 
     if (!rawPostData) {
-
-      console.log('[DEBUG] Post not found in Sanity.'); // LOG 4
-
       throw error(404, 'Artículo no encontrado');
-
     }
 
-
-
-    // --- CONSTRUCCIÓN SEGURA DEL OBJETO 'post' (CORREGIDA) ---
-
+    // --- CONSTRUCCIÓN SEGURA DEL OBJETO 'post' ---
+    // Se asegura de que todos los campos tengan un valor por defecto seguro
     const post = {
-
-      title: typeof rawPostData.title === 'string' ? rawPostData.title : 'Sin Título',
-
-      subtitle: typeof rawPostData.subtitle === 'string' ? rawPostData.subtitle : null,
-
-      publishedAt: typeof rawPostData.publishedAt === 'string' ? rawPostData.publishedAt : new Date().toISOString(),
-
-      _updatedAt: typeof rawPostData._updatedAt === 'string' ? rawPostData._updatedAt : new Date().toISOString(),
-
-      mainImageUrl: typeof rawPostData.mainImageUrl === 'string' ? rawPostData.mainImageUrl : null,
-
+      title: rawPostData.title || 'Sin Título',
+      subtitle: rawPostData.subtitle || null,
+      publishedAt: rawPostData.publishedAt || new Date().toISOString(),
+      _updatedAt: rawPostData._updatedAt || new Date().toISOString(),
+      mainImageUrl: rawPostData.mainImageUrl || null,
       body: Array.isArray(rawPostData.body) ? rawPostData.body : [],
+      seoTitle: rawPostData.seoTitle || rawPostData.title || 'Sin Título',
+      seoDescription: rawPostData.seoDescription || '',
+      slug: rawPostData.slug || { current: slug },
+      apellidosRelacionados: Array.isArray(rawPostData.apellidosRelacionados) ? rawPostData.apellidosRelacionados : [],
+      faqSection: Array.isArray(rawPostData.faqSection) ? rawPostData.faqSection : null,
+      author: (rawPostData.author && typeof rawPostData.author.name === 'string') ? { name: rawPostData.author.name } : null
+    };
 
-      seoTitle: typeof rawPostData.seoTitle === 'string' ? rawPostData.seoTitle : (rawPostData.title || 'Sin Título'),
-
-      seoDescription: typeof rawPostData.seoDescription === 'string' ? rawPostData.seoDescription : '',
-
-     
-
-      apellidosRelacionados: Array.isArray(rawPostData.apellidosRelacionados)
-
-        ? rawPostData.apellidosRelacionados.filter(item => typeof item === 'string' && item.trim() !== '')
-
-        : [],
-
-       
-
-      // --- SECCIÓN CORREGIDA ---
-
-      faqSection: Array.isArray(rawPostData.faqSection) ? rawPostData.faqSection : null, // <-- Coma aquí
-
-
-
-      author: (rawPostData.author && typeof rawPostData.author === 'object' && typeof rawPostData.author.name === 'string')
-
-        ? { name: rawPostData.author.name } // Solo pasamos 'name'
-
-        : null // Si no, garantizamos que sea null
-
-      // --- SIN coma aquí porque es el último elemento ---
-
-    }; // <-- ÚNICO CIERRE DEL OBJETO 'post'
-
-    // --- FIN CONSTRUCCIÓN SEGURA ---
-
-
-
-    console.log('[DEBUG] Cleaned Post Object:', JSON.stringify(post, null, 2)); // LOG 5
-
-    return { post }; // Retornamos el objeto limpio y seguro
-
-
+    // Devolvemos el post Y la baseUrl para las URLs del schema
+    return { post, baseUrl };
 
   } catch (err) {
-
-    console.error('[DEBUG] CATCH BLOCK ERROR:', err); // LOG 6
-
-    console.error('[DEBUG] Raw data before error (if available):', JSON.stringify(rawPostData, null, 2));
-
-   
-
+    console.error('[SERVER LOAD ERROR]', err);
     if (err.status === 404) {
-
       throw err;
-
     } else {
-
-      const errorMessage = err.message || 'Error desconocido en load function';
-
-      throw error(500, `Error interno del servidor: ${errorMessage}`);
-
+      throw error(500, `Error interno al cargar el post: ${err.message}`);
     }
-
   }
+}
 
-} // <-- LLAVE DE CIERRE FINAL DE LA FUNCIÓN load
