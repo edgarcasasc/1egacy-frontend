@@ -396,3 +396,8 @@
   }
 </style>
 
+<!--
+  Este archivo es la plantilla para todas las páginas dentro de /studio.
+  Su ÚNICA función es mostrar el contenido de las páginas hijas. NO debe tener más código.
+-->
+<slot />

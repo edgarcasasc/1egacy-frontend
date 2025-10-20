@@ -31,7 +31,7 @@ Aquí, fusionamos la reverencia de un historiador con el pulso de un maestro art
 			<p>
 				No es un libro; es el testamento visual de tu linaje. Una obra de archivo, encuadernada a mano con calidad museística, destinada a ser la pieza central de tu biblioteca y el catalizador de historias para las futuras generaciones.
 			</p>
-			<a href="/productos/codice-del-legado" class="boton-tarjeta">Descubrir el Códice</a>
+			<a href="/codice-del-legado" class="boton-tarjeta">Descubrir el Códice</a>
 		</div>
 
 		<div class="producto-card">
