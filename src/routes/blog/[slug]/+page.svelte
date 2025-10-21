@@ -1,96 +1,96 @@
 <script>
-    import { PortableText } from '@portabletext/svelte';
-    // Usamos las importaciones que sabemos que funcionan para tu estructura
-    import SanityImage from '$lib/components/SanityImage.svelte';
-    import FaqItem from '../../../components/FaqItem.svelte';
-    import Navbar from '../../../components/Navbar.svelte';
+ import { PortableText } from '@portabletext/svelte';
+ // Usamos las importaciones que sabemos que funcionan para tu estructura
+ import SanityImage from '$lib/components/SanityImage.svelte';
+ import FaqItem from '../../../components/FaqItem.svelte';
+ import Navbar from '../../../components/Navbar.svelte';
 
 
-    export let data;
-    const { post } = data;
+ export let data;
+ const { post } = data;
 
 
-    const components = {
-        types: {
-            image: SanityImage
-        }
-    };
+ const components = {
+  types: {
+   image: SanityImage
+  }
+ };
 
 
-    // --- PREPARACIÓN SEGURA DE DATOS PARA EL TEMPLATE ---
-    // Filtramos el array de FAQs ANTES de pasarlo al template para evitar errores.
-    const validFaqsForTemplate = Array.isArray(post?.faqSection)
-        ? post.faqSection.filter((item) => item && typeof item === 'object' && item.question && item.answer)
-        : [];
+ // --- PREPARACIÓN SEGURA DE DATOS PARA EL TEMPLATE ---
+ // Filtramos el array de FAQs ANTES de pasarlo al template para evitar errores.
+ const validFaqsForTemplate = Array.isArray(post?.faqSection)
+  ? post.faqSection.filter((item) => item && typeof item === 'object' && item.question && item.answer)
+  : [];
 
 
-    // --- IMPLEMENTACIÓN DE SCHEMA MARKUP A PRUEBA DE ERRORES ---
-    function createSchema(postData) {
-        if (!postData) return {};
+ // --- IMPLEMENTACIÓN DE SCHEMA MARKUP A PRUEBA DE ERRORES ---
+ function createSchema(postData) {
+  if (!postData) return {};
 
 
-        const schema = {
-            '@context': 'https://schema.org',
-            '@graph': [
-                {
-                    '@type': 'Article',
-                    mainEntityOfPage: {
-                        '@type': 'WebPage',
-                        '@id': `https://somos1egacy.com/blog/${postData.slug?.current || ''}`
-                    },
-                    headline: postData.title,
-                    description: postData.seoDescription || postData.subtitle,
-                    image: postData.mainImageUrl,
-                    author: {
-                        '@type': 'Person',
-                        name: postData.author?.name || '1egacy Studio'
-                    },
-                    publisher: {
-                        '@type': 'Organization',
-                        name: '1egacy',
-                        logo: {
-                            '@type': 'ImageObject',
-                            url: 'https://somos1egacy.com/logo1egacy.svg' // Asegúrate de que este logo exista
-                        }
-                    },
-                    datePublished: postData.publishedAt,
-                    dateModified: postData._updatedAt
-                }
-            ]
-        };
+  const schema = {
+   '@context': 'https://schema.org',
+   '@graph': [
+    {
+     '@type': 'Article',
+     mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `https://somos1egacy.com/blog/${postData.slug?.current || ''}`
+     },
+     headline: postData.title,
+     description: postData.seoDescription || postData.subtitle,
+     image: postData.mainImageUrl,
+     author: {
+      '@type': 'Person',
+      name: postData.author?.name || '1egacy Studio'
+     },
+     publisher: {
+      '@type': 'Organization',
+      name: '1egacy',
+      logo: {
+       '@type': 'ImageObject',
+       url: 'https://somos1egacy.com/logo1egacy.svg' // Asegúrate de que este logo exista
+      }
+     },
+     datePublished: postData.publishedAt,
+     dateModified: postData._updatedAt
+    }
+   ]
+  };
 
 
-        if (validFaqsForTemplate.length > 0) {
-            schema['@graph'].push({
-                '@type': 'FAQPage',
-                mainEntity: validFaqsForTemplate.map((faq) => ({
-                    '@type': 'Question',
-                    name: faq.question,
-                    acceptedAnswer: {
-                        '@type': 'Answer',
-                        text: Array.isArray(faq.answer)
-                            ? faq.answer.map(block => block.children.map(child => child.text).join('')).join('\n')
-                            : faq.answer
-                    }
-                }))
-            });
-        }
-        return schema;
-    }
+  if (validFaqsForTemplate.length > 0) {
+   schema['@graph'].push({
+    '@type': 'FAQPage',
+    mainEntity: validFaqsForTemplate.map((faq) => ({
+     '@type': 'Question',
+     name: faq.question,
+     acceptedAnswer: {
+      '@type': 'Answer',
+      text: Array.isArray(faq.answer)
+       ? faq.answer.map(block => block.children.map(child => child.text).join('')).join('\n')
+       : faq.answer
+     }
+    }))
+   });
+  }
+  return schema;
+ }
 
 
-    const schema = createSchema(post);
+ const schema = createSchema(post);
 </script>
 
 
 <svelte:head>
-    <title>{post?.seoTitle || post?.title || 'Artículo'} | 1egacy</title>
-    <meta name="description" content={post?.seoDescription || post?.snippet || ''} />
+ <title>{post?.seoTitle || post?.title || 'Artículo'} | 1egacy</title>
+ <meta name="description" content={post?.seoDescription || post?.snippet || ''} />
 
 
-    {#if post && Object.keys(schema).length > 0}
-        {@html `<script type="application/ld+json">${JSON.stringify(schema)}</script>`}
-    {/if}
+ {#if post && Object.keys(schema).length > 0}
+  {@html `<script type="application/ld+json">${JSON.stringify(schema)}</script>`}
+ {/if}
 </svelte:head>
 
 
