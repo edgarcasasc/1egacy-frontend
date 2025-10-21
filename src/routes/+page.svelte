@@ -185,30 +185,28 @@
 					<article class="testimonial-card">
 						<span class="quote-icon">“</span>
 						<blockquote>
-							1egacy no entregó un libro, entregó una pieza perdida de nuestra alma familiar. Es, sin
-							duda, el objeto más valioso que ahora poseemos.
+							Quería un símbolo para mi familia que fuera más allá de un logo genérico. El proceso de 1egacy fue una revelación: el equipo del Maestro Ovidio no solo investigó la heráldica auténtica de mi linaje, sino que luego, como verdaderos artesanos, la rediseñaron con una elegancia moderna, explicándome el 'porqué' de cada elemento. El resultado no es solo un diseño, es nuestro estandarte. Una pieza de arte que se siente histórica y completamente actual, y que ahora usamos con un orgullo inmenso como la firma de nuestra familia.
 						</blockquote>
 						<footer>
-							<div class="author-avatar" />
-							<div>
-								<p class="author-name">Mariana V.</p>
-								<p class="author-title">Guardiana de la Historia Familiar</p>
-							</div>
-						</footer>
+    						<img src="/imagenes_clientes/ana_sofia.webp" alt="Foto de perfil de Ana Sofía Martínez" class="author-avatar" />
+   										 <div>
+      							  <p class="author-name">Ana Sofía Martínez</p>
+      					  <p class="author-title">Emprendedora y Guardiana de un Símbolo</p>
+    									</div>	
+								</footer>
 					</article>
 
 					<!-- Testimonio 2 -->
 					<article class="testimonial-card">
 						<span class="quote-icon">“</span>
 						<blockquote>
-							Como profesional, valoro la precisión y la excelencia. El Códice superó todas mis
-							expectativas. Es una obra de arte y una inversión en identidad.
+							Cuando 1egacy me entregó el Códice de mi linaje, sentí que sostenía no solo un libro, sino un mapa del alma de mi familia. Su equipo demostró una maestría excepcional, desenterrando 'Fragmentos de Vida' desde la Castilla del siglo XIV hasta la California del XIX, tejiéndolos en una narrativa que va más allá de las fechas. Lo que realmente valoro es cómo capturaron la esencia de nuestro legado —la lealtad, la resiliencia, la lección de la tarraya — y lo convirtieron en una obra de arte tangible. No es solo investigación; es la materialización de la identidad, una brújula que honra nuestro pasado y fortalece nuestro camino hacia el futuro.
 						</blockquote>
 						<footer>
-							<div class="author-avatar" />
+							<img src="/imagenes_clientes/chagocama.webp" alt="Foto de perfil de Ana Sofía Martínez" class="author-avatar" />
 							<div>
-								<p class="author-name">Ricardo E.</p>
-								<p class="author-title">Fundador y CEO</p>
+								<p class="author-name">Santiago Camarillo</p>
+								<p class="author-title">Jefe del clan Camarillo</p>
 							</div>
 						</footer>
 					</article>
@@ -217,14 +215,13 @@
 					<article class="testimonial-card">
 						<span class="quote-icon">“</span>
 						<blockquote>
-							El motor de crecimiento que construyeron optimizó nuestro LTV:CAC en un 40%. Un socio
-							estratégico indispensable para el futuro.
+							Buscábamos honrar la vida de mi padre, el fundador de nuestra empresa, por su 80 aniversario. 1egacy FILMS superó todas nuestras expectativas. Su equipo no solo tiene una calidad cinematográfica impecable, sino una sensibilidad de 'Maestro' para encontrar el alma de la historia. No crearon un video corporativo; capturaron la filosofía de vida de mi padre en un documental biográfico que nos conmovió a todos. Han inmortalizado su voz y su legado de una forma que trasciende el tiempo.
 						</blockquote>
 						<footer>
-							<div class="author-avatar" />
+							<img src="/imagenes_clientes/carlosrivas.webp" alt="Foto de perfil de Ana Sofía Martínez" class="author-avatar" />
 							<div>
-								<p class="author-name">Sofía L.</p>
-								<p class="author-title">Directora de Marketing</p>
+								<p class="author-name">Carlos Rivas Villareal</p>
+								<p class="author-title">Hijo y Custodio de una Historia</p>
 							</div>
 						</footer>
 					</article>
@@ -427,6 +424,8 @@
 	}
 
 	.testimonial-carousel {
+		
+		transform-origin:-10%;
 		display: flex;
 		gap: 2rem;
 		padding: 1rem 0;
@@ -439,11 +438,12 @@
 
 	.testimonial-carousel::-webkit-scrollbar {
 		display: none; /* Chrome, Safari and Opera */
+		
 	}
 
 	.testimonial-card {
 		flex: 0 0 90%; /* En móvil ocupa casi todo el ancho */
-		max-width: 400px; /* Ancho máximo por tarjeta */
+		max-width: 300px; /* Ancho máximo por tarjeta */
 		background: linear-gradient(145deg, #1e1e1e, #141414);
 		border: 1px solid #333;
 		padding: 2.5rem;
@@ -492,11 +492,12 @@
 	}
 	
 	.author-avatar {
-		width: 50px;
-		height: 50px;
-		border-radius: 50%;
-		background-color: #c0a062;
-		/* Placeholder para una imagen futura */
+	width: 50px;
+    height: 50px;
+    border-radius: 50%; /* Esto crea el círculo */
+    object-fit: cover; /* Esto asegura que la imagen cubra el círculo sin deformarse */
+    background-color: #c0a062; /* Se puede eliminar si hay imagen */
+    flex-shrink: 0; /* Asegura que la imagen no se encoja */
 	}
 
 	.author-name {
