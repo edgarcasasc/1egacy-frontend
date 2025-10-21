@@ -7,7 +7,7 @@ export async function load({ params, url }) {
   const baseUrl = url.origin; // Para URLs dinámicas en el schema
 
   // --- CONSULTA GROQ FINAL Y LIMPIA ---
-  // Pide todos los campos necesarios y expande las referencias de "linaje"
+  // Pide todos los campos necesarios y expande las referencias
   const query = `*[_type == "post" && slug.current == $slug][0]{
     title,
     subtitle,
@@ -18,9 +18,16 @@ export async function load({ params, url }) {
     seoTitle,
     seoDescription,
     slug { current },
+    
+    // --- DATOS DE AUTOR PARA E-E-A-T ---
     author->{ 
-      name 
+      name,
+      "image": image.asset->url,
+      bio,
+      socialLink
     },
+    // --- FIN DATOS DE AUTOR ---
+
     faqSection,
     "apellidosRelacionados": coalesce(apellidosRelacionados, [])[defined(_ref)]->{ 
       "slug": slug.current,
@@ -50,7 +57,23 @@ export async function load({ params, url }) {
       slug: rawPostData.slug || { current: slug },
       apellidosRelacionados: Array.isArray(rawPostData.apellidosRelacionados) ? rawPostData.apellidosRelacionados : [],
       faqSection: Array.isArray(rawPostData.faqSection) ? rawPostData.faqSection : null,
-      author: (rawPostData.author && typeof rawPostData.author.name === 'string') ? { name: rawPostData.author.name } : null
+      
+      // --- INICIO DE LA CORRECCIÓN DE AUTOR ---
+      // Pasamos el objeto 'author' completo, con fallbacks seguros
+      // para evitar errores en el frontend si un campo viene nulo.
+      author: rawPostData.author ? {
+          name: rawPostData.author.name || '1egacy Studio',
+          image: rawPostData.author.image || null,
+          bio: rawPostData.author.bio || null,
+          socialLink: rawPostData.author.socialLink || null
+        } : {
+          // Fallback si NINGÚN autor está asignado al post
+          name: '1egacy Studio',
+          image: null,
+          bio: null,
+          socialLink: null
+        }
+      // --- FIN DE LA CORRECCIÓN DE AUTOR ---
     };
 
     // Devolvemos el post Y la baseUrl para las URLs del schema
@@ -65,4 +88,3 @@ export async function load({ params, url }) {
     }
   }
 }
-
