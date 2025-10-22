@@ -10,80 +10,97 @@
 	import { gsap } from 'gsap';
 	import { MotionPathPlugin } from 'gsap/MotionPathPlugin';
 
+	// --- INICIO CÓDIGO GSAP CORREGIDO CON SETTIMEOUT ---
 	onMount(() => {
+		let animationTimeoutId; // Guardar ID para limpiar
+
 		if (browser) {
 			gsap.registerPlugin(MotionPathPlugin);
-			console.log('Entorno de navegador detectado, iniciando animaciones GSAP...');
+			console.log('Entorno de navegador detectado. Animaciones GSAP diferidas...');
 
-			try {
-				// --- Animaciones de fondo y partículas (sin cambios) ---
-				gsap.to('.hilo-destino-container', {
-					y: 10,
-					duration: 7,
-					repeat: -1,
-					yoyo: true,
-					ease: 'sine.inOut'
-				});
-				const particulasSingle = gsap.utils.toArray('.particle-single');
-				particulasSingle.forEach((particle, i) => {
-					gsap.to(particle, {
-						motionPath: {
-							path: '#hilo-path',
-							align: '#hilo-path',
-							alignOrigin: [0.5, 0.5]
-						},
-						duration: 8 + Math.random() * 4,
-						delay: i * 0.5 + Math.random() * 1,
-						repeat: -1,
-						ease: 'linear',
-						opacity: 0,
-						onStart: () => gsap.to(particle, { opacity: 1, duration: 1 }),
-						onRepeat: () => {
-							gsap.set(particle, { opacity: 0 });
-							gsap.to(particle, { opacity: 1, duration: 1, delay: 0.1 });
-						}
-					});
-				});
-				const enjambreContainer = '.enjambre-container';
-				const particulasEnjambre = gsap.utils.toArray('.particle-enjambre');
-				gsap.to(enjambreContainer, {
-					motionPath: {
-						path: '#hilo-path',
-						align: '#hilo-path',
-						alignOrigin: [0.5, 0.5],
-						start: 0.1,
-						end: 0.9
-					},
-					duration: 20,
-					repeat: -1,
-					yoyo: true,
-					ease: 'sine.inOut'
-				});
-				particulasEnjambre.forEach((particle) => {
-					gsap.to(particle, {
-						x: () => Math.random() * 30 - 15,
-						y: () => Math.random() * 30 - 15,
-						scale: () => 0.8 + Math.random() * 0.4,
-						duration: 1.5 + Math.random() * 1,
+			// *** DIFERIR ANIMACIONES ***
+			// Esperar 300ms después de montar para renderizar contenido primero.
+			animationTimeoutId = setTimeout(() => {
+				console.log('Iniciando animaciones GSAP ahora.');
+				try {
+					// --- TODO el código de tus animaciones GSAP va AQUÍ DENTRO ---
+					gsap.to('.hilo-destino-container', {
+						y: 10,
+						duration: 7,
 						repeat: -1,
 						yoyo: true,
 						ease: 'sine.inOut'
 					});
-				});
-			} catch (e) {
-				console.error('Error al inicializar las animaciones GSAP:', e);
-			}
 
+					const particulasSingle = gsap.utils.toArray('.particle-single');
+					particulasSingle.forEach((particle, i) => {
+						gsap.to(particle, {
+							motionPath: {
+								path: '#hilo-path',
+								align: '#hilo-path',
+								alignOrigin: [0.5, 0.5]
+							},
+							duration: 8 + Math.random() * 4,
+							delay: i * 0.5 + Math.random() * 1,
+							repeat: -1,
+							ease: 'linear',
+							opacity: 0,
+							onStart: () => gsap.to(particle, { opacity: 1, duration: 1 }),
+							onRepeat: () => {
+								gsap.set(particle, { opacity: 0 });
+								gsap.to(particle, { opacity: 1, duration: 1, delay: 0.1 });
+							}
+						});
+					});
+
+					const enjambreContainer = '.enjambre-container';
+					const particulasEnjambre = gsap.utils.toArray('.particle-enjambre');
+					gsap.to(enjambreContainer, {
+						motionPath: {
+							path: '#hilo-path',
+							align: '#hilo-path',
+							alignOrigin: [0.5, 0.5],
+							start: 0.1,
+							end: 0.9
+						},
+						duration: 20,
+						repeat: -1,
+						yoyo: true,
+						ease: 'sine.inOut'
+					});
+					
+					particulasEnjambre.forEach((particle) => {
+						gsap.to(particle, {
+							x: () => Math.random() * 30 - 15,
+							y: () => Math.random() * 30 - 15,
+							scale: () => 0.8 + Math.random() * 0.4,
+							duration: 1.5 + Math.random() * 1,
+							repeat: -1,
+							yoyo: true,
+							ease: 'sine.inOut'
+						});
+					});
+					// --- FIN del código de animaciones ---
+
+				} catch (e) {
+					console.error('Error al inicializar las animaciones GSAP diferidas:', e);
+				}
+			}, 300); // <-- Retraso de 300 milisegundos
+			// *** FIN DEL CAMBIO ***
+
+			// Función de limpieza
 			return () => {
-				console.log('Limpiando animaciones GSAP...');
+				console.log('Limpiando animaciones GSAP y timeout...');
+				clearTimeout(animationTimeoutId); // Limpiar el timeout
 				gsap.killTweensOf(
 					'.hilo-destino-container, .particle-single, .enjambre-container, .particle-enjambre'
 				);
 			};
 		}
 
-		return () => {};
+		return () => {}; // Limpieza vacía si no es browser
 	});
+	// --- FIN CÓDIGO GSAP CORREGIDO ---
 </script>
 
 <svelte:head>
@@ -102,7 +119,7 @@
 			"name": "1egacy",
 			"url": "https://somos1legacy.com",
 			"logo": "https://somos1legacy.com/logo1egacy.svg",
-			"description": "Contamos las historias que merecen ser recordadas.", // Puedes actualizar esta si quieres
+			"description": "Contamos las historias que merecen ser recordadas.", 
 			"address": {
 				"@type": "PostalAddress",
 				"addressLocality": "Monterrey",
@@ -121,9 +138,7 @@
 
 	</svelte:head>
 
-<!-- Contenedor Principal de la Página -->
 <div class="page-wrapper">
-	<!-- Hero Section con animaciones (sin cambios) -->
 	<div class="home-container">
 		<div class="animated-background">
 			<div class="nebula nebula-blue"></div>
@@ -173,9 +188,6 @@
 		</main>
 	</div>
 
-	<!-- ======================================================================== -->
-	<!-- NUEVA SECCIÓN DE TESTIMONIOS (REDiseñada)                              -->
-	<!-- ======================================================================== -->
 	<section class="social-proof-section">
 		<div class="container">
 			<h2>Lo que los Guardianes de Legados Dicen</h2>
@@ -185,45 +197,40 @@
 
 			<div class="testimonial-carousel-wrapper">
 				<div class="testimonial-carousel">
-					<!-- Testimonio 1 -->
 					<article class="testimonial-card">
 						<span class="quote-icon">“</span>
 						<blockquote>
 							Quería un símbolo para mi familia que fuera más allá de un logo genérico. El proceso de 1egacy fue una revelación: el equipo del Maestro Ovidio no solo investigó la heráldica auténtica de mi linaje, sino que luego, como verdaderos artesanos, la rediseñaron con una elegancia moderna, explicándome el 'porqué' de cada elemento. El resultado no es solo un diseño, es nuestro estandarte. Una pieza de arte que se siente histórica y completamente actual, y que ahora usamos con un orgullo inmenso como la firma de nuestra familia.
 						</blockquote>
 						<footer>
-    						<img src="/imagenes_clientes/ana_sofia.webp" alt="Foto de perfil de Ana Sofía Martínez" class="author-avatar" />
-   										 <div>
-      							  <p class="author-name">Ana Sofía Martínez</p>
-      					  <p class="author-title">Emprendedora y Guardiana de un Símbolo</p>
-    									</div>	
+							<img src="/imagenes_clientes/ana_sofia.webp" alt="Foto de perfil de Ana Sofía Martínez" class="author-avatar" />
+									<div>
+								<p class="author-name">Ana Sofía Martínez</p>
+							<p class="author-title">Emprendedora y Guardiana de un Símbolo</p>
+									</div> 	
 								</footer>
 					</article>
 
-					<!-- Testimonio 2 -->
 					<article class="testimonial-card">
 						<span class="quote-icon">“</span>
 						<blockquote>
 							Cuando 1egacy me entregó el Códice de mi linaje, sentí que sostenía no solo un libro, sino un mapa del alma de mi familia. Su equipo demostró una maestría excepcional, desenterrando 'Fragmentos de Vida' desde la Castilla del siglo XIV hasta la California del XIX, tejiéndolos en una narrativa que va más allá de las fechas. Lo que realmente valoro es cómo capturaron la esencia de nuestro legado —la lealtad, la resiliencia, la lección de la tarraya — y lo convirtieron en una obra de arte tangible. No es solo investigación; es la materialización de la identidad, una brújula que honra nuestro pasado y fortalece nuestro camino hacia el futuro.
 						</blockquote>
 						<footer>
-							<img src="/imagenes_clientes/chagocama.webp" alt="Foto de perfil de Ana Sofía Martínez" class="author-avatar" />
-							<div>
+							<img src="/imagenes_clientes/chagocama.webp" alt="Foto de perfil de Santiago Camarillo" class="author-avatar" /> <div>
 								<p class="author-name">Santiago Camarillo</p>
 								<p class="author-title">Jefe del clan Camarillo</p>
 							</div>
 						</footer>
 					</article>
 
-					<!-- Testimonio 3 -->
 					<article class="testimonial-card">
 						<span class="quote-icon">“</span>
 						<blockquote>
 							Buscábamos honrar la vida de mi padre, el fundador de nuestra empresa, por su 80 aniversario. 1egacy FILMS superó todas nuestras expectativas. Su equipo no solo tiene una calidad cinematográfica impecable, sino una sensibilidad de 'Maestro' para encontrar el alma de la historia. No crearon un video corporativo; capturaron la filosofía de vida de mi padre en un documental biográfico que nos conmovió a todos. Han inmortalizado su voz y su legado de una forma que trasciende el tiempo.
 						</blockquote>
 						<footer>
-							<img src="/imagenes_clientes/carlosrivas.webp" alt="Foto de perfil de Ana Sofía Martínez" class="author-avatar" />
-							<div>
+							<img src="/imagenes_clientes/carlosrivas.webp" alt="Foto de perfil de Carlos Rivas Villareal" class="author-avatar" /> <div>
 								<p class="author-name">Carlos Rivas Villareal</p>
 								<p class="author-title">Hijo y Custodio de una Historia</p>
 							</div>
@@ -236,7 +243,8 @@
 </div>
 
 <style>
-	/* --- Estilos del Hero y Animaciones (sin cambios) --- */
+	/* --- ESTILOS (SIN CAMBIOS) --- */
+	/* ... (Todos tus estilos existentes van aquí) ... */
 	.home-container {
 		min-height: 100vh;
 		position: relative;
@@ -318,22 +326,12 @@
 		animation: pulse 12s infinite ease-in-out alternate;
 	}
 	@keyframes drift {
-		from {
-			transform: translateX(-20%) translateY(-5%);
-		}
-		to {
-			transform: translateX(20%) translateY(5%);
-		}
+		from { transform: translateX(-20%) translateY(-5%); }
+		to { transform: translateX(20%) translateY(5%); }
 	}
 	@keyframes pulse {
-		from {
-			transform: scale(0.95);
-			opacity: 0.08;
-		}
-		to {
-			transform: scale(1.05);
-			opacity: 0.12;
-		}
+		from { transform: scale(0.95); opacity: 0.08; }
+		to { transform: scale(1.05); opacity: 0.12; }
 	}
 	.hilo-destino-container {
 		position: absolute;
@@ -378,28 +376,18 @@
 		opacity: 1;
 	}
 	@media (max-width: 768px) {
-		.hero-content h1 {
-			font-size: clamp(2rem, 8vw, 2.8rem);
-		}
-		.hero-content p {
-			font-size: clamp(0.9rem, 4vw, 1rem);
-		}
-		.cta-button {
-			padding: 0.8rem 1.8rem;
-			font-size: 1rem;
-		}
+		.hero-content h1 { font-size: clamp(2rem, 8vw, 2.8rem); }
+		.hero-content p { font-size: clamp(0.9rem, 4vw, 1rem); }
+		.cta-button { padding: 0.8rem 1.8rem; font-size: 1rem; }
 	}
 
-	/* --- NUEVOS ESTILOS PARA LA SECCIÓN DE TESTIMONIOS --- */
-	.page-wrapper {
-		/* Contenedor para toda la página, incluyendo secciones debajo del hero */
-	}
+	.page-wrapper { /* Contenedor */ }
 
 	.social-proof-section {
-		background-color: #111111; /* Un negro un poco más suave */
-		padding: 6rem 0; /* Espaciado vertical generoso */
+		background-color: #111111; 
+		padding: 6rem 0; 
 		color: #e0e0e0;
-		overflow: hidden; /* Evita que el glow se desborde */
+		overflow: hidden; 
 		position: relative;
 	}
 
@@ -423,37 +411,30 @@
 		margin: 0 auto 4rem auto;
 	}
 
-	.testimonial-carousel-wrapper {
-		/* Contenedor que permite el desbordamiento sin mostrar scrollbar */
-	}
+	.testimonial-carousel-wrapper { /* Contenedor */ }
 
 	.testimonial-carousel {
-		
 		transform-origin:-10%;
 		display: flex;
 		gap: 2rem;
 		padding: 1rem 0;
-		overflow-x: auto; /* Permite el scroll horizontal */
-		scroll-snap-type: x mandatory; /* El scroll se "pegará" a cada tarjeta */
-		/* Ocultar la barra de scroll */
-		-ms-overflow-style: none; /* IE and Edge */
-		scrollbar-width: none; /* Firefox */
+		overflow-x: auto; 
+		scroll-snap-type: x mandatory; 
+		-ms-overflow-style: none; 
+		scrollbar-width: none; 
 	}
 
-	.testimonial-carousel::-webkit-scrollbar {
-		display: none; /* Chrome, Safari and Opera */
-		
-	}
+	.testimonial-carousel::-webkit-scrollbar { display: none; }
 
 	.testimonial-card {
-		flex: 0 0 90%; /* En móvil ocupa casi todo el ancho */
-		max-width: 300px; /* Ancho máximo por tarjeta */
+		flex: 0 0 90%; 
+		max-width: 300px; 
 		background: linear-gradient(145deg, #1e1e1e, #141414);
 		border: 1px solid #333;
 		padding: 2.5rem;
 		border-radius: 12px;
 		text-align: left;
-		scroll-snap-align: start; /* Cada tarjeta es un punto de "pegado" */
+		scroll-snap-align: start; 
 		transition: all 0.4s ease;
 		position: relative;
 	}
@@ -496,12 +477,12 @@
 	}
 	
 	.author-avatar {
-	width: 50px;
-    height: 50px;
-    border-radius: 50%; /* Esto crea el círculo */
-    object-fit: cover; /* Esto asegura que la imagen cubra el círculo sin deformarse */
-    background-color: #c0a062; /* Se puede eliminar si hay imagen */
-    flex-shrink: 0; /* Asegura que la imagen no se encoja */
+		width: 50px;
+		height: 50px;
+		border-radius: 50%; 
+		object-fit: cover; 
+		background-color: #c0a062; 
+		flex-shrink: 0; 
 	}
 
 	.author-name {
@@ -517,17 +498,11 @@
 	}
 
 	@media (min-width: 768px) {
-		.testimonial-card {
-			flex-basis: 45%; /* Dos tarjetas visibles en tablet */
-		}
+		.testimonial-card { flex-basis: 45%; }
 	}
 
 	@media (min-width: 1024px) {
-		.testimonial-carousel {
-			justify-content: center; /* Centra las tarjetas en escritorio si no llenan el espacio */
-		}
-		.testimonial-card {
-			flex-basis: 30%; /* Tres tarjetas visibles en escritorio */
-		}
+		.testimonial-carousel { justify-content: center; }
+		.testimonial-card { flex-basis: 30%; }
 	}
 </style>

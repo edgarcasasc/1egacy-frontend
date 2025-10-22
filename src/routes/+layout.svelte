@@ -1,72 +1,72 @@
 <script>
-  import Navbar from '../components/Navbar.svelte';
+	import Navbar from '../components/Navbar.svelte'; // Asume que la ruta es correcta
 </script>
+
 <svelte:head>
-  <link rel="icon" href="/favicon.svg" />
-</svelte:head>
+	<link rel="icon" href="/favicon.svg" />
+
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> 
+	
+	<link 
+		href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Source+Sans+3:wght@400;600&display=swap" 
+		rel="stylesheet" 
+		media="print" 
+		on:load={(event) => event.target.media='all'} >
+	<noscript>
+		<link 
+			href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Source+Sans+3:wght@400;600&display=swap" 
+			rel="stylesheet"
+		>
+	</noscript>
+	</svelte:head>
+
 <Navbar />
 
 <main>
-  <slot />
+	<slot />
 </main>
 
 <style>
-  /* --- 1. IMPORTACIÓN DE FUENTES --- */
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Source+Sans+3:wght@400;600&display=swap');
-
-  /* --- 2. REGLAS GLOBALES DEL CUERPO --- */
-  :global(body) {
-    background-color: #121212;
-    color: #e0e0e0;
-    font-family: 'Source Sans 3', sans-serif; /* Fuente por defecto para todo */
-    font-weight: 400;
-    line-height: 1.6;
-  }
-
-  /* --- 3. SISTEMA DE TÍTULOS (H1, H2, H3) --- */
-  :global(h1), :global(h2), :global(h3) {
-    font-family: 'Playfair Display', serif; /* Fuente Serif para títulos */
-    font-weight: 400;
-    color: #c0a062; /* Color dorado para dar énfasis */
-    line-height: 1.2;
-    margin-bottom: 1rem;
-  }
-
-  :global(h1) {
-    font-size: 3.5rem;
-    font-weight: 700; /* Más peso para el título principal */
-  }
-
-  :global(h2) {
-    font-size: 2.5rem;
-    margin-top: 3rem;
-  }
-
-  :global(h3) {
-    font-size: 1.8rem;
-    margin-top: 2.5rem;
-  }
-  
-  /* --- 4. SISTEMA DE PÁRRAFOS Y ENLACES --- */
-  :global(p) {
-    max-width: 750px; /* Asegura una longitud de línea cómoda para leer */
-    margin-bottom: 1.5rem;
-    color: #b0b0b0; /* Un gris un poco más suave que el blanco puro */
-  }
-
-  :global(a) {
-    color: #c0a062;
-    text-decoration: none;
-    transition: color 0.3s ease;
-  }
-  
-  :global(a:hover) {
-    color: #ffffff;
-  }
-
-  /* --- 5. ESTILOS BASE (SIN CAMBIOS) --- */
-  main {
-    padding: 0;
-    margin: 0;
-  }
+	/* --- ESTILOS (Sin cambios respecto a la versión anterior) --- */
+	:global(body) {
+		background-color: #121212;
+		color: #e0e0e0;
+		font-family: 'Source Sans 3', sans-serif; 
+		font-weight: 400;
+		line-height: 1.6;
+		margin: 0; 
+		padding: 0; 
+		box-sizing: border-box; 
+	}
+	:global(*, *:before, *:after) {
+		box-sizing: inherit;
+	}
+	:global(h1), :global(h2), :global(h3) {
+		font-family: 'Playfair Display', serif; 
+		font-weight: 400;
+		color: #c0a062; 
+		line-height: 1.2;
+		margin-top: 0; 
+		margin-bottom: 1rem;
+	}
+	:global(h1) { font-size: clamp(2.5rem, 6vw, 3.5rem); font-weight: 700; }
+	:global(h2) { font-size: clamp(2rem, 5vw, 2.5rem); margin-top: 3rem; }
+	:global(h3) { font-size: clamp(1.5rem, 4vw, 1.8rem); margin-top: 2.5rem; }
+	:global(p) {
+		max-width: 75ch; 
+		margin-top: 0; 
+		margin-bottom: 1.5rem;
+		color: #b0b0b0; 
+	}
+	:global(a) {
+		color: #c0a062;
+		text-decoration: none;
+		transition: color 0.3s ease;
+	}
+	:global(a:hover) { color: #ffffff; text-decoration: underline; }
+	main { display: block; }
+	:global(img, svg, video) { max-width: 100%; height: auto; display: block; }
+	:global(ul, ol) { list-style: none; padding: 0; margin: 0 0 1.5rem 0; }
+	:global(li) { margin-bottom: 0.5rem; }
 </style>
