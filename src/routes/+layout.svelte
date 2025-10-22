@@ -3,8 +3,13 @@
 </script>
 
 <svelte:head>
+	<!-- Tu svelte:head se queda igual, con el Schema y el Título -->
+	<title>1egacy: Estudio Creativo | Descubre y Materializa tu Legado</title>
 	<link rel="icon" href="/favicon.svg" />
-
+<meta
+		name="description"
+		content="Estudio creativo que narra lo que no se ha narrado. Investigamos tu linaje, rediseñamos tu escudo y narramos tu historia. Transforma tu pasado en arte tangible."
+	/>
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> 
 	
@@ -13,6 +18,30 @@
 		rel="stylesheet" 
 		media="print" 
 		on:load={(event) => event.target.media='all'} >
+		<script type="application/ld+json">
+{
+	"@context": "https://schema.org",
+	"@type": "Organization",
+	"name": "1egacy",
+	"url": "https://somos1legacy.com",
+	"logo": "https://somos1legacy.com/logo1egacy.svg",
+	"description": "Contamos las historias que merecen ser recordadas.",
+	"address": {
+		"@type": "PostalAddress",
+		"addressLocality": "Monterrey",
+		"postalCode": "67140",
+		"addressCountry": "MX"
+	},
+	"sameAs": [
+		"https://www.instagram.com/somos1egacy/",
+		"https://x.com/somos1egacy",
+		"https://www.youtube.com/@somos1egacy",
+		"https://www.tiktok.com/@somos1egacy",
+		"https://www.facebook.com/profile.php?id=61579103341000"
+	]
+}
+</script>
+
 	<noscript>
 		<link 
 			href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Source+Sans+3:wght@400;600&display=swap" 
