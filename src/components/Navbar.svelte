@@ -9,7 +9,8 @@
 </script>
 
 <header class:open={isMobileMenuOpen}>
-  <a href="/" class="logo-link">
+  <a href="/" class="logo-link"
+  aria-label="Ir a la página de inicio de 1egacy" >
     <Logo />
   </a>
   
