@@ -87,11 +87,14 @@
 </script>
 
 <svelte:head>
-	<title>1egacy - El Comienzo de tu Legado</title>
-	<meta
-		name="description"
-		content="En 1egacy, desenterramos la historia de tus ancestros para forjar el mapa de tu futuro. Tu apellido es solo el comienzo."
+	
+	<title>1egacy: Estudio Creativo | Descubre y Materializa tu Legado</title>
+	
+	<meta 
+		name="description" 
+		content="Estudio creativo que narra lo que no se ha narrado. Investigamos tu linaje, rediseñamos tu escudo y narramos tu historia. Transforma tu pasado en arte tangible." 
 	/>
+
 	<script type="application/ld+json">
 		{
 			"@context": "https://schema.org",
@@ -99,7 +102,7 @@
 			"name": "1egacy",
 			"url": "https://somos1legacy.com",
 			"logo": "https://somos1legacy.com/logo1egacy.svg",
-			"description": "Contamos las historias que merecen ser recordadas.",
+			"description": "Contamos las historias que merecen ser recordadas.", // Puedes actualizar esta si quieres
 			"address": {
 				"@type": "PostalAddress",
 				"addressLocality": "Monterrey",
@@ -115,7 +118,8 @@
 			]
 		}
 	</script>
-</svelte:head>
+
+	</svelte:head>
 
 <!-- Contenedor Principal de la Página -->
 <div class="page-wrapper">
