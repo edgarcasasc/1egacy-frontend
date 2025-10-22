@@ -39,8 +39,15 @@
 </nav>
 
 <!-- Overlay para cerrar el menú al hacer clic fuera -->
-<div class="mobile-nav-overlay" class:open={isMobileMenuOpen} on:click={toggleMobileMenu}></div>
-
+<div 
+    class="mobile-nav-overlay" 
+    class:open={isMobileMenuOpen} 
+    on:click={toggleMobileMenu}
+    on:keydown={(e) => { if (e.key === 'Escape' || e.key === 'Enter') toggleMobileMenu(); }} 
+    role="button" 
+    tabindex="0" 
+    aria-label="Cerrar menú de navegación"
+></div>
 <style>
   header {
     display: flex;

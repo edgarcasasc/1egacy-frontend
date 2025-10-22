@@ -169,12 +169,12 @@
 				/>
 			</svg>
 			{#each Array(5) as _}
-				<div class="particle particle-single" />
-			{/each}
+<div class="particle particle-single"></div>
+
+{/each}
 			<div class="enjambre-container">
 				{#each Array(10) as _}
-					<div class="particle particle-enjambre" />
-				{/each}
+<div class="particle particle-enjambre"></div>				{/each}
 			</div>
 		</div>
 

@@ -9,11 +9,16 @@
   $: escudoUrl = linaje.escudoUrl || ''; // <-- Obtenemos la URL del escudo
 </script>
 
-<div class="modal-background" on:click={onCerrar} transition:fade={{ duration: 300 }}>
-  <div class="modal-content" on:click|stopPropagation transition:fade={{ duration: 300, delay: 150 }}>
-    
-    
+<div 
+    class="modal-background" 
+    on:click={onCerrar} 
+    on:keydown={(e) => { if (e.key === 'Escape' || e.key === 'Enter') onCerrar(); }}
+    role="button" 
+    tabindex="0" 
+    aria-label="Cerrar ventana modal"
+    transition:fade={{ duration: 300 }}>
 
+<div class="modal-content" on:click|stopPropagation transition:fade={{ duration: 300, delay: 150 }}>
     <h2>{apellido}</h2>
     {#if escudoUrl}
       <div class="escudo-wrapper">

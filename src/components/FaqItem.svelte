@@ -15,28 +15,30 @@
 </script>
 
 {#if faqItem && faqItem.question && faqItem.answer}
-  <div class="faq-item" class:open={isOpen}>
-        <button 
-      class="faq-question" 
-      on:click={toggle} 
-      aria-expanded={isOpen}
-      aria-controls="{uniqueId}"
-      role="heading"
-    >
-      <span>{faqItem.question}</span>
-      <span class="faq-icon">{isOpen ? '−' : '+'}</span>
-    </button>
-        {#if isOpen}
+ <div class="faq-item" class:open={isOpen}>
+    <h3 class="faq-question-wrapper" aria-level="3"> 
+   <button 
+    class="faq-question" 
+   on:click={toggle} 
+    aria-expanded={isOpen}
+    aria-controls="{uniqueId}"
+   >
+    <span>{faqItem.question}</span>
+    <span class="faq-icon">{isOpen ? '−' : '+'}</span>
+   </button>
+  </h3>
+  
+  {#if isOpen}
       <div 
-        class="faq-answer" 
-        id="{uniqueId}" 
-        role="region" 
-        aria-labelledby="{uniqueId}"
-      >
-                <p>{@html faqItem.answer.replace(/\n/g, '<br/>')}</p>
-      </div>
-    {/if}
-  </div>
+                class="faq-answer" 
+                id="{uniqueId}" 
+                role="region" 
+                aria-labelledby="{uniqueId}"
+            >
+    <p>{@html faqItem.answer.replace(/\n/g, '<br/>')}</p>
+   </div>
+  {/if}
+ </div>
 {/if}
 
 <style>
