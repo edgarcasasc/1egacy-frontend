@@ -1,16 +1,14 @@
-// src/lib/sanityClient.js (VERSIÓN MEJORADA Y SEGURA)
+// src/lib/sanityClient.js (VERSIÓN FINAL CON CDN FORZADO)
 
 import { createClient } from '@sanity/client';
 
 // 1. Lee las variables de entorno de Vite/SvelteKit
-// Netlify "inyectará" los valores que configuraste en su dashboard.
-// Localmente, las leerá de tu archivo .env
 const projectId = import.meta.env.VITE_SANITY_PROJECT_ID;
 const dataset = import.meta.env.VITE_SANITY_DATASET;
-const token = import.meta.env.VITE_SANITY_READ_TOKEN; // ¡La "llave" que faltaba!
-const apiVersion = '2025-10-15'; // Mantenemos tu fecha
+const token = import.meta.env.VITE_SANITY_READ_TOKEN; 
+const apiVersion = '2025-10-15'; 
 
-// 2. Verificación de seguridad (falla rápido si faltan variables)
+// 2. Verificación de seguridad
 if (!projectId || !dataset) {
   throw new Error(
     "Error de configuración: Faltan variables de entorno de Sanity (VITE_SANITY_PROJECT_ID o VITE_SANITY_DATASET). " +
@@ -24,14 +22,13 @@ export const client = createClient({
   dataset,
   apiVersion,
 
-  // 4. Lógica de Token y CDN (¡Esto es lo más importante!)
+  // 4. LÓGICA DE CDN CORREGIDA (¡ESTE ES EL CAMBIO!)
   
-  // Si SÍ tenemos un token (SSR en Netlify), NO usamos el caché (useCdn: false)
-  // para obtener datos frescos y autenticados.
-  // Si NO hay token (Navegador del cliente), SÍ usamos el caché (useCdn: true)
-  // para velocidad.
-  useCdn: !token, // Si existe 'token', !token es false. Si no existe, !token es true.
+  // Forzamos el uso del CDN (true) para velocidad.
+  // Sanity es lo suficientemente inteligente como para usar el token 
+  // para la autenticación incluso si el CDN está activado.
+  // Esto nos da lo mejor de ambos mundos: velocidad y acceso.
+  useCdn: true, // <--- ¡AQUÍ ESTÁ EL CAMBIO! (Antes era !token)
   
-  token: token,   // ¡Esta es la línea que soluciona tu error 5xx!
-                  // Le da la "llave" al servidor de Netlify.
+  token: token,   // Seguimos pasando el token
 });
