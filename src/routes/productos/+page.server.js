@@ -1,47 +1,49 @@
+// @ts-nocheck
 // src/routes/productos/+page.server.js
 import { client } from '$lib/sanityClient.js';
 import { error } from '@sveltejs/kit';
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load() {
-    // Consulta GROQ para obtener TODOS los productos
-    // Seleccionamos los campos necesarios para la tarjeta del catálogo:
-    // - Título (title)
-    // - Slug (para el enlace)
-    // - Precio (price)
-    // - Descripción corta (description - opcional, si la muestras en la tarjeta)
-    // - Imagen Principal (podemos tomar la primera de la galería o necesitar un campo 'mainImage')
-    // - Información del linaje asociado (opcional, para contexto)
-    const query = `*[_type == "product"] | order(_createdAt desc) {
+    // Consulta para obtener TODOS los productos CON SU CATEGORÍA (título y slug)
+    // Asegúrate que productType.ts tiene el campo 'category' tipo reference a 'category'
+    const productQuery = `*[_type == "product" && defined(category)] | order(_createdAt desc) {
         title,
         "slug": slug.current,
         price,
-        description, // O un campo específico 'shortDescription' si lo tienes
-        // Tomamos la URL de la primera imagen de la galería como imagen principal
+        description,
         "mainImageUrl": gallery[0].asset->url,
-        // Opcional: Si tienes un campo 'mainImage' específico, úsalo:
-        // "mainImageUrl": mainImage.asset->url,
-        "linajeInfo": linaje->{ "slug": slug.current, "title": title } // Opcional
+        "category": category->{ title, "slug": slug.current } // Obtenemos título y slug de la categoría referenciada
     }`;
 
+    // Consulta para obtener SÓLO las categorías que están referenciadas por al menos un producto
+    const categoryQuery = `*[_type == "category" && count(*[_type == "product" && references(^._id)]) > 0] {
+        title,
+        "slug": slug.current
+    } | order(title asc)`;
+
     try {
-        const products = await client.fetch(query);
+        // Ejecutamos ambas consultas en paralelo
+        const [products, usedCategories] = await Promise.all([
+            client.fetch(productQuery),
+            client.fetch(categoryQuery)
+        ]);
 
-        if (products) {
-            // Devolvemos un objeto 'products' que contendrá el array
-            return {
-                products: products
-            };
-        }
+        // Preparamos los filtros añadiendo 'Todos' al inicio
+        const categoryFilters = [
+            { title: 'Todos', slug: 'todos' }, // Slug especial para mostrar todos
+            ...(usedCategories || []) // Asegura que sea un array aunque no haya categorías
+        ];
 
-        // Si no hay productos, podríamos devolver un array vacío o manejarlo como prefieras
+        // Devolvemos ambos: productos y la lista dinámica de filtros
         return {
-            products: []
+            products: products || [],
+            categoryFilters: categoryFilters
         };
 
     } catch (err) {
-        console.error('Error fetching products from Sanity:', err);
-        // Lanzamos un error del servidor si falla la consulta
-        throw error(500, 'No se pudieron cargar los productos');
+        console.error('Error fetching dynamic catalog data from Sanity:', err);
+        // Lanzamos un error del servidor si falla alguna consulta
+        throw error(500, 'No se pudieron cargar los datos para el catálogo');
     }
 }
