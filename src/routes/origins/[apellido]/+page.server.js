@@ -1,39 +1,54 @@
 // src/routes/origins/[apellido]/+page.server.js
-import { client } from '$lib/sanityClient';
+import { client } from '$lib/sanityClient.js';
 import { error } from '@sveltejs/kit';
 
 export async function load({ params }) {
-  // Obtenemos el apellido de la URL y lo convertimos a minúsculas
-  const slug = params.apellido.toLowerCase();
+    // Usamos 'apellido' como el slug, asegurándonos que sea minúsculas
+    const slug = params.apellido.toLowerCase();
 
-  // Creamos una consulta para pedirle a Sanity el linaje específico,
-  // comparando los slugs en minúsculas.
- const query = `*[_type == "linaje" && slug.current == $slug][0]{
-    title,
-    "slug": slug.current,
-    introduccion,
-    "escudoUrl": escudo.asset->url,
-    descripcionEscudo,
-    articulosRelacionados[]->{
-      title,
-      "slug": slug.current,
-      "mainImageUrl": mainImage.asset->url
-    },
-    // --- NUEVA SECCIÓN: Pide los productos relacionados ---
-    "productos": *[_type == "product" && references(^._id)]{
-      "slug": slug.current
+    // Consulta GROQ mejorada para obtener Linaje y Productos relacionados detallados
+    const query = `*[_type == "linaje" && slug.current == $slug][0]{
+        _id, // Necesitamos el ID para buscar productos
+        title,
+        "slug": slug.current,
+        introduccion, // Si lo usas
+        "escudoUrl": escudo.asset->url,
+        descripcionEscudo,
+        // Artículos relacionados (como lo tenías, asegúrate que pidan los campos correctos)
+        articulosRelacionados[]->{
+            title,
+            "slug": slug.current,
+            "mainImageUrl": mainImage.asset->url, // Asume que 'mainImage' existe en 'post'
+            excerpt // Asume que 'excerpt' existe en 'post'
+        },
+        // --- SECCIÓN MEJORADA: Obtener Productos relacionados con detalles para tarjetas ---
+        "relatedProducts": *[_type == "product" && references(^._id)] | order(_createdAt desc) {
+            title,
+            "slug": slug.current,
+            price,
+            "mainImageUrl": gallery[0].asset->url // Imagen principal para la tarjeta
+            // Podrías añadir category->{title} si quieres mostrarla
+        }
+    }`;
+
+    try {
+        const linajeData = await client.fetch(query, { slug });
+
+        if (!linajeData) {
+            // Mantenemos el error 404 si no se encuentra el linaje
+            throw error(404, 'Linaje no encontrado');
+        }
+
+        // Devolvemos el objeto linajeData completo, que ahora contiene 'relatedProducts'
+        return {
+            linaje: linajeData
+        };
+
+    } catch (err) {
+         if (err.status === 404) {
+             throw err;
+         }
+        console.error(`Error loading data for linaje page (${slug}):`, err);
+        throw error(500, 'No se pudo cargar la información del linaje');
     }
-  }`;
-  
-  // Pasamos el slug en minúsculas a la consulta
-  const linaje = await client.fetch(query, { slug });
-
-  if (linaje) {
-    return {
-      linaje
-    };
-  }
-
-  // Si no se encuentra, mostramos un error 404
-  throw error(404, 'Linaje no encontrado');
 }

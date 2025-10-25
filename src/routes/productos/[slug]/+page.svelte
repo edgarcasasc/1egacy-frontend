@@ -182,7 +182,7 @@
                 disabled={ (tallasUnicas.length > 0 && !tallaSeleccionada) || (coloresUnicos.length > 0 && !colorSeleccionado) }
                 aria-disabled={ (tallasUnicas.length > 0 && !tallaSeleccionada) || (coloresUnicos.length > 0 && !colorSeleccionado) }
             >
-                Pre-ordenar
+                Próximamente
             </button>
         </div>
     {:else}
