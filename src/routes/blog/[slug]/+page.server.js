@@ -24,7 +24,8 @@ export async function load({ params, url }) {
       name,
       "image": image.asset->url,
       bio,
-      socialLink
+      socialLink,
+      "authorSlug": slug.current // <--- ¡AÑADE ESTA LÍNEA!
     },
     // --- FIN DATOS DE AUTOR ---
 
@@ -65,13 +66,15 @@ export async function load({ params, url }) {
           name: rawPostData.author.name || '1egacy Studio',
           image: rawPostData.author.image || null,
           bio: rawPostData.author.bio || null,
-          socialLink: rawPostData.author.socialLink || null
+          socialLink: rawPostData.author.socialLink || null,
+          authorSlug: rawPostData.author.authorSlug || null, // <--- ¡AÑADE ESTA LÍNEA!
         } : {
           // Fallback si NINGÚN autor está asignado al post
           name: '1egacy Studio',
           image: null,
           bio: null,
-          socialLink: null
+          socialLink: null,
+          authorSlug: null // <--- ¡Y AÑÁDALA AQUÍ TAMBIÉN!
         }
       // --- FIN DE LA CORRECCIÓN DE AUTOR ---
     };

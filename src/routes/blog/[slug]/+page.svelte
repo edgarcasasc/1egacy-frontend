@@ -48,6 +48,9 @@
 					'author': {
 						'@type': 'Person',
 						'name': authorName,
+						// --- LA LÍNEA QUE RESUELVE LA ALERTA ---
+						...(authorData.authorSlug && { 'url': `${safeBaseUrl}/autor/${authorData.authorSlug}` }),
+						// --- FIN DE LA LÍNEA ---
 						// Añadir URL absoluta de imagen si existe
 						...(authorData.image && { 'image': authorData.image }), 
 						// Añadir bio como description si existe
