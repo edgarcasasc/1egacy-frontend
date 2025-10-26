@@ -28,7 +28,8 @@
 	"description": "Contamos las historias que merecen ser recordadas.",
 	"address": {
 		"@type": "PostalAddress",
-		"streetAddress": "Valle Oaxaca 2400, Colonia Chapultepec",  // <-- AÑADE ESTA LÍNEA CON TU DIRECCIÓN		"addressLocality": "Monterrey",
+		"streetAddress": "Valle Oaxaca 2400, Colonia Chapultepec", 	
+		"addressLocality": "Monterrey",
 		"postalCode": "64620",
 		"addressCountry": "MX"
 	},
