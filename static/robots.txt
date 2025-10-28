@@ -1,4 +1,4 @@
-# allow crawling everything by default
+# Permitir rastreo (esto está perfecto)
 User-agent: *
 Disallow:
-Sitemap: https://somos1legacy.com/sitemap.xml
+Sitemap: https://somos1egacy.com/sitemap.xml
