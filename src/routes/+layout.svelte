@@ -1,5 +1,21 @@
 <script>
-	import Navbar from '../components/Navbar.svelte'; // Asume que la ruta es correcta
+    import Navbar from '../components/Navbar.svelte'; // Tu importación existente
+
+    // --- CÓDIGO GTM AÑADIDO ---
+    import { onMount } from 'svelte';
+    import { browser } from '$app/environment';
+
+    onMount(() => {
+        // Asegúrate de que esto solo se ejecute en el navegador
+        if (browser) {
+            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','GTM-W783R3C7');
+        }
+    });
+    // --- FIN DE CÓDIGO GTM ---
 </script>
 
 <svelte:head>
