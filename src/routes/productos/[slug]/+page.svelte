@@ -24,43 +24,73 @@
     let mostrarModal = false;
 
     // --- Lógica Schema (sin cambios) ---
-    function createProductSchema(productData, pageBaseUrl) {
-       const mainImageForSchema = gallerySource?.[0] || null;
+    // --- Lógica Schema (CORREGIDA) ---
+   function createProductSchema(productData, pageBaseUrl) {
+       
+       // ↓↓↓ ESTE ES EL CAMBIO CRÍTICO ↓↓↓
+       // Usamos productData.mainImageUrl (que viene directo del 'load')
+       // en lugar de la variable reactiva 'gallerySource'.
+       const mainImageForSchema = productData?.mainImageUrl || null;
+
        const schema = {
            "@context": "https://schema.org/",
            "@type": "Product",
            "name": productData?.title || '',
-           "image": mainImageForSchema ? [`${mainImageForSchema}?w=1200`] : [], // Usa la imagen principal
+           
+           // Ahora 'image' SÍ tendrá el valor correcto
+           "image": mainImageForSchema ? [`${mainImageForSchema}?w=1200`] : [], 
+           
            "description": productData?.description || '',
-           "sku": productData?.sku || productData?._id || '', // Usa SKU si existe, si no _id
-           // "brand": { // Descomenta si tienes marca
-           //   "@type": "Brand",
-           //   "name": productData?.brand?.name || "1egacy"
-           // },
+           "sku": productData?.sku || productData?._id || '', 
            "offers": {
                "@type": "Offer",
                "url": `${pageBaseUrl}/productos/${productData?.slug || ''}`,
-               "priceCurrency": "MXN",
-               "price": productData?.price || '0.00', // Usa precio base o 0 si no hay
-               "availability": "https://schema.org/PreOrder", // O InStock, OutOfStock
+               "priceCurrency": productData?.priceCurrency || "MXN", 
+               "price": productData?.price || '0.00', 
+               "availability": "https://schema.org/PreOrder", 
                "itemCondition": "https://schema.org/NewCondition"
            },
-           // Opcional: Añadir AggregateRating si tienes reseñas
        };
-
+       
+       // --- Esta parte ya estaba bien ---
        if (productData?.rating && productData?.reviewCount) {
            schema.aggregateRating = {
                "@type": "AggregateRating",
-               "ratingValue": productData.rating,       // ej: 4.5
-               "reviewCount": productData.reviewCount   // ej: 12
+               "ratingValue": productData.rating,
+               "reviewCount": productData.reviewCount
            };
        }
+
        if (productData?.priceValidUntil) {
-           schema.offers.priceValidUntil = productData.priceValidUntil; // ej: "2025-11-30"
+           schema.offers.priceValidUntil = productData.priceValidUntil;
+       }
+       
+       // --- Esto es para las advertencias amarillas (opcional pero recomendado) ---
+       if (productData?.shippingCost !== null && productData?.shippingCost !== undefined) {
+         schema.offers.shippingDetails = {
+           "@type": "OfferShippingDetails",
+           "shippingRate": {
+             "@type": "MonetaryAmount",
+             "value": productData.shippingCost,
+             "currency": productData.priceCurrency || "MXN"
+           }
+         };
+       }
+
+       if (productData?.returnPolicyDays > 0) {
+         schema.offers.hasMerchantReturnPolicy = {
+           "@type": "MerchantReturnPolicy",
+           "applicableCountry": "MX",
+           "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+           "merchantReturnDays": productData.returnPolicyDays,
+           "returnMethod": "https://schema.org/ReturnByMail",
+           "returnFees": "https://schema.org/FreeReturn" 
+         };
        }
 
        return schema;
      }
+// --- Fin Lógica Schema ---
     const productSchema = createProductSchema(product, baseUrl);
 
     // --- Lógica Pre-orden (sin cambios) ---
