@@ -15,6 +15,13 @@ export async function load({ params, url }) {
     "mainImageUrl": gallery[0].asset->url,
     "galleryImages": gallery[].asset->url,
     sku,
+
+    // --- CAMPOS CORREGIDOS PARA GSC ---
+    rating,
+    reviewCount,
+    priceCurrency,
+    priceValidUntil,
+    // ----------------------------------
     // Obtener título y slug de la categoría referenciada
     "category": category->{
         title,

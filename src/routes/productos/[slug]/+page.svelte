@@ -47,6 +47,18 @@
            },
            // Opcional: Añadir AggregateRating si tienes reseñas
        };
+
+       if (productData?.rating && productData?.reviewCount) {
+           schema.aggregateRating = {
+               "@type": "AggregateRating",
+               "ratingValue": productData.rating,       // ej: 4.5
+               "reviewCount": productData.reviewCount   // ej: 12
+           };
+       }
+       if (productData?.priceValidUntil) {
+           schema.offers.priceValidUntil = productData.priceValidUntil; // ej: "2025-11-30"
+       }
+
        return schema;
      }
     const productSchema = createProductSchema(product, baseUrl);
