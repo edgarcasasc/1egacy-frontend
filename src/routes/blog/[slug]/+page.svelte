@@ -6,10 +6,13 @@
 	import Navbar from '../../../components/Navbar.svelte';
 
 	export let data;
+
+	
 	// data.post ahora contiene el objeto de autor completo { name, image, bio, socialLink, authorSlug }
 	// data.baseUrl también viene de +page.server.js
 	const { post, baseUrl } = data;
-
+const safeBaseUrl = baseUrl || 'https://somos1egacy.com';
+    const canonicalUrl = `${safeBaseUrl}/blog/${post?.slug?.current || ''}`;
 	const components = {
 		types: {
 			image: SanityImage
@@ -125,7 +128,7 @@
 		name="description"
 		content={post?.seoDescription || post?.subtitle || ''}
 	/>
-
+<link rel="canonical" href={canonicalUrl} />
 	{#if post && schema && Object.keys(schema).length > 0}
 		{@html `<script type="application/ld+json">${JSON.stringify(schema)}</script>`}
 	{/if}

@@ -140,8 +140,12 @@
 </script>
 
 <svelte:head>
+    
     <!-- Metadata para SEO y redes sociales --><title>1egacy: Estudio Creativo | Descubre y Materializa tu Legado</title>
     <meta name="description" content="Estudio creativo que narra lo que no se ha narrado. Investigamos tu linaje, rediseñamos tu escudo y narramos tu historia. Transforma tu pasado en arte tangible." />
+    
+    <link rel="canonical" href="https://somos1egacy.com/" />
+    
     <!-- Schema.org para datos estructurados --><script type="application/ld+json">{
             "@context": "https://schema.org",
             "@type": "Organization",
