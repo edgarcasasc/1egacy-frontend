@@ -247,8 +247,8 @@
         <div class="contact-method">
             <h4>Escríbenos Directamente</h4>
             <p class="description">Para preguntas generales, colaboraciones, consultas de prensa o si prefieres usar tu propio gestor de correo.</p>
-            <a href="mailto:estudio@somos1egacy.com" class="email-link">
-                estudio@somos1egacy.com
+            <a href="mailto:hola@1egado.com" class="email-link">
+                hola@1egado.com
             </a>
         </div>
     </div>
