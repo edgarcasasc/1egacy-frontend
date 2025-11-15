@@ -9,10 +9,34 @@
 
 <svelte:head>
 	<title>El Códice - Clústeres Temáticos | 1egacy</title>
+
+
 	<meta 
 		name="description" 
 		content="Explora los clústeres temáticos de 1egacy: Historias de legado, estrategia de crecimiento y más." 
 	/>
+
+	<link rel="canonical" href="https://somos1egacy.com/blog" />
+
+<script type="application/ld+json">
+{
+"@context": "https://schema.org",
+"@type": "Blog",
+"name": "El Códice | 1egacy",
+"url": "https://somos1egacy.com/blog",
+"description": "Explora los clústeres temáticos de 1egacy: Historias de legado, estrategia de crecimiento y más.",
+"publisher": {
+"@type": "Organization",
+"name": "1egacy",
+"logo": {
+"@type": "ImageObject",
+"url": "https://somos1egacy.com/logo1egacy.svg"
+}
+}
+// Opcionalmente, puedes listar los artículos aquí,
+// pero para SvelteKit es más simple solo definir el Blog.
+}
+</script>
 	</svelte:head>
 
 <Navbar />
