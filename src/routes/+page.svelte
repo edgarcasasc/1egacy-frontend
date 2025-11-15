@@ -146,20 +146,7 @@
     
     <link rel="canonical" href="https://somos1egacy.com/" />
     
-    <!-- Schema.org para datos estructurados --><script type="application/ld+json">{
-            "@context": "https://schema.org",
-            "@type": "Organization",
-            "name": "1egacy",
-            "url": "https://somos1egacy.com", // Corregido
-            "logo": "https://somos1egacy.com/logo1egacy.svg", // Corregido
-            "description": "Contamos las historias que merecen ser recordadas.",
-            "address": { "@type": "PostalAddress", "addressLocality": "Monterrey", "postalCode": "67140", "addressCountry": "MX" },
-            "sameAs": [
-                "https://www.instagram.com/somos1egacy/", "https://x.com/somos1egacy",
-                "https://www.youtube.com/@somos1egacy", "https://www.tiktok.com/@somos1egacy",
-                "https://www.facebook.com/profile.php?id=61579103341000"
-            ]
-        }</script>
+
     <!-- Favicon (ya lo tenías en +layout.svelte, puedes quitarlo de aquí si prefieres) --><!-- <link rel="icon" href="/favicon.svg" /> --><!-- Preconexión a Google Fonts (ya lo tenías en +layout.svelte) --><!-- <link rel="preconnect" href="https://fonts.googleapis.com"> --><!-- <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> --><!-- Carga diferida de fuentes (ya lo tenías en +layout.svelte) --><!-- <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet" media="print" on:load={(event) => event.target.media='all'} > --><!-- Fallback de fuentes para noscript (ya lo tenías en +layout.svelte) --><!-- <noscript><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet"></noscript> --></svelte:head>
 
 <!-- Contenedor principal de la página --><div class="page-wrapper">
