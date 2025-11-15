@@ -365,7 +365,8 @@
     Podemos actualizar esta Política de Privacidad ocasionalmente. Te notificaremos sobre
     cambios significativos publicando la nueva política aquí y actualizando la fecha de "Última
     Actualización".
-  </f>
+  </p>
+
   <p>Te recomendamos revisarla periódicamente.</p>
 
   <h2>14. Contacto</h2>
