@@ -23,10 +23,17 @@ const query = `*[_type == "product" && slug.current == $slug][0]{
  // --- FIN DE LA CORRECCIÓN 5XX ---
 
  sku,
+
  rating,
  reviewCount,
  priceCurrency,
  priceValidUntil,
+
+ // --- INICIO DE CORRECCIÓN DE ADVERTENCIAS AMARILLAS ---
+  shippingCost, // <-- AÑADE ESTA LÍNEA (Asumiendo que el campo se llama 'shippingCost' en Sanity)
+  returnPolicyDays, // <-- AÑADE ESTA LÍNEA (Asumiendo que el campo se llama 'returnPolicyDays' en Sanity)
+  // --- FIN DE CORRECCIÓN ---
+ 
  "category": category->{ // Esto es seguro, GROQ devuelve null si no hay referencia
    title,
    "slug": slug.current
