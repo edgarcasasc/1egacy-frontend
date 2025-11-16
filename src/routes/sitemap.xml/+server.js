@@ -26,12 +26,18 @@ export async function GET() {
 			"slug": slug.current,
 			_updatedAt
 		}`;
+    // 4. NUEVO: Obtener Productos
+const productosQuery = `*[_type == "product" && defined(slug.current)] {
+	"slug": slug.current,
+	_updatedAt
+}`;
 
 		// Ejecutar todas las consultas en paralelo
-		const [posts, linajes, autores] = await Promise.all([
+const [posts, linajes, autores, productos] = await Promise.all([
 			client.fetch(postsQuery),
 			client.fetch(linajesQuery),
-			client.fetch(autoresQuery)
+			client.fetch(autoresQuery),
+      client.fetch(productosQuery) // <-- Añade esta línea
 		]);
 
 		// --- FIN DE NUEVAS QUERIES ---
@@ -43,7 +49,8 @@ export async function GET() {
       { path: '/origins', priority: 0.8, changefreq: 'weekly' },
       { path: '/studio', priority: 0.7, changefreq: 'monthly' },
       { path: '/films', priority: 0.7, changefreq: 'monthly' },
-      { path: '/el-codice', priority: 0.9, changefreq: 'weekly' }, 
+      { path: '/blog', priority: 0.9, changefreq: 'weekly' }, 
+      { path: '/productos', priority: 0.7, changefreq: 'monthly' }, 
     ];
 
     // 5. Construir el XML del sitemap
@@ -81,6 +88,15 @@ export async function GET() {
       <lastmod>${new Date(autor._updatedAt).toISOString().split('T')[0]}</lastmod> 
       <priority>0.5</priority>
       <changefreq>yearly</changefreq>
+    </url>
+  `).join('')}
+
+  ${productos.map(producto => `
+    <url>
+      <loc>${siteUrl}/productos/${producto.slug}</loc>
+      <lastmod>${new Date(producto._updatedAt).toISOString().split('T')[0]}</lastmod> 
+      <priority>0.8</priority> 
+      <changefreq>weekly</changefreq>
     </url>
   `).join('')}
 </urlset>`;
