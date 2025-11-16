@@ -24,10 +24,12 @@ const query = `*[_type == "product" && slug.current == $slug][0]{
 
  sku,
 
- rating,
- reviewCount,
- priceCurrency,
- priceValidUntil,
+  rating,
+  reviewCount,
+  priceCurrency,
+  priceValidUntil,
+  shippingDetails,
+  hasMerchantReturnPolicy,
 
  // --- INICIO DE CORRECCIÓN DE ADVERTENCIAS AMARILLAS ---
   shippingCost, // <-- AÑADE ESTA LÍNEA (Asumiendo que el campo se llama 'shippingCost' en Sanity)

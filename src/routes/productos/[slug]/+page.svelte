@@ -25,71 +25,81 @@
 
     // --- Lógica Schema (sin cambios) ---
     // --- Lógica Schema (CORREGIDA) ---
-   function createProductSchema(productData, pageBaseUrl) {
-       
-       // ↓↓↓ ESTE ES EL CAMBIO CRÍTICO ↓↓↓
-       // Usamos productData.mainImageUrl (que viene directo del 'load')
-       // en lugar de la variable reactiva 'gallerySource'.
-       const mainImageForSchema = productData?.mainImageUrl || null;
+   // --- Lógica Schema (CORREGIDA) ---
+function createProductSchema(productData, pageBaseUrl) {
+    
+    // ↓↓↓ ESTE ES EL CAMBIO CRÍTICO ↓↓↓
+    // Usamos productData.mainImageUrl (que viene directo del 'load')
+    // en lugar de la variable reactiva 'gallerySource'.
+    const mainImageForSchema = productData?.mainImageUrl || null;
 
-       const schema = {
-           "@context": "https://schema.org/",
-           "@type": "Product",
-           "name": productData?.title || '',
-           
-           // Ahora 'image' SÍ tendrá el valor correcto
-           "image": mainImageForSchema ? [`${mainImageForSchema}?w=1200`] : [], 
-           
-           "description": productData?.description || '',
-           "sku": productData?.sku || productData?._id || '', 
-           "offers": {
-               "@type": "Offer",
-               "url": `${pageBaseUrl}/productos/${productData?.slug || ''}`,
-               "priceCurrency": productData?.priceCurrency || "MXN", 
-               "price": productData?.price || '0.00', 
-               "availability": "https://schema.org/PreOrder", 
-               "itemCondition": "https://schema.org/NewCondition"
-           },
-       };
-       
-       // --- Esta parte ya estaba bien ---
-       if (productData?.rating && productData?.reviewCount) {
-           schema.aggregateRating = {
-               "@type": "AggregateRating",
-               "ratingValue": productData.rating,
-               "reviewCount": productData.reviewCount
-           };
-       }
+    const schema = {
+        "@context": "https://schema.org/",
+        "@type": "Product",
+        "name": productData?.title || '',
+        
+        // Ahora 'image' SÍ tendrá el valor correcto
+        "image": mainImageForSchema ? [`${mainImageForSchema}?w=1200`] : [], 
+        
+        "description": productData?.description || '',
+        "sku": productData?.sku || productData?._id || '', 
+        "offers": {
+            "@type": "Offer",
+            "url": `${pageBaseUrl}/productos/${productData?.slug || ''}`,
+            "priceCurrency": productData?.priceCurrency || "MXN", 
+            "price": productData?.price || '0.00', 
+            "availability": "https://schema.org/PreOrder", 
+            "itemCondition": "https://schema.org/NewCondition"
+        },
+    };
+    
+    // --- Esta parte ya estaba bien ---
+    if (productData?.rating && productData?.reviewCount) {
+        schema.aggregateRating = {
+            "@type": "AggregateRating",
+            "ratingValue": productData.rating,
+            "reviewCount": productData.reviewCount
+        };
+    }
 
-       if (productData?.priceValidUntil) {
-           schema.offers.priceValidUntil = productData.priceValidUntil;
-       }
-       
-       // --- Esto es para las advertencias amarillas (opcional pero recomendado) ---
-       if (productData?.shippingCost !== null && productData?.shippingCost !== undefined) {
-         schema.offers.shippingDetails = {
-           "@type": "OfferShippingDetails",
-           "shippingRate": {
-             "@type": "MonetaryAmount",
-             "value": productData.shippingCost,
-             "currency": productData.priceCurrency || "MXN"
-           }
-         };
-       }
+    if (productData?.priceValidUntil) {
+        schema.offers.priceValidUntil = productData.priceValidUntil;
+    }
+    
+    // --- AQUÍ ESTÁ LA CORRECCIÓN ---
+    // Comprobamos que el objeto 'shippingDetails' y su sub-objeto 'shippingRate' existan
+    if (productData?.shippingDetails && productData.shippingDetails.shippingRate) {
+        schema.offers.shippingDetails = {
+            "@type": "OfferShippingDetails",
+            "shippingRate": {
+                "@type": "MonetaryAmount",
+                // Accedemos al valor anidado correcto
+                "value": productData.shippingDetails.shippingRate.value, 
+                "currency": productData.shippingDetails.shippingRate.currency || "MXN"
+            }
+        };
+    }
 
-       if (productData?.returnPolicyDays > 0) {
-         schema.offers.hasMerchantReturnPolicy = {
-           "@type": "MerchantReturnPolicy",
-           "applicableCountry": "MX",
-           "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
-           "merchantReturnDays": productData.returnPolicyDays,
-           "returnMethod": "https://schema.org/ReturnByMail",
-           "returnFees": "https://schema.org/FreeReturn" 
-         };
-       }
+    // --- Y AQUÍ LA OTRA CORRECCIÓN ---
+    // Comprobamos que el objeto 'hasMerchantReturnPolicy' exista
+    if (productData?.hasMerchantReturnPolicy && productData.hasMerchantReturnPolicy.merchantReturnDays > 0) {
+        schema.offers.hasMerchantReturnPolicy = {
+            "@type": "MerchantReturnPolicy",
+            // Accedemos a los valores anidados que definimos en Sanity
+            "returnPolicyCategory": productData.hasMerchantReturnPolicy.returnPolicyCategory,
+            "merchantReturnDays": productData.hasMerchantReturnPolicy.merchantReturnDays,
+            "refundType": productData.hasMerchantReturnPolicy.refundType
+        };
+        
+        // Añadir la URL de la política solo si existe en los datos
+        if (productData.hasMerchantReturnPolicy.returnPolicyUrl) {
+            schema.offers.hasMerchantReturnPolicy.returnPolicyUrl = productData.hasMerchantReturnPolicy.returnPolicyUrl;
+        }
+    }
 
-       return schema;
-     }
+    return schema;
+}
+// --- Fin Lógica Schema ---
 // --- Fin Lógica Schema ---
     const productSchema = createProductSchema(product, baseUrl);
 
