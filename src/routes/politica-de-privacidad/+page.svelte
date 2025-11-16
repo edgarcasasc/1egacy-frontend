@@ -1,7 +1,22 @@
-<script>
-  // Puedes agregar metadatos de SEO (título, descripción) aquí
-  // si estás usando un <svelte:head> en tu layout.
+<script lang="ts">
+  // --- BLOQUE DE SEO AÑADIDO ---
+  // Meta descriptions and titles for the Privacy Policy page
+  const pageTitle = 'Política de Privacidad | 1egacy';
+  const pageDescription =
+    'Consulta cómo 1egacy protege y gestiona tus datos personales. Conoce tus derechos y nuestro compromiso con tu privacidad.';
+  const canonicalUrl = 'https://somos1egacy.com/politica-de-privacidad'; // URL de esta página
+  // --- FIN DEL BLOQUE DE SEO ---
 </script>
+
+<svelte:head>
+  <title>{pageTitle}</title>
+  <meta name="description" content={pageDescription} />
+  <link rel="canonical" href={canonicalUrl} />
+  <meta property="og:title" content={pageTitle} />
+  <meta property="og:description" content={pageDescription} />
+  <meta property="og:url" content={canonicalUrl} />
+  <meta name="twitter:card" content="summary" />
+</svelte:head>
 
 <main>
   <h1>Política de Privacidad de 1egacy</h1>
@@ -11,33 +26,17 @@
 
   <h2>1. Introducción</h2>
   <p>
-    Bienvenido a 1egacy. Somos un estudio creativo y una casa productora dedicada a "contar
-    las historias que merecen ser recordadas", operando bajo tres divisiones: 1egacy ORIGINS
-    (non-fiction, historia de linajes), 1egacy FILMS (cortometrajes cinematográficos) y 1egacy
-    STUDIOS (entretenimiento y ficción).
+    Bienvenido a 1egacy. Somos un estudio creativo y una casa productora dedicada a "contar las historias que merecen ser recordadas", operando bajo tres divisiones: 1egacy ORIGINS (non-fiction, historia de linajes), 1egacy FILMS (cortometrajes cinematográficos) y 1egacy STUDIOS (entretenimiento y ficción).
   </p>
+  <p>Tu privacidad es fundamental para nosotros. Esta Política de Privacidad explica qué datos personales recopilamos de nuestros usuarios y visitantes ("tú"), cómo los usamos, con quién los compartimos, qué derechos tienes sobre ellos y cómo los protegemos.</p>
+  <p>Operamos en cumplimiento con la <strong>Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP) de México, en su versión vigente a partir de 2025</strong>, y, dado nuestro alcance internacional, aspiramos a cumplir con los más altos estándares globales como el <strong>Reglamento General de Protección de Datos (RGPD) de la Unión Europea</strong>, aplicando el estándar más protector donde sea necesario.</p>
+  
+<h2>2. Responsable del Tratamiento de Datos</h2>
+<p>El responsable del tratamiento de tus datos personales es:</p>
+<p><strong>Identidad:</strong> Edgar Ovidio Casas Camarillo ("1egacy")</p>
+<p><strong>Domicilio:</strong> Valle del Maíz 2305, Col. Valle de Chapultepec, Monterrey, Nuevo León, México </p>
   <p>
-    Tu privacidad es fundamental para nosotros. Esta Política de Privacidad explica qué datos
-    personales recopilamos de nuestros usuarios y visitantes ("tú"), cómo los usamos, con quién los
-    compartimos, qué derechos tienes sobre ellos y cómo los protegemos.
-  </p>
-  <p>
-    Operamos en cumplimiento con la
-    <strong>Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP)
-      de México, en su versión vigente a partir de 2025</strong>, y, dado nuestro alcance internacional, aspiramos a cumplir con los más altos
-    estándares globales como el
-    <strong>Reglamento General de Protección de Datos (RGPD) de la Unión Europea</strong>, aplicando el estándar más protector donde sea necesario.
-  </p>
-
-  <h2>2. Responsable del Tratamiento de Datos</h2>
-  <p>El responsable del tratamiento de tus datos personales es:</p>
-  <p><strong>Identidad:</strong> Edgar Ovidio Casas Camarillo ("1egacy")</p>
-  <p>
-    <strong>Domicilio:</strong> Valle del Maíz 2305, Col. Valle de Chapultepec, Monterrey, Nuevo León,
-    México]
-  </p>
-  <p>
-    <strong>Correo Electrónico de Contacto para Privacidad:</strong> privacidad@1egado.com
+    <strong>Correo Electrónico de Contacto para Privacidad:</strong> <a href="mailto:hola@1egado.com"> hola@1egado.com</a>
   </p>
   <p>
     <strong>Delegado de Protección de Datos (DPO):</strong> [Si aplica, insertar nombre y datos de
@@ -372,7 +371,7 @@
   <h2>14. Contacto</h2>
   <p>
     Si tienes preguntas sobre esta Política de Privacidad o deseas ejercer tus derechos, contáctanos
-    en: privacidad@1egado.com
+    en:<a href="mailto:hola@1egado.com"> hola@1egado.com</a>
   </p>
 
   <blockquote>
@@ -466,4 +465,7 @@
   blockquote p:last-child {
     margin-bottom: 0;
   }
+  strong {
+   color:#eee;
+  } 
 </style>
