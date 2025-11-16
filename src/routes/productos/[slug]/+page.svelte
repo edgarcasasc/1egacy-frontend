@@ -27,10 +27,9 @@
    // --- Lógica Schema (CORREGIDA) ---
 // En: src/routes/productos/[slug]/+page.svelte
 
-// --- Lógica Schema (ACTUALIZADA PARA ARRAY DE ENVÍOS) ---
-// En: src/routes/productos/[slug]/+page.svelte
+/// En: src/routes/productos/[slug]/+page.svelte
 
-// --- Lógica Schema (¡CORREGIDA AHORA SÍ!) ---
+// --- Lógica Schema (ACTUALIZADA CON "brand") ---
 function createProductSchema(productData, pageBaseUrl) {
     const mainImageForSchema = productData?.mainImageUrl || null;
 
@@ -38,6 +37,14 @@ function createProductSchema(productData, pageBaseUrl) {
         "@context": "https://schema.org/",
         "@type": "Product",
         "name": productData?.title || '',
+
+        // --- ¡AQUÍ ESTÁ EL NUEVO CAMPO! ---
+        "brand": {
+            "@type": "Brand",
+            "name": "1egacy"
+        },
+        // --- FIN DEL CAMBIO ---
+
         "image": mainImageForSchema ? [`${mainImageForSchema}?w=1200`] : [], 
         "description": productData?.description || '',
         "sku": productData?.sku || productData?._id || '', 
@@ -87,12 +94,11 @@ function createProductSchema(productData, pageBaseUrl) {
                 }
             }
 
-            // --- ¡¡ESTA ES LA CORRECCIÓN!! ---
-            // Leemos desde 'rule.deliveryTime.transitTime'
+            // --- Lee desde 'transitTime' ---
             if (rule.deliveryTime && rule.deliveryTime.transitTime) { 
                 shippingDetail.deliveryTime = {
                     "@type": "ShippingDeliveryTime",
-                    "transitTime": { // <-- El objeto que faltaba
+                    "transitTime": {
                         "@type": "QuantitativeValue", 
                         "minValue": rule.deliveryTime.transitTime.minValue,
                         "maxValue": rule.deliveryTime.transitTime.maxValue,
@@ -100,7 +106,7 @@ function createProductSchema(productData, pageBaseUrl) {
                     }
                 };
             }
-            // --- FIN DEL CAMBIO ---
+            
 
             return shippingDetail;
         });
@@ -112,15 +118,14 @@ function createProductSchema(productData, pageBaseUrl) {
             "@type": "MerchantReturnPolicy",
             "returnPolicyCategory": productData.hasMerchantReturnPolicy.returnPolicyCategory,
             "merchantReturnDays": productData.hasMerchantReturnPolicy.merchantReturnDays,
-            "refundType": productData.hasMerchantReturnPolicy.refundType, // <-- Ya viene como URL desde Sanity
+            "refundType": productData.hasMerchantReturnPolicy.refundType,
             "applicableCountry": productData.hasMerchantReturnPolicy.applicableCountry
         };
     }
 
     return schema;
 }
-// --- Fin Lógica Schema ---
-// --- Fin Lógica Schema ---
+
 // --- Fin Lógica Schema ---
 // --- Fin Lógica Schema ---
     const productSchema = createProductSchema(product, baseUrl);
