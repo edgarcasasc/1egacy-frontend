@@ -28,6 +28,7 @@
 // En: src/routes/productos/[slug]/+page.svelte
 
 // --- Lógica Schema (ACTUALIZADA PARA ARRAY DE ENVÍOS) ---
+// --- Lógica Schema (ACTUALIZADA PARA VALIDATOR.SCHEMA.ORG) ---
 function createProductSchema(productData, pageBaseUrl) {
     const mainImageForSchema = productData?.mainImageUrl || null;
 
@@ -60,16 +61,12 @@ function createProductSchema(productData, pageBaseUrl) {
         schema.offers.priceValidUntil = productData.priceValidUntil;
     }
     
-    // --- SECCIÓN DE ENVÍO (ACTUALIZADA PARA ARRAY) ---
-    // 'shippingDetails' es ahora un array de reglas
+    // --- SECCIÓN DE ENVÍO (CORREGIDA) ---
     if (productData?.shippingDetails && productData.shippingDetails.length > 0) {
         schema.offers.shippingDetails = productData.shippingDetails.map(rule => {
             
-            const shippingDetail = {
-                "@type": "OfferShippingDetails"
-            };
+            const shippingDetail = { "@type": "OfferShippingDetails" };
 
-            // Añadir tarifa de envío
             if (rule.shippingRate) {
                 shippingDetail.shippingRate = {
                     "@type": "MonetaryAmount",
@@ -78,48 +75,51 @@ function createProductSchema(productData, pageBaseUrl) {
                 };
             }
 
-            // Añadir destino de envío
             if (rule.shippingDestination) {
                 shippingDetail.shippingDestination = {
                     "@type": "DefinedRegion",
                     "addressCountry": rule.shippingDestination.addressCountry
                 };
-                // Añadir el estado (region) SI existe
                 if (rule.shippingDestination.addressRegion) {
                     shippingDetail.shippingDestination.addressRegion = rule.shippingDestination.addressRegion;
                 }
             }
 
-            // Añadir tiempo de entrega
-            if (rule.deliveryTime) {
+            // --- AQUÍ ESTÁ EL CAMBIO IMPORTANTE ---
+            // 'minValue' y 'maxValue' van DENTRO de 'transitTime'
+            if (rule.deliveryTime && rule.deliveryTime.transitTime) {
                 shippingDetail.deliveryTime = {
                     "@type": "ShippingDeliveryTime",
-                    "minValue": rule.deliveryTime.minValue,
-                    "maxValue": rule.deliveryTime.maxValue,
-                    "unitCode": rule.deliveryTime.unitCode || "DAY"
+                    "transitTime": {
+                        "@type": "QuantitativeValue", // <--- Tipo de objeto correcto
+                        "minValue": rule.deliveryTime.transitTime.minValue,
+                        "maxValue": rule.deliveryTime.transitTime.maxValue,
+                        "unitCode": rule.deliveryTime.transitTime.unitCode || "DAY"
+                    }
                 };
             }
+            // --- FIN DEL CAMBIO ---
+
             return shippingDetail;
         });
     }
 
-    // --- SECCIÓN DE DEVOLUCIONES (ACTUALIZADA) ---
+    // --- SECCIÓN DE DEVOLUCIONES (CORREGIDA) ---
     if (productData?.hasMerchantReturnPolicy) {
         schema.offers.hasMerchantReturnPolicy = {
             "@type": "MerchantReturnPolicy",
             "returnPolicyCategory": productData.hasMerchantReturnPolicy.returnPolicyCategory,
             "merchantReturnDays": productData.hasMerchantReturnPolicy.merchantReturnDays,
-            "refundType": productData.hasMerchantReturnPolicy.refundType,
+            "refundType": productData.hasMerchantReturnPolicy.refundType, // <-- Ya viene como URL desde Sanity
             "applicableCountry": productData.hasMerchantReturnPolicy.applicableCountry
         };
         
-        if (productData.hasMerchantReturnPolicy.returnPolicyUrl) {
-            schema.offers.hasMerchantReturnPolicy.returnPolicyUrl = productData.hasMerchantReturnPolicy.returnPolicyUrl;
-        }
+        // El campo 'returnPolicyUrl' se ha ELIMINADO
     }
 
     return schema;
 }
+// --- Fin Lógica Schema ---
 // --- Fin Lógica Schema ---
 // --- Fin Lógica Schema ---
     const productSchema = createProductSchema(product, baseUrl);
