@@ -176,6 +176,19 @@ function createProductSchema(productData, pageBaseUrl) {
     {#if productSchema}
         {@html `<script type="application/ld+json">${JSON.stringify(productSchema)}</script>`}
     {/if}
+
+    <meta
+    name="description"
+    content={product?.description?.substring(0, 160) || product?.title || ''}
+  />
+  
+  <meta property="og:title" content={product?.title || 'Producto'} />
+  <meta property="og:description" content={product?.description?.substring(0, 160) || ''} />
+  <meta property="og:image" content={product?.mainImageUrl || 'https://somos1egacy.com/1egacy-og-logo.jpg'} />
+  <meta name="twitter:image" content={product?.mainImageUrl || 'https://somos1egacy.com/1egacy-og-logo.jpg'} />
+  {#if productSchema}
+    {@html `<script type="application/ld+json">${JSON.stringify(productSchema)}</script>`}
+  {/if}
 </svelte:head>
 
 <Navbar /> <!-- Asume que Navbar está fuera del main para que sea sticky/fixed -->

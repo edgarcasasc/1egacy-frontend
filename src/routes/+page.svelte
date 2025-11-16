@@ -140,6 +140,18 @@
 </script>
 
 <svelte:head>
+
+<meta property="og:site_name" content="1egacy" />
+  <meta property="og:type" content="website" />
+  
+  <meta property="og:image" content="https://somos1egacy.com/1egacy-og-logo.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@somos1egacy" /> <meta name="twitter:image" content="https://somos1egacy.com/1egacy-og-logo.jpg" />
+
+  
     
     <!-- Metadata para SEO y redes sociales --><title>1egacy: Estudio Creativo | Descubre y Materializa tu Legado</title>
     <meta name="description" content="Estudio creativo que narra lo que no se ha narrado. Investigamos tu linaje, rediseñamos tu escudo y narramos tu historia. Transforma tu pasado en arte tangible." />
