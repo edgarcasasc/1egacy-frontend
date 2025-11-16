@@ -23,9 +23,10 @@
     let colorSeleccionado = '';
     let mostrarModal = false;
 
-    // --- Lógica Schema (sin cambios) ---
-    // --- Lógica Schema (CORREGIDA) ---
+ 
    // --- Lógica Schema (CORREGIDA) ---
+// En: src/routes/productos/[slug]/+page.svelte
+
 // --- Lógica Schema (ACTUALIZADA PARA ARRAY DE ENVÍOS) ---
 function createProductSchema(productData, pageBaseUrl) {
     const mainImageForSchema = productData?.mainImageUrl || null;
@@ -60,7 +61,7 @@ function createProductSchema(productData, pageBaseUrl) {
     }
     
     // --- SECCIÓN DE ENVÍO (ACTUALIZADA PARA ARRAY) ---
-    // 'shippingDetails' es ahora un array de reglas (no un solo objeto)
+    // 'shippingDetails' es ahora un array de reglas
     if (productData?.shippingDetails && productData.shippingDetails.length > 0) {
         schema.offers.shippingDetails = productData.shippingDetails.map(rule => {
             
@@ -119,6 +120,7 @@ function createProductSchema(productData, pageBaseUrl) {
 
     return schema;
 }
+// --- Fin Lógica Schema ---
 // --- Fin Lógica Schema ---
     const productSchema = createProductSchema(product, baseUrl);
 
