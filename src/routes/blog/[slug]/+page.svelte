@@ -123,22 +123,11 @@ const safeBaseUrl = baseUrl || 'https://somos1egacy.com';
 </script>
 
 <svelte:head>
-	<title>{post?.seoTitle || post?.title || 'Artículo'} | 1egacy Blog</title>
+	<title>{post?.seoTitle || post?.title || 'Artículo'} | 1egacy</title>
 	<meta
 		name="description"
 		content={post?.seoDescription || post?.subtitle || ''}
 	/>
-
-
-	<meta name="description" content={post.excerpt || ''} />
-  
-  <meta property="og:title" content={post.title} />
-  <meta property="og:description" content={post.excerpt || ''} />
-  <meta property="og:image" content={post.mainImage?.url || 'https://somos1egacy.com/1egacy-og-logo.jpg'} />
-  <meta name="twitter:image" content={post.mainImage?.url || 'https://somos1egacy.com/1egacy-og-logo.jpg'} />
-  <meta property="og:type" content="article" />
-
-  
 <link rel="canonical" href={canonicalUrl} />
 	{#if post && schema && Object.keys(schema).length > 0}
 		{@html `<script type="application/ld+json">${JSON.stringify(schema)}</script>`}
