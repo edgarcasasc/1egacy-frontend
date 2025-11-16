@@ -26,21 +26,15 @@
     // --- Lógica Schema (sin cambios) ---
     // --- Lógica Schema (CORREGIDA) ---
    // --- Lógica Schema (CORREGIDA) ---
+// --- Lógica Schema (ACTUALIZADA PARA ARRAY DE ENVÍOS) ---
 function createProductSchema(productData, pageBaseUrl) {
-    
-    // ↓↓↓ ESTE ES EL CAMBIO CRÍTICO ↓↓↓
-    // Usamos productData.mainImageUrl (que viene directo del 'load')
-    // en lugar de la variable reactiva 'gallerySource'.
     const mainImageForSchema = productData?.mainImageUrl || null;
 
     const schema = {
         "@context": "https://schema.org/",
         "@type": "Product",
         "name": productData?.title || '',
-        
-        // Ahora 'image' SÍ tendrá el valor correcto
         "image": mainImageForSchema ? [`${mainImageForSchema}?w=1200`] : [], 
-        
         "description": productData?.description || '',
         "sku": productData?.sku || productData?._id || '', 
         "offers": {
@@ -53,7 +47,6 @@ function createProductSchema(productData, pageBaseUrl) {
         },
     };
     
-    // --- Esta parte ya estaba bien ---
     if (productData?.rating && productData?.reviewCount) {
         schema.aggregateRating = {
             "@type": "AggregateRating",
@@ -66,32 +59,59 @@ function createProductSchema(productData, pageBaseUrl) {
         schema.offers.priceValidUntil = productData.priceValidUntil;
     }
     
-    // --- AQUÍ ESTÁ LA CORRECCIÓN ---
-    // Comprobamos que el objeto 'shippingDetails' y su sub-objeto 'shippingRate' existan
-    if (productData?.shippingDetails && productData.shippingDetails.shippingRate) {
-        schema.offers.shippingDetails = {
-            "@type": "OfferShippingDetails",
-            "shippingRate": {
-                "@type": "MonetaryAmount",
-                // Accedemos al valor anidado correcto
-                "value": productData.shippingDetails.shippingRate.value, 
-                "currency": productData.shippingDetails.shippingRate.currency || "MXN"
+    // --- SECCIÓN DE ENVÍO (ACTUALIZADA PARA ARRAY) ---
+    // 'shippingDetails' es ahora un array de reglas (no un solo objeto)
+    if (productData?.shippingDetails && productData.shippingDetails.length > 0) {
+        schema.offers.shippingDetails = productData.shippingDetails.map(rule => {
+            
+            const shippingDetail = {
+                "@type": "OfferShippingDetails"
+            };
+
+            // Añadir tarifa de envío
+            if (rule.shippingRate) {
+                shippingDetail.shippingRate = {
+                    "@type": "MonetaryAmount",
+                    "value": rule.shippingRate.value,
+                    "currency": rule.shippingRate.currency || "MXN"
+                };
             }
-        };
+
+            // Añadir destino de envío
+            if (rule.shippingDestination) {
+                shippingDetail.shippingDestination = {
+                    "@type": "DefinedRegion",
+                    "addressCountry": rule.shippingDestination.addressCountry
+                };
+                // Añadir el estado (region) SI existe
+                if (rule.shippingDestination.addressRegion) {
+                    shippingDetail.shippingDestination.addressRegion = rule.shippingDestination.addressRegion;
+                }
+            }
+
+            // Añadir tiempo de entrega
+            if (rule.deliveryTime) {
+                shippingDetail.deliveryTime = {
+                    "@type": "ShippingDeliveryTime",
+                    "minValue": rule.deliveryTime.minValue,
+                    "maxValue": rule.deliveryTime.maxValue,
+                    "unitCode": rule.deliveryTime.unitCode || "DAY"
+                };
+            }
+            return shippingDetail;
+        });
     }
 
-    // --- Y AQUÍ LA OTRA CORRECCIÓN ---
-    // Comprobamos que el objeto 'hasMerchantReturnPolicy' exista
-    if (productData?.hasMerchantReturnPolicy && productData.hasMerchantReturnPolicy.merchantReturnDays > 0) {
+    // --- SECCIÓN DE DEVOLUCIONES (ACTUALIZADA) ---
+    if (productData?.hasMerchantReturnPolicy) {
         schema.offers.hasMerchantReturnPolicy = {
             "@type": "MerchantReturnPolicy",
-            // Accedemos a los valores anidados que definimos en Sanity
             "returnPolicyCategory": productData.hasMerchantReturnPolicy.returnPolicyCategory,
             "merchantReturnDays": productData.hasMerchantReturnPolicy.merchantReturnDays,
-            "refundType": productData.hasMerchantReturnPolicy.refundType
+            "refundType": productData.hasMerchantReturnPolicy.refundType,
+            "applicableCountry": productData.hasMerchantReturnPolicy.applicableCountry
         };
         
-        // Añadir la URL de la política solo si existe en los datos
         if (productData.hasMerchantReturnPolicy.returnPolicyUrl) {
             schema.offers.hasMerchantReturnPolicy.returnPolicyUrl = productData.hasMerchantReturnPolicy.returnPolicyUrl;
         }
@@ -99,7 +119,6 @@ function createProductSchema(productData, pageBaseUrl) {
 
     return schema;
 }
-// --- Fin Lógica Schema ---
 // --- Fin Lógica Schema ---
     const productSchema = createProductSchema(product, baseUrl);
 
