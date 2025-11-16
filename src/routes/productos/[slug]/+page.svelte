@@ -28,7 +28,9 @@
 // En: src/routes/productos/[slug]/+page.svelte
 
 // --- Lógica Schema (ACTUALIZADA PARA ARRAY DE ENVÍOS) ---
-// --- Lógica Schema (ACTUALIZADA PARA VALIDATOR.SCHEMA.ORG) ---
+// En: src/routes/productos/[slug]/+page.svelte
+
+// --- Lógica Schema (¡CORREGIDA AHORA SÍ!) ---
 function createProductSchema(productData, pageBaseUrl) {
     const mainImageForSchema = productData?.mainImageUrl || null;
 
@@ -85,13 +87,13 @@ function createProductSchema(productData, pageBaseUrl) {
                 }
             }
 
-            // --- AQUÍ ESTÁ EL CAMBIO IMPORTANTE ---
-            // 'minValue' y 'maxValue' van DENTRO de 'transitTime'
-            if (rule.deliveryTime && rule.deliveryTime.transitTime) {
+            // --- ¡¡ESTA ES LA CORRECCIÓN!! ---
+            // Leemos desde 'rule.deliveryTime.transitTime'
+            if (rule.deliveryTime && rule.deliveryTime.transitTime) { 
                 shippingDetail.deliveryTime = {
                     "@type": "ShippingDeliveryTime",
-                    "transitTime": {
-                        "@type": "QuantitativeValue", // <--- Tipo de objeto correcto
+                    "transitTime": { // <-- El objeto que faltaba
+                        "@type": "QuantitativeValue", 
                         "minValue": rule.deliveryTime.transitTime.minValue,
                         "maxValue": rule.deliveryTime.transitTime.maxValue,
                         "unitCode": rule.deliveryTime.transitTime.unitCode || "DAY"
@@ -113,12 +115,11 @@ function createProductSchema(productData, pageBaseUrl) {
             "refundType": productData.hasMerchantReturnPolicy.refundType, // <-- Ya viene como URL desde Sanity
             "applicableCountry": productData.hasMerchantReturnPolicy.applicableCountry
         };
-        
-        // El campo 'returnPolicyUrl' se ha ELIMINADO
     }
 
     return schema;
 }
+// --- Fin Lógica Schema ---
 // --- Fin Lógica Schema ---
 // --- Fin Lógica Schema ---
 // --- Fin Lógica Schema ---
