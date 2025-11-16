@@ -9,9 +9,16 @@ export async function load() {
             title,
             "slug": slug.current,
             price,
-            description, // Para posible uso futuro, aunque no se muestre en home
-            "mainImageUrl": gallery[0].asset->url,
-            "category": category->{ title, "slug": slug.current } // Necesitamos el slug de categoría
+            description,
+
+            // --- ¡AQUÍ ESTÁ LA CORRECCIÓN! ---
+            // Usamos 'select' y 'coalesce' para manejar de forma segura
+            // productos sin galería o con galería vacía.
+      "mainImageUrl": select(
+        defined(gallery[0].asset) => gallery[0].asset->url,
+        null // Devuelve null si no hay imagen principal
+      ),
+      "category": category->{ title, "slug": slug.current }
         }`);
 
         if (!products || products.length === 0) {
