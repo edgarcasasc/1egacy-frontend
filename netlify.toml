@@ -10,8 +10,6 @@
   status = 301
   force = true
 
-# Asegurar que todas las rutas de la SPA sean manejadas por SvelteKit (opcional pero recomendado)
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+[build]
+  command = "npm run build"
+  publish = "build"
