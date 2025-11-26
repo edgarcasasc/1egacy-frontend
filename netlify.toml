@@ -1,0 +1,17 @@
+[build]
+  command = "npm run build"
+  publish = "build"
+
+# Regla de redirección para forzar HTTPS y evitar duplicados www/no-www
+# Esto redirige todo lo que llegue a www hacia el dominio principal
+[[redirects]]
+  from = "https://www.somos1egacy.com/*"
+  to = "https://somos1egacy.com/:splat"
+  status = 301
+  force = true
+
+# Asegurar que todas las rutas de la SPA sean manejadas por SvelteKit (opcional pero recomendado)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

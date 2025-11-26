@@ -5,6 +5,13 @@
   import { onMount } from 'svelte';
   import { browser } from '$app/environment';
 
+import { page } from '$app/stores'; // [Nuevo] Importamos esto para saber la URL actual
+
+  // Variable reactiva para la URL canónica
+  // Esto genera automáticamente: https://somos1egacy.com/blog, https://somos1egacy.com/contacto, etc.
+  $: canonicalUrl = `https://somos1egacy.com${$page.url.pathname === '/' ? '' : $page.url.pathname}`;
+
+
   onMount(() => {
     // Asegúrate de que esto solo se ejecute en el navegador
     if (browser) {
@@ -49,8 +56,8 @@
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": "1egacy",
-    "url": "https://somos1legacy.com",
-    "logo": "https://somos1legacy.com/logo1egacy.svg",
+    "url": "https://somos1egacy.com",
+    "logo": "https://somos1egacy.com/logo1egacy.svg",
     "description": "Contamos las historias que merecen ser recordadas.",
     "address": {
       "@type": "PostalAddress",
