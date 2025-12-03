@@ -1,365 +1,407 @@
-<script>
-    import PreorderModal from '$lib/components/PreorderModal.svelte';
-    import Navbar from '../../../components/Navbar.svelte'; // Asegúrate que la ruta sea correcta
+<script lang="ts">
+    import { MetaTags } from 'svelte-meta-tags';
+    import { page } from '$app/stores';
+    import { addToCart } from '$lib/stores/cart';
+    import { fade } from 'svelte/transition';
 
     export let data;
-    const { product, baseUrl } = data;
+    // Protección inicial por si data viene vacía
+    const product = data?.product || {};
+    const baseUrl = data?.baseUrl || '';
 
-    // --- Lógica Galería ---
+    // --- ESTADO DE SELECCIÓN ---
+    let selectedServiceLevel = 'standard'; // 'standard' | 'bespoke'
+    let isAdding = false; 
+
+    // --- LÓGICA DE PRECIO ---
+    $: currentPrice = selectedServiceLevel === 'standard' 
+        ? (product.price || 0)
+        : ((product.price || 0) * 1.5); 
+
+    // --- LÓGICA DE IMAGEN ---
     $: gallerySource = product?.galleryImages || product?.gallery || [];
-    let imagenActiva = '';
-    $: if (gallerySource.length > 0) {
-        imagenActiva = gallerySource[0];
-    } else {
-        imagenActiva = '/placeholder-default.webp'; // Placeholder si no hay galería
+    let imagenSeleccionadaGaleria = '';
+
+    $: if (gallerySource.length > 0 && !imagenSeleccionadaGaleria) {
+        imagenSeleccionadaGaleria = gallerySource[0];
     }
 
-    // --- Lógica para Variantes ---
-    $: variantsData = product?.variants || [];
-    $: tallasUnicas = [...new Set(variantsData.map(v => v.size).filter(Boolean))];
+    $: imageToDisplay = selectedServiceLevel === 'bespoke'
+        ? '/blueprint-generico.webp'
+        : (imagenSeleccionadaGaleria || '/placeholder-default.webp');
+
+    // --- LÓGICA DE VARIANTES (BLINDADA) ---
+    $: variantsData = Array.isArray(product?.variants) ? product.variants : [];
+
+    // 1. BUSCAR LA VARIANTE "BESPOKE/PERSONALIZADO" PARA CONTROLAR EL BOTÓN GRANDE
+    $: bespokeVariant = variantsData.find(v => {
+        if (!v) return false;
+        // Usamos || '' para evitar que .toLowerCase() explote con null
+        const t = (v.title || '').toLowerCase();
+        const s = (v.size || '').toLowerCase();
+        return t.includes('personalizado') || t.includes('bespoke') || s.includes('personalizado');
+    });
+
+    // 2. ESTADOS DEL BOTÓN BESPOKE
+    // En lugar de buscarlo en la variante...
+$: isBespokeLocked = product.availabilityStatus === 'coming_soon';
+$: isBespokeSoldOut = product.availabilityStatus === 'sold_out';
+    $: isBespokeDisabled = isBespokeLocked || isBespokeSoldOut;
+
+    // --- NUEVA LÓGICA PARA OCULTO/SEO ---
+    // Si está oculto, bloqueamos TODO el carrito, no solo el bespoke
+    $: isProductHidden = product.availabilityStatus === 'hidden';
+    // 3. LISTAS DE TALLAS Y COLORES (Filtrando "Personalizado" para que no salga duplicado abajo)
+    $: tallasUnicas = [...new Set(variantsData
+        .filter(v => {
+            if (!v) return false;
+            const t = (v.title || '').toLowerCase();
+            const s = (v.size || '').toLowerCase();
+            // Excluir la variante personalizada de la lista de tallas normales
+            return !t.includes('personalizado') && !t.includes('bespoke') && !s.includes('personalizado');
+        })
+        .map(v => v.size).filter(Boolean))];
+    
     $: coloresUnicos = [...new Set(variantsData.map(v => v.color).filter(Boolean))];
 
     let tallaSeleccionada = '';
     let colorSeleccionado = '';
-    let mostrarModal = false;
 
- 
-   // --- Lógica Schema (CORREGIDA) ---
-// En: src/routes/productos/[slug]/+page.svelte
-
-/// En: src/routes/productos/[slug]/+page.svelte
-
-// --- Lógica Schema (ACTUALIZADA CON "brand") ---
-function createProductSchema(productData, pageBaseUrl) {
-    const mainImageForSchema = productData?.mainImageUrl || null;
-
-    const schema = {
-        "@context": "https://schema.org/",
-        "@type": "Product",
-        "name": productData?.title || '',
-
-        // --- ¡AQUÍ ESTÁ EL NUEVO CAMPO! ---
-        "brand": {
-            "@type": "Brand",
-            "name": "1egacy"
-        },
-        // --- FIN DEL CAMBIO ---
-
-        "image": mainImageForSchema ? [`${mainImageForSchema}?w=1200`] : [], 
-        "description": productData?.description || '',
-        "sku": productData?.sku || productData?._id || '', 
-        "offers": {
-            "@type": "Offer",
-            "url": `${pageBaseUrl}/productos/${productData?.slug || ''}`,
-            "priceCurrency": productData?.priceCurrency || "MXN", 
-            "price": productData?.price || '0.00', 
-            "availability": "https://schema.org/PreOrder", 
-            "itemCondition": "https://schema.org/NewCondition"
-        },
-    };
-    
-    if (productData?.rating && productData?.reviewCount) {
-        schema.aggregateRating = {
-            "@type": "AggregateRating",
-            "ratingValue": productData.rating,
-            "reviewCount": productData.reviewCount
-        };
-    }
-
-    if (productData?.priceValidUntil) {
-        schema.offers.priceValidUntil = productData.priceValidUntil;
-    }
-    
-    // --- SECCIÓN DE ENVÍO (CORREGIDA) ---
-    if (productData?.shippingDetails && productData.shippingDetails.length > 0) {
-        schema.offers.shippingDetails = productData.shippingDetails.map(rule => {
-            
-            const shippingDetail = { "@type": "OfferShippingDetails" };
-
-            if (rule.shippingRate) {
-                shippingDetail.shippingRate = {
-                    "@type": "MonetaryAmount",
-                    "value": rule.shippingRate.value,
-                    "currency": rule.shippingRate.currency || "MXN"
-                };
-            }
-
-            if (rule.shippingDestination) {
-                shippingDetail.shippingDestination = {
-                    "@type": "DefinedRegion",
-                    "addressCountry": rule.shippingDestination.addressCountry
-                };
-                if (rule.shippingDestination.addressRegion) {
-                    shippingDetail.shippingDestination.addressRegion = rule.shippingDestination.addressRegion;
-                }
-            }
-
-            // --- Lee desde 'transitTime' ---
-            if (rule.deliveryTime && rule.deliveryTime.transitTime) { 
-                shippingDetail.deliveryTime = {
-                    "@type": "ShippingDeliveryTime",
-                    "transitTime": {
-                        "@type": "QuantitativeValue", 
-                        "minValue": rule.deliveryTime.transitTime.minValue,
-                        "maxValue": rule.deliveryTime.transitTime.maxValue,
-                        "unitCode": rule.deliveryTime.transitTime.unitCode || "DAY"
-                    }
-                };
-            }
-            
-
-            return shippingDetail;
+    // --- CARRITO ---
+    function handleAddToCart() {
+        isAdding = true;
+        addToCart({
+            id: product._id || product.slug,
+            title: product.title || 'Producto',
+            slug: product.slug,
+            price: currentPrice,
+            image: imageToDisplay,
+            productType: product.productType || 'physical',
+            customizationLevel: selectedServiceLevel,
+            selectedSize: tallaSeleccionada,
+            selectedColor: colorSeleccionado,
+            quantity: 1
         });
+        setTimeout(() => isAdding = false, 800);
     }
 
-    // --- SECCIÓN DE DEVOLUCIONES (CORREGIDA) ---
-    if (productData?.hasMerchantReturnPolicy) {
-        schema.offers.hasMerchantReturnPolicy = {
-            "@type": "MerchantReturnPolicy",
-            "returnPolicyCategory": productData.hasMerchantReturnPolicy.returnPolicyCategory,
-            "merchantReturnDays": productData.hasMerchantReturnPolicy.merchantReturnDays,
-            "refundType": productData.hasMerchantReturnPolicy.refundType,
-            "applicableCountry": productData.hasMerchantReturnPolicy.applicableCountry
+    // --- SCHEMA ---
+    function createProductSchema(productData, pageBaseUrl) {
+        if (!productData) return null;
+        const mainImageForSchema = productData?.mainImageUrl || null;
+        return {
+            "@context": "https://schema.org/",
+            "@type": "Product",
+            "name": productData.title || '',
+            "brand": { "@type": "Brand", "name": "1egacy" },
+            "image": mainImageForSchema ? [`${mainImageForSchema}?w=1200`] : [], 
+            "description": productData.description || '',
+            "sku": productData.sku || productData._id || '', 
+            "offers": {
+                "@type": "Offer",
+                "url": `${pageBaseUrl}/productos/${productData.slug || ''}`,
+                "priceCurrency": productData.priceCurrency || "MXN", 
+                "price": currentPrice,
+                "availability": "https://schema.org/InStock"
+            }
         };
     }
-
-    return schema;
-}
-
-// --- Fin Lógica Schema ---
-// --- Fin Lógica Schema ---
-    const productSchema = createProductSchema(product, baseUrl);
-
-    // --- Lógica Pre-orden (sin cambios) ---
-    async function handlePreOrderSubmit(email) {
-      const payload = {
-            email: email,
-            productName: product.title,
-            productSlug: product.slug,
-            talla: tallaSeleccionada || 'N/A',
-            color: colorSeleccionado || 'N/A',
-            source: 'Preorden Producto Pagina'
-       };
-
-        try {
-            const response = await fetch('/api/preorder', { // Ajusta la ruta de tu API endpoint si es diferente
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            if (response.ok) {
-                // Éxito - Puedes cerrar el modal y mostrar un mensaje
-                console.log('Preorden enviada:', payload);
-                mostrarModal = false;
-                alert('¡Gracias por tu preorden! Nos pondremos en contacto pronto.'); // Considera un toast/notificación más elegante
-            } else {
-                // Error del servidor
-                const errorData = await response.json();
-                console.error('Error al enviar preorden:', errorData);
-                alert(`Hubo un error al procesar tu solicitud: ${errorData.message || response.statusText}`);
-            }
-        } catch (error) {
-            // Error de red u otro
-            console.error('Error de red al enviar preorden:', error);
-            alert('Hubo un error de conexión. Por favor, inténtalo de nuevo.');
-        }
-    }
+    
+    $: productSchema = createProductSchema(product, baseUrl);
+    $: pageTitle = `${product?.title || 'Producto'} | 1egacy`;
+    $: canonicalUrl = `https://somos1egacy.com${$page.url.pathname}`;
 </script>
 
 <svelte:head>
-    <title>{product?.title || 'Producto'} | 1egacy</title>
-    <meta
-        name="description"
-        content={product?.description?.substring(0, 160) || product?.title || ''}
-    />
+    <title>{pageTitle}</title>
+    <meta name="description" content={product?.description?.substring(0, 160)} />
+    <link rel="canonical" href={canonicalUrl} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:image" content={imageToDisplay} />
     {#if productSchema}
         {@html `<script type="application/ld+json">${JSON.stringify(productSchema)}</script>`}
     {/if}
-
-    <meta
-    name="description"
-    content={product?.description?.substring(0, 160) || product?.title || ''}
-  />
-  
-  <meta property="og:title" content={product?.title || 'Producto'} />
-  <meta property="og:description" content={product?.description?.substring(0, 160) || ''} />
-  <meta property="og:image" content={product?.mainImageUrl || 'https://somos1egacy.com/1egacy-og-logo.jpg'} />
-  <meta name="twitter:image" content={product?.mainImageUrl || 'https://somos1egacy.com/1egacy-og-logo.jpg'} />
-  {#if productSchema}
-    {@html `<script type="application/ld+json">${JSON.stringify(productSchema)}</script>`}
-  {/if}
 </svelte:head>
 
-<Navbar /> <!-- Asume que Navbar está fuera del main para que sea sticky/fixed -->
-
 <div class="producto-container">
-    {#if product}
-        <!-- Columna de Galería -->
+    {#if product && product.title}
         <div class="galeria-columna">
-            <div class="imagen-principal">
-                 <img src={imagenActiva} alt={product.title} />
+            <div class="imagen-principal-container relative group">
+                {#key imageToDisplay}
+                    <img 
+                        src={imageToDisplay} 
+                        alt={product.title} 
+                        class="imagen-animada"
+                        in:fade={{ duration: 300 }}
+                    />
+                {/key}
+                
+                <div class="absolute top-4 left-4 bg-black/80 backdrop-blur px-3 py-1 text-xs font-bold tracking-widest uppercase text-[#c0a062] border border-[#c0a062]/30 rounded">
+                    {selectedServiceLevel === 'standard' ? 'Diseño Final' : 'Boceto Artesanal'}
+                </div>
             </div>
-            <div class="thumbnails">
-                {#if gallerySource.length > 1} <!-- Solo mostrar si hay más de 1 imagen -->
+
+            {#if selectedServiceLevel === 'standard' && gallerySource.length > 1}
+                <div class="thumbnails">
                     {#each gallerySource as imagen, i (i)}
-                        <div
+                        <button
                             class="thumbnail-wrapper"
-                            class:active={imagen === imagenActiva}
-                            on:click={() => imagenActiva = imagen}
-                            on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') imagenActiva = imagen; }}
-                            role="button"
-                            tabindex="0"
+                            class:active={imagen === imagenSeleccionadaGaleria}
+                            on:click={() => imagenSeleccionadaGaleria = imagen}
                             aria-label="Ver imagen {i + 1}"
                         >
-                             <img src={`${imagen}?w=100&h=100&fit=crop&auto=format`} alt="Vista {i + 1} de {product.title}" loading="lazy"/>
-                        </div>
+                            <img src={`${imagen}?w=100&h=100&fit=crop`} alt="" />
+                        </button>
                     {/each}
-                {/if}
-            </div>
-        </div>
-
-        <!-- Columna de Detalles -->
-        <div class="detalles-columna">
-
-            <!-- *** INICIO BREADCRUMBS *** -->
-            <nav aria-label="breadcrumb" class="breadcrumbs">
-                <ol>
-                    <li><a href="/">Inicio</a></li>
-                    <li><a href="/productos">Catálogo</a></li>
-                    {#if product.category}
-                        <li><a href="/productos?categoria={product.category.slug}">{product.category.title}</a></li>
-                        <!-- El enlace a categoría podría llevar a la página de catálogo pre-filtrada -->
-                    {/if}
-                    <li><span aria-current="page">{product.title}</span></li>
-                </ol>
-            </nav>
-            <!-- *** FIN BREADCRUMBS *** -->
-
-            <h1>{product.title}</h1>
-            {#if product.price}
-                <p class="precio">${product.price.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MXN</p>
-                <!-- Usar toLocaleString para formato de moneda -->
-            {/if}
-            <p class="descripcion">{product.description || 'Descripción no disponible.'}</p>
-
-            <!-- Selectores de Variantes -->
-            {#if tallasUnicas.length > 0 || coloresUnicos.length > 0}
-                <div class="selectores">
-                    {#if tallasUnicas.length > 0}
-                    <div>
-                        <label for="talla-select">Talla:</label>
-                        <select id="talla-select" bind:value={tallaSeleccionada}>
-                            <option value="" disabled selected>Elige una Talla</option>
-                            {#each tallasUnicas as talla} <option value={talla}>{talla}</option> {/each}
-                        </select>
-                    </div>
-                    {/if}
-                    {#if coloresUnicos.length > 0}
-                    <div>
-                        <label for="color-select">Color:</label>
-                        <select id="color-select" bind:value={colorSeleccionado}>
-                            <option value="" disabled selected>Elige un Color</option>
-                            {#each coloresUnicos as color} <option value={color}>{color}</option> {/each}
-                        </select>
-                    </div>
-                    {/if}
                 </div>
             {/if}
+            
+            {#if selectedServiceLevel === 'bespoke'}
+                <p class="text-xs text-center mt-4 text-[#c0a062] italic">
+                    * La imagen muestra un esquema genérico. Tu diseño será único.
+                </p>
+            {/if}
+        </div>
 
-            <!-- Botón de Compra/Pre-orden -->
+        <div class="detalles-columna">
+            <nav aria-label="Ruta de navegación" class="breadcrumbs-container">
+                <ol class="breadcrumbs-list">
+                    <li><a href="/">Inicio</a></li>
+                    <li class="separator">/</li>
+                    <li><a href="/productos">Colección</a></li>
+                    {#if product.category}
+                        <li class="separator">/</li>
+                        <li><a href="/productos?categoria={product.category.slug}">{product.category.title}</a></li>
+                    {/if}
+                    <li class="separator">/</li>
+                    <li><span class="current">{product.title}</span></li>
+                </ol>
+            </nav>
+
+            <h1 class="titulo-producto">{product.title}</h1>
+            
+            <div class="precio-container">
+                <span class="precio">${currentPrice.toLocaleString('es-MX')} MXN</span>
+            </div>
+
+            <div class="descripcion">
+                <p>{product.description || 'Una pieza de historia forjada para perdurar.'}</p>
+            </div>
+
+            <div class="separador"></div>
+
+            <div class="opciones-servicio mb-8">
+                <h3 class="label-seccion">Selecciona tu Acabado</h3>
+                <div class="grid grid-cols-1 gap-4">
+                    <button 
+                        class="opcion-card {selectedServiceLevel === 'standard' ? 'activa' : ''}"
+                        on:click={() => selectedServiceLevel = 'standard'}
+                    >
+                        <div class="flex justify-between w-full items-center">
+                            <div class="text-left">
+                                <span class="titulo-opcion">Edición Clásica</span>
+                                <span class="desc-opcion">Diseño fiel al registro histórico del apellido.</span>
+                            </div>
+                            <div class="radio-circle">
+                                {#if selectedServiceLevel === 'standard'} <div class="radio-dot"></div> {/if}
+                            </div>
+                        </div>
+                    </button>
+
+                    <button 
+                        class="opcion-card {selectedServiceLevel === 'bespoke' ? 'activa' : ''} {isBespokeDisabled ? 'deshabilitada' : ''}"
+                        on:click={() => { if (!isBespokeDisabled) selectedServiceLevel = 'bespoke'; }}
+                        disabled={isBespokeDisabled}
+                    >
+                        <div class="flex justify-between w-full items-center">
+                            <div class="text-left relative">
+                                <span class="titulo-opcion text-[#c0a062]">
+                                    Bespoke (A la Medida)
+                                    {#if isBespokeLocked}
+                                        <span class="etiqueta-estado pronto">Próximamente</span>
+                                    {/if}
+                                    {#if isBespokeSoldOut}
+                                        <span class="etiqueta-estado agotado">Agotado</span>
+                                    {/if}
+                                </span>
+                                <span class="desc-opcion">Investigación profunda, rediseño único y ceremonia digital.</span>
+                            </div>
+                            
+                            {#if !isBespokeDisabled}
+                                <div class="radio-circle">
+                                    {#if selectedServiceLevel === 'bespoke'} <div class="radio-dot"></div> {/if}
+                                </div>
+                            {:else}
+                                <span class="text-gray-600 text-xl">🔒</span>
+                            {/if}
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <div class="variantes-container">
+                {#if tallasUnicas.length > 0}
+                    <div class="grupo-variante">
+                        <h3 class="label-seccion">Talla</h3>
+                        <div class="botones-grid">
+                            {#each tallasUnicas as talla}
+                                {@const variantAsoc = variantsData.find(v => v.size === talla)}
+                                {@const status = variantAsoc?.availabilityStatus}
+                                {@const isLocked = status === 'coming_soon'}
+                                {@const isSoldOut = status === 'sold_out'}
+                                {@const isDisabled = isLocked || isSoldOut}
+                                {@const isSelected = tallaSeleccionada === talla}
+
+                                <button
+                                    class="boton-variante {isSelected ? 'seleccionado' : ''} {isDisabled ? 'deshabilitado' : ''}"
+                                    disabled={isDisabled}
+                                    on:click={() => { if (!isDisabled) tallaSeleccionada = talla }}
+                                >
+                                    <span class="texto-boton">{talla}</span>
+                                    {#if isLocked} <div class="etiqueta-flotante">Pronto</div> {/if}
+                                    {#if isSoldOut} <div class="etiqueta-flotante agotado">Agotado</div> {/if}
+                                </button>
+                            {/each}
+                        </div>
+                    </div>
+                {/if}
+
+                {#if coloresUnicos.length > 0}
+                    <div class="grupo-variante">
+                        <h3 class="label-seccion">Color</h3>
+                        <div class="botones-grid">
+                            {#each coloresUnicos as color}
+                                {@const isSelected = colorSeleccionado === color}
+                                <button
+                                    class="boton-variante color {isSelected ? 'seleccionado' : ''}"
+                                    on:click={() => colorSeleccionado = color}
+                                >
+                                    <span class="bolita-color" 
+                                          style="background-color: {color === 'Amarillo' ? '#FFD700' : color === 'Negro' ? '#000' : '#fff'}">
+                                    </span>
+                                    <span class="texto-boton">{color}</span>
+                                </button>
+                            {/each}
+                        </div>
+                    </div>
+                {/if}
+            </div>
+
             <button
-                class="boton-compra"
-                on:click={() => mostrarModal = true}
-                disabled={ (tallasUnicas.length > 0 && !tallaSeleccionada) || (coloresUnicos.length > 0 && !colorSeleccionado) }
-                aria-disabled={ (tallasUnicas.length > 0 && !tallaSeleccionada) || (coloresUnicos.length > 0 && !colorSeleccionado) }
-            >
-                Próximamente
-            </button>
+    class="boton-compra"
+    on:click={handleAddToCart}
+    disabled={isAdding || isProductHidden || (tallasUnicas.length > 0 && !tallaSeleccionada)}
+    class:hidden-btn={isProductHidden} >
+    {#if isAdding}
+        <span class="animate-pulse">Agregando...</span>
+    {:else if isProductHidden}
+        No disponible temporalmente
+    {:else}
+        Agregar al Legado — ${currentPrice.toLocaleString('es-MX')}
+    {/if}
+</button>
+            
+            <p class="garantia-texto">
+                🔒 Compra segura. Envíos globales asegurados.
+            </p>
+
         </div>
     {:else}
-        <p>Cargando producto...</p> <!-- O un componente de Skeleton Loader -->
+        <div class="loading-container">
+            <div class="loading-text">Cargando legado...</div>
+        </div>
     {/if}
 </div>
 
-<!-- Modal -->
-{#if mostrarModal}
-    <PreorderModal
-        producto={product.title}
-        onCerrar={() => mostrarModal = false}
-        onEnviar={handlePreOrderSubmit}
-    />
-{/if}
-
 <style>
-    /* --- ESTILOS GENERALES (sin cambios significativos) --- */
-    .producto-container { max-width: 1100px; margin: 0 auto; padding: 120px 2rem 60px 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; }
+    /* --- BASE --- */
+    :global(body) { background-color: #121212; color: #e0e0e0; }
+    .producto-container { max-width: 1200px; margin: 0 auto; padding: 140px 2rem 80px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 4rem; align-items: start; }
+    
+    .loading-container { display: flex; justify-content: center; align-items: center; height: 50vh; width: 100%; grid-column: 1 / -1; }
+    .loading-text { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #c0a062; animation: pulse 2s infinite; }
+    @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+
+    /* --- GALERÍA --- */
     .galeria-columna { position: sticky; top: 120px; }
-    .imagen-principal img { width: 100%; height: auto; display: block; border-radius: 8px; border: 1px solid #333; aspect-ratio: 1 / 1; object-fit: cover; }
-    .thumbnails { display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 1rem; margin-top: 1rem; }
-    .thumbnail-wrapper { cursor: pointer; border: 2px solid #333; border-radius: 4px; overflow: hidden; transition: border-color 0.3s ease; aspect-ratio: 1 / 1; }
-    .thumbnail-wrapper:hover, .thumbnail-wrapper:focus { border-color: #c0a062; outline: none; }
-    .thumbnail-wrapper.active { border-color: #ffffff; }
-    .thumbnail-wrapper img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .imagen-principal-container { width: 100%; aspect-ratio: 1/1; background-color: #1a1a1a; border-radius: 4px; overflow: hidden; border: 1px solid #333; position: relative; }
+    .imagen-animada { width: 100%; height: 100%; object-fit: cover; }
+    
+    .thumbnails { display: flex; gap: 10px; margin-top: 15px; overflow-x: auto; padding-bottom: 5px; }
+    .thumbnail-wrapper { width: 70px; height: 70px; border: 1px solid #333; border-radius: 4px; overflow: hidden; opacity: 0.6; transition: all 0.3s; cursor: pointer; flex-shrink: 0; }
+    .thumbnail-wrapper:hover, .thumbnail-wrapper.active { opacity: 1; border-color: #c0a062; }
+    .thumbnail-wrapper img { width: 100%; height: 100%; object-fit: cover; }
 
-    /* --- ESTILOS COLUMNA DETALLES (sin cambios) --- */
-    .detalles-columna h1 { font-size: 2.5rem; margin-bottom: 0.5rem; color: #ffffff; }
-    .precio { font-size: 1.8rem; font-family: 'Playfair Display', serif; color: #c0a062; margin-bottom: 1.5rem; }
-    .descripcion { margin-bottom: 2rem; color: #b0b0b0; line-height: 1.7; }
-    .selectores { display: flex; flex-direction: column; gap: 1.5rem; margin-bottom: 2rem; }
-    .selectores div { display: flex; flex-direction: column; gap: 0.5rem; }
-    .selectores label { font-size: 0.9rem; color: #aaa; font-weight: 600; }
-    select { /* ... estilos del select ... */ width: 100%; max-width: 300px; padding: 0.8rem 1rem; background-color: #1a1a1a; border: 1px solid #333; color: #e0e0e0; font-size: 1rem; border-radius: 4px; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23aaa' viewBox='0 0 16 16'%3E%3Cpath d='M8 11.5a.5.5 0 0 1-.354-.146l-4-4a.5.5 0 0 1 .708-.708L8 10.293l3.646-3.647a.5.5 0 0 1 .708.708l-4 4A.5.5 0 0 1 8 11.5z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 16px 12px;}
-    .boton-compra { /* ... estilos del botón ... */ width: 100%; max-width: 300px; background-color: #c0a062; color: #121212; padding: 1.2rem; font-size: 1.1rem; text-transform: uppercase; font-weight: bold; border: none; cursor: pointer; border-radius: 4px; transition: background-color 0.3s ease, opacity 0.3s ease; }
-    .boton-compra:hover:not(:disabled) { background-color: #ffffff; }
-    .boton-compra:disabled { background-color: #555; color: #999; cursor: not-allowed; opacity: 0.7; }
+    /* --- BREADCRUMBS --- */
+    .breadcrumbs-container { margin-bottom: 2rem; width: 100%; }
+    .breadcrumbs-list { display: flex; flex-wrap: wrap; align-items: center; list-style: none; padding: 0; margin: 0; gap: 0.5rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #888; }
+    .breadcrumbs-list a { text-decoration: none; color: #888; transition: color 0.2s; white-space: nowrap; }
+    .breadcrumbs-list a:hover { color: #c0a062; }
+    .separator { color: #444; font-size: 0.7rem; }
+    .current { color: #c0a062; font-weight: bold; }
+    
+    /* --- TEXTOS --- */
+    .titulo-producto { font-family: "Palatino Linotype", serif; font-size: 2.8rem; line-height: 1.1; margin-bottom: 10px; color: #fff; }
+    .precio { font-size: 1.5rem; color: #c0a062; font-weight: bold; letter-spacing: 1px; }
+    .descripcion { margin-top: 20px; color: #aaa; line-height: 1.6; font-size: 1rem; }
+    .separador { height: 1px; background: #333; margin: 30px 0; }
+    .label-seccion { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: #666; margin-bottom: 10px; display: block; font-weight: bold; }
 
-    /* --- *** NUEVOS ESTILOS PARA BREADCRUMBS *** --- */
-    .breadcrumbs {
-        margin-bottom: 1.5rem; /* Espacio antes del título */
-        font-size: 0.9em;
-        color: #aaa; /* Color tenue */
-    }
-    .breadcrumbs ol {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: flex; /* Alinea horizontalmente */
-        flex-wrap: wrap; /* Permite que se rompa en líneas si es muy largo */
-        gap: 0.5em; /* Espacio entre elementos */
-    }
-    .breadcrumbs li:not(:last-child)::after {
-        content: '/'; /* Separador */
-        margin-left: 0.5em; /* Espacio después del separador */
-        color: #666; /* Color del separador */
-    }
-    .breadcrumbs a {
-        color: #aaa;
-        text-decoration: none;
-        transition: color 0.2s ease;
-    }
-    .breadcrumbs a:hover {
-        color: #c0a062; /* Color de acento al pasar el ratón */
-        text-decoration: underline;
-    }
-    .breadcrumbs span[aria-current="page"] {
-        font-weight: 600; /* Destaca la página actual */
-        color: #e0e0e0; /* Un poco más brillante */
-    }
-    /* --- *** FIN ESTILOS BREADCRUMBS *** --- */
+    /* --- OPCIONES SERVICIO (TARJETAS GRANDES) --- */
+    .opcion-card { width: 100%; background: transparent; border: 1px solid #333; padding: 15px 20px; border-radius: 6px; cursor: pointer; transition: all 0.3s ease; text-align: left; }
+    .opcion-card:hover:not(:disabled) { border-color: #666; background: #1a1a1a; }
+    .opcion-card.activa { border-color: #c0a062; background: rgba(192, 160, 98, 0.05); }
+    
+    .opcion-card.deshabilitada { background-color: #1a1a1a; border-color: #2a2a2a; opacity: 0.6; cursor: not-allowed; }
+    .opcion-card.deshabilitada .titulo-opcion, .opcion-card.deshabilitada .desc-opcion { color: #555 !important; }
 
+    .titulo-opcion { display: block; font-weight: bold; color: #e0e0e0; font-size: 1rem; margin-bottom: 2px; }
+    .desc-opcion { display: block; font-size: 0.85rem; color: #888; }
+    
+    .radio-circle { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #555; display: flex; align-items: center; justify-content: center; }
+    .activa .radio-circle { border-color: #c0a062; }
+    .radio-dot { width: 10px; height: 10px; background-color: #c0a062; border-radius: 50%; }
 
-    /* Responsive (sin cambios) */
+    /* Etiquetas de estado (Próximamente/Agotado) */
+    .etiqueta-estado { display: inline-block; font-size: 0.6rem; text-transform: uppercase; padding: 2px 6px; border-radius: 2px; margin-left: 8px; vertical-align: middle; letter-spacing: 0.5px; font-weight: bold; }
+    .etiqueta-estado.pronto { background-color: rgba(192, 160, 98, 0.1); color: #c0a062; border: 1px solid #c0a062; }
+    .etiqueta-estado.agotado { background-color: rgba(255, 107, 107, 0.1); color: #ff6b6b; border: 1px solid #ff6b6b; }
+
+    /* --- VARIANTES (BOTONES PEQUEÑOS) --- */
+    .variantes-container { margin: 1.5rem 0 2rem 0; display: flex; flex-direction: column; gap: 1.5rem; }
+    .grupo-variante { display: flex; flex-direction: column; gap: 0.5rem; }
+    .botones-grid { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+
+    .boton-variante {
+        position: relative; padding: 0.8rem 1.2rem; background-color: transparent; border: 1px solid #444; color: #ccc; border-radius: 4px; cursor: pointer; transition: all 0.3s ease; min-width: 70px; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    }
+    .texto-boton { font-size: 0.9rem; font-weight: 500; text-transform: uppercase; }
+
+    .boton-variante:hover:not(.deshabilitado):not(.seleccionado) { border-color: #c0a062; color: #c0a062; }
+    .boton-variante.seleccionado { background-color: #c0a062; border-color: #c0a062; color: #121212; font-weight: bold; box-shadow: 0 0 10px rgba(192, 160, 98, 0.3); }
+    .boton-variante.deshabilitado { background-color: #1a1a1a; border-color: #333; color: #555; cursor: not-allowed; opacity: 0.8; }
+
+    .etiqueta-flotante { position: absolute; top: -8px; right: -5px; font-size: 0.6rem; text-transform: uppercase; background-color: #121212; color: #c0a062; padding: 0 4px; font-weight: bold; letter-spacing: 0.5px; border: 1px solid #333; }
+    .etiqueta-flotante.agotado { color: #ff6b6b; }
+    
+    .bolita-color { display: block; width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); }
+
+    /* --- BOTÓN COMPRA --- */
+    .boton-compra { width: 100%; background-color: #c0a062; color: #000; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; padding: 18px; border: none; border-radius: 4px; cursor: pointer; margin-top: 30px; font-size: 1rem; transition: all 0.3s; }
+    .boton-compra:hover:not(:disabled) { background-color: #dcb87a; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(192, 160, 98, 0.2); }
+    .boton-compra:disabled { background-color: #333; color: #666; cursor: not-allowed; }
+
+    .garantia-texto { text-align: center; font-size: 0.8rem; color: #555; margin-top: 15px; }
+.boton-compra:disabled {
+    background-color: #333;
+    color: #666;
+    cursor: not-allowed;
+}
+    /* --- RESPONSIVE --- */
     @media (max-width: 768px) {
-        .producto-container { grid-template-columns: 1fr; gap: 2rem; padding-top: 100px; }
-        .galeria-columna { position: static; top: auto; }
-        .detalles-columna { margin-top: 2rem; }
-        .detalles-columna h1 { font-size: 2rem; }
-        .precio { font-size: 1.5rem; }
-        .selectores, .boton-compra { max-width: 100%; }
-        /* Opcional: Ocultar thumbnails en móvil muy pequeño */
-        @media (max-width: 480px) {
-            .thumbnails { display: none; }
-        }
+        .producto-container { grid-template-columns: 1fr; gap: 40px; padding-top: 100px; }
+        .galeria-columna { position: static; }
+        .titulo-producto { font-size: 2rem; }
     }
+    
 </style>

@@ -1,6 +1,6 @@
 <script>
 	// Importaciones (Asegúrate que Navbar esté en la ruta correcta)
-	import Navbar from '../../components/Navbar.svelte'; 
+
 
 	// Recibimos 'topics' desde data (proveniente de +page.server.js)
 	export let data;
@@ -39,7 +39,7 @@
 </script>
 	</svelte:head>
 
-<Navbar />
+
 
 <div class="blog-clusters-container"> 
 	<header class="clusters-header"> 

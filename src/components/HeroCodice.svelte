@@ -1,19 +1,19 @@
-<section class="hero-codice relative flex items-center justify-center min-h-screen text-center text-white overflow-hidden">
-	<div class="absolute inset-0 z-0">
-		<img src="/placeholder-hero-codice-bg.webp" alt="Detalle artesanal de El Códice del Legado" class="w-full h-full object-cover filter brightness-50">
-		</div>
+<section class="relative flex items-center justify-center min-h-screen text-center text-white overflow-hidden">
+    <div class="absolute inset-0 z-0">
+        <img src="/placeholder-hero-codice-bg.webp" alt="Detalle artesanal" class="w-full h-full object-cover brightness-50">
+    </div>
 
-	<div class="relative z-10 p-4 max-w-4xl mx-auto">
-		<h1 class="text-4xl md:text-6xl lg:text-7xl font-serif font-bold mb-4 leading-tight">
-			El Códice del Legado
-		</h1>
-		<h2 class="text-xl md:text-2xl lg:text-3xl font-light mb-8">
-			El Testamento Visual de Tu Linaje. Donde la investigación histórica se encuentra con la maestría artesanal para hacer eterna tu historia.
-		</h2>
-		<a href="#consulta" class="inline-block bg-primary-500 hover:bg-primary-600 text-white text-lg font-semibold py-3 px-8 rounded-md transition duration-300 shadow-lg">
-			Comenzar tu Códice
-		</a>
-	</div>
+    <div class="relative z-10 p-4 max-w-4xl mx-auto">
+        <h1 class="text-4xl md:text-6xl lg:text-7xl font-serif font-bold mb-4 leading-tight">
+            El Códice del Legado
+        </h1>
+        <h2 class="text-xl md:text-2xl lg:text-3xl font-light mb-8">
+            El Testamento Visual de Tu Linaje. Donde la investigación histórica se encuentra con la maestría artesanal.
+        </h2>
+        <a href="#consulta" class="inline-block bg-primary-500 hover:bg-primary-600 text-white text-lg font-semibold py-3 px-8 rounded-md transition duration-300 shadow-lg">
+            Comenzar tu Códice
+        </a>
+    </div>
 </section>
 
 <style>
@@ -65,4 +65,8 @@
     .transition { transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
     .duration-300 { transition-duration: 300ms; }
     .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+
+
+
+    
 </style>

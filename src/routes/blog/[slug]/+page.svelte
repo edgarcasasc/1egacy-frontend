@@ -3,7 +3,6 @@
 	// Usamos las importaciones que sabemos que funcionan para tu estructura
 	import SanityImage from '$lib/components/SanityImage.svelte';
 	import FaqItem from '../../../components/FaqItem.svelte';
-	import Navbar from '../../../components/Navbar.svelte';
 
 	export let data;
 
@@ -134,7 +133,7 @@ const safeBaseUrl = baseUrl || 'https://somos1egacy.com';
 	{/if}
 </svelte:head>
 
-<Navbar />
+
 
 <div class="layout-container">
 	{#if post}

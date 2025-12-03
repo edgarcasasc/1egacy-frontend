@@ -1,9 +1,6 @@
-<script lang="ts"> // Cambiado a lang="ts" por consistencia
-import Navbar from '../../components/Navbar.svelte'; // <-- CORRECTA
-// 	// Importar MetaTags si lo usas en otras páginas, o usar <svelte:head>
-	// import { MetaTags } from 'svelte-meta-tags';
+<script lang="ts">
 
-	// Datos de los proyectos (Idealmente vendrían de Sanity en el futuro)
+
 	const projects = [
 		{
 			id: 'instantes',
@@ -52,7 +49,6 @@ import Navbar from '../../components/Navbar.svelte'; // <-- CORRECTA
 	<meta name="twitter:card" content="summary_large_image" />
 </svelte:head>
 
-<Navbar />
 
 <section class="films-hero-section">
 	<div class="hero-background-video">
