@@ -208,15 +208,15 @@
                     
                     <div class="or-divider"><span>O PAGAR CON</span></div>
 
-                    <div class="paypal-box { !acceptedTerms ? 'disabled-payment' : '' }">
-                        <PayPalButton amount={totalFinal} customerInfo={contactInfo} />
-                    </div>    
-                    
-                    {#if !acceptedTerms}
-                        <p class="text-xs text-center text-red-400 mt-2">
-                            * Debes aceptar los términos para habilitar el pago.
-                        </p>
-                    {/if}
+                    <div class="paypal-box { (!acceptedTerms || !contactInfo.email || !contactInfo.phone) ? 'disabled-payment' : '' }">
+    <PayPalButton amount={totalFinal} customerInfo={contactInfo} />
+</div>    
+
+{#if !acceptedTerms || !contactInfo.email || !contactInfo.phone}
+    <p class="text-xs text-center text-red-400 mt-2 animate-pulse">
+        * Completa tus datos de contacto y acepta los términos para habilitar el pago.
+    </p>
+{/if}
 
                     <p class="security-note">🔒 Pago encriptado SSL. Garantía 1egacy.</p>
                 </div>
