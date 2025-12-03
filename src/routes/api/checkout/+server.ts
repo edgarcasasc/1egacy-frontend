@@ -1,9 +1,9 @@
 import { json } from '@sveltejs/kit';
 import Stripe from 'stripe';
-import { STRIPE_SECRET_KEY } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 import { client } from '$lib/sanityClient';
 
-const stripe = new Stripe(STRIPE_SECRET_KEY);
+const stripe = new Stripe(env.STRIPE_SECRET_KEY);
 
 export async function POST({ request }) {
   try {
