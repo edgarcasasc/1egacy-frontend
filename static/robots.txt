@@ -1,4 +1,7 @@
 # Permitir rastreo (esto está perfecto)
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /boveda/
+Disallow: /el-codice/
+Disallow: /tu-legado/
 Sitemap: https://somos1egacy.com/sitemap.xml
