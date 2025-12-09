@@ -245,14 +245,11 @@ const safeBaseUrl = baseUrl || 'https://somos1egacy.com';
 					</div>
 				{:else}
 					<div class="anuncio-generico">
-						<h3>¿Conoces la Historia de tu Apellido?</h3>
+						<h3>Tu Apellido no es un Trámite. Es un Testamento.</h3>
 						<p>
-							Cada linaje tiene una saga esperando ser contada. En 1egacy
-							Origins, transformamos esa historia en arte.
-						</p>
-						<a href="/origins" class="boton-anuncio"
-							>Explorar la Constelación</a
-						>
+							Llevas 500 años de historia en tu firma. Desde la supervivencia de tus ancestros hasta el futuro de tus nietos, tu linaje es el hilo conductor.
+						</p><p>Honra a los que vinieron antes. Inspira a los que vienen después.</p>
+						<a href="/origins" class="boton-anuncio">Materializa tu Historia Aquí</a>
 					</div>
 				{/if}
 			</div>

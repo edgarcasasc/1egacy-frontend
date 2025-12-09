@@ -70,12 +70,16 @@ Aquí, fusionamos la reverencia de un historiador con el pulso de un maestro art
 		width: 100%;
 		padding-left: 1.5rem;
 		padding-right: 1.5rem;
+		margin-left: auto !important;
+		margin-right: auto !important;
 	}
 
 	.manifesto {
 		text-align: center;
-		max-width: 800px;
+		max-width: 800px ;
 		margin-bottom: 4rem;
+		margin-left: auto !important;
+		margin-right: auto !important;
 	}
 
 	.manifesto h1 {
@@ -86,6 +90,9 @@ Aquí, fusionamos la reverencia de un historiador con el pulso de un maestro art
 	.manifesto p {
 		font-size: 1.1rem;
 		line-height: 1.6;
+		width: 100% !important;
+		margin-left: auto !important;
+		margin-right: auto !important;
 	}
 
 	.productos-grid {

@@ -16,9 +16,10 @@
   
   <nav class="desktop-nav">
     <a href="/origins">Origins</a>
+        <a href="/blog">El Códice</a>
+            <a href="/productos">Colección</a>
     <a href="/studio">Studio</a>
     <a href="/films">Films</a>
-    <a href="/blog">El Códice</a>
 
     <a href="/carrito" class="cart-icon" aria-label="Ver carrito">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -40,9 +41,11 @@
 
 <nav class="mobile-nav" class:open={isMobileMenuOpen}>
   <a href="/origins" on:click={toggleMobileMenu}>Origins</a>
+    <a href="/blog" on:click={toggleMobileMenu}>El Códice</a>
+        <a href="/productos" on:click={toggleMobileMenu}>Colección</a>
   <a href="/studio" on:click={toggleMobileMenu}>Studio</a>
   <a href="/films" on:click={toggleMobileMenu}>Films</a>
-  <a href="/blog" on:click={toggleMobileMenu}>El Códice</a>
+
   
   <a href="/carrito" on:click={toggleMobileMenu} class="mobile-cart-link">
     Tu Legado (Carrito) 
