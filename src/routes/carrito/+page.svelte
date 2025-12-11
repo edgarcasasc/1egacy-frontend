@@ -10,9 +10,12 @@
         shippingZone: 'mty' // por defecto MTY (Gratis)
     };
 
-    let acceptedTerms = false; // <--- NUEVO: Estado de la casilla
+    let acceptedTerms = false;
     let shippingCost = 0;
     let isLoading = false;
+    
+    // VARIABLE NUEVA PARA CONTROLAR QUÉ BOTÓN SE MUESTRA
+    let paymentMethod = null; // 'stripe', 'paypal' o null
 
     // --- 2. LÓGICA DE COSTOS ---
     $: if (contactInfo.shippingZone === 'nacional') {
@@ -34,6 +37,7 @@
     }
 
     // --- 4. PROCESO DE PAGO (STRIPE) ---
+    // --- 4. PROCESO DE PAGO (STRIPE) ---
     async function handleStripeCheckout() {
         // Validaciones
         if (!acceptedTerms) {
@@ -47,11 +51,13 @@
 
         isLoading = true;
         try {
-            const response = await fetch('/api/checkout', {
+            // CAMBIO: Apuntamos a la API real (o la IP si no tienes SSL aún)
+            // IMPORTANTE: Asegúrate de usar http://159.65.66.140:8000 si no tienes SSL
+            const response = await fetch('http://159.65.66.140:8000/crear-sesion-checkout', {
                 method: 'POST',
                 body: JSON.stringify({
                     items: $cart,
-                    customerInfo: contactInfo,
+                    email: contactInfo.email,
                     shippingTotal: shippingCost 
                 }),
                 headers: { 'Content-Type': 'application/json' }
@@ -59,8 +65,9 @@
 
             const data = await response.json();
             
+            // CAMBIO CRÍTICO: Usamos la URL directa que nos manda el backend
             if (data.url) {
-                window.location.href = data.url;
+                window.location.href = data.url; // <--- Redirección directa
             } else {
                 console.error('Error:', data);
                 alert('Hubo un problema iniciando el pago. Intenta de nuevo.');
@@ -197,26 +204,50 @@
                         </label>
                     </div>
 
-                    <button 
-                        class="boton-accion full-width" 
-                        on:click={handleStripeCheckout}
-                        disabled={isLoading || !contactInfo.email || !contactInfo.phone || !acceptedTerms}
-                        style={isLoading || !acceptedTerms ? 'opacity: 0.5; cursor: not-allowed;' : ''}
-                    >
-                        {#if isLoading} Procesando... {:else} Pagar con Tarjeta {/if}
-                    </button>
-                    
-                    <div class="or-divider"><span>O PAGAR CON</span></div>
+                    {#if !paymentMethod}
+                        <div class="payment-selection-box" in:fade>
+                            <p class="label-payment">Selecciona Método de Pago:</p>
+                            <div class="selection-grid">
+                                <button class="btn-select" on:click={() => paymentMethod = 'stripe'}>
+                                    💳 Tarjeta / Débito
+                                </button>
+                                <button class="btn-select" on:click={() => paymentMethod = 'paypal'}>
+                                    🅿️ PayPal
+                                </button>
+                            </div>
+                        </div>
 
-                    <div class="paypal-box { (!acceptedTerms || !contactInfo.email || !contactInfo.phone) ? 'disabled-payment' : '' }">
-    <PayPalButton amount={totalFinal} customerInfo={contactInfo} />
-</div>    
+                    {:else}
+                        <div class="selected-payment-container" in:slide>
+                            
+                            {#if paymentMethod === 'stripe'}
+                                <button 
+                                    class="boton-accion full-width" 
+                                    on:click={handleStripeCheckout}
+                                    disabled={isLoading || !contactInfo.email || !contactInfo.phone || !acceptedTerms}
+                                    style={isLoading || !acceptedTerms ? 'opacity: 0.5; cursor: not-allowed;' : ''}
+                                >
+                                    {#if isLoading} Procesando... {:else} Pagar con Tarjeta {/if}
+                                </button>
+                            {/if}
 
-{#if !acceptedTerms || !contactInfo.email || !contactInfo.phone}
-    <p class="text-xs text-center text-red-400 mt-2 animate-pulse">
-        * Completa tus datos de contacto y acepta los términos para habilitar el pago.
-    </p>
-{/if}
+                            {#if paymentMethod === 'paypal'}
+                                <div class="paypal-box { (!acceptedTerms || !contactInfo.email || !contactInfo.phone) ? 'disabled-payment' : '' }">
+                                    <PayPalButton amount={totalFinal} customerInfo={contactInfo} />
+                                </div>
+                            {/if}
+
+                            {#if !acceptedTerms || !contactInfo.email || !contactInfo.phone}
+                                <p class="text-xs text-center text-red-400 mt-2 animate-pulse">
+                                    * Completa tus datos y acepta los términos para pagar.
+                                </p>
+                            {/if}
+
+                            <button class="btn-change-method" on:click={() => paymentMethod = null}>
+                                🔄 Cambiar método de pago
+                            </button>
+                        </div>
+                    {/if}
 
                     <p class="security-note">🔒 Pago encriptado SSL. Garantía 1egacy.</p>
                 </div>
@@ -287,13 +318,21 @@
     .boton-accion:hover:not(:disabled) { background: #fff; }
     .boton-accion:disabled { background: #333; color: #666; cursor: not-allowed; }
 
-    .or-divider { text-align: center; margin: 15px 0; font-size: 0.7rem; color: #666; text-transform: uppercase; letter-spacing: 1px; }
-    
     .paypal-box { background: #fff; padding: 10px; border-radius: 4px; transition: opacity 0.3s; }
-    /* CLASE PARA BLOQUEAR PAYPAL VISUALMENTE Y FUNCIONALMENTE */
     .paypal-box.disabled-payment { opacity: 0.4; pointer-events: none; filter: grayscale(100%); }
 
     .security-note { font-size: 0.7rem; text-align: center; color: #555; margin-top: 15px; }
+
+    /* --- ESTILOS NUEVOS PARA LA SELECCIÓN DE PAGO --- */
+    .label-payment { font-size: 0.8rem; color: #aaa; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; text-align: center; }
+    
+    .selection-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+    
+    .btn-select { background: #222; border: 1px solid #444; color: #fff; padding: 15px 10px; border-radius: 4px; cursor: pointer; transition: all 0.3s; font-size: 0.9rem; }
+    .btn-select:hover { border-color: #c0a062; background: #2a2a2a; color: #c0a062; }
+
+    .btn-change-method { background: none; border: none; color: #666; font-size: 0.8rem; text-decoration: underline; cursor: pointer; display: block; margin: 15px auto 0; transition: color 0.3s; }
+    .btn-change-method:hover { color: #c0a062; }
 
     @media (max-width: 900px) { .cart-layout { grid-template-columns: 1fr; } .cart-summary { position: static; } }
 </style>
