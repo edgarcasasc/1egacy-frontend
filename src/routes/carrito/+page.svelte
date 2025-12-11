@@ -5,6 +5,7 @@
 
     // --- 1. ESTADO DEL CLIENTE Y ENVÍO ---
     let contactInfo = {
+        name: '', // <--- ¡ESTO FALTA! Para guardar el nombre universal
         email: '',
         phone: '',
         shippingZone: 'mty' // por defecto MTY (Gratis)
@@ -58,6 +59,9 @@
                 body: JSON.stringify({
                     items: $cart,
                     email: contactInfo.email,
+                    // ¡AQUÍ ESTÁ LA CLAVE UNIVERSAL! 🗝️
+                    // Enviamos todo el objeto para que Python lo lea
+                    customerInfo: contactInfo,
                     shippingTotal: shippingCost 
                 }),
                 headers: { 'Content-Type': 'application/json' }
@@ -137,7 +141,10 @@
             <div class="cart-summary-wrapper">
                 <div class="cart-summary">
                     <h3 class="title-serif summary-title">Datos de Entrega</h3>
-                    
+                    <div class="form-group">
+                        <label>Nombre Completo</label>
+                        <input type="text" bind:value={contactInfo.name} placeholder="Ej: Ricardo Garza" class="input-dark">
+                    </div>
                     <div class="form-group">
                         <label>Correo Electrónico</label>
                         <input type="email" bind:value={contactInfo.email} placeholder="tu@email.com" class="input-dark">
