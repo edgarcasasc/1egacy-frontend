@@ -54,7 +54,8 @@
         try {
             // CAMBIO: Apuntamos a la API real (o la IP si no tienes SSL aún)
             // IMPORTANTE: Asegúrate de usar http://159.65.66.140:8000 si no tienes SSL
-            const response = await fetch('http://159.65.66.140:8000/crear-sesion-checkout', {
+            // BUENO (Seguro y Profesional)
+            const response = await fetch('https://api.somos1egacy.com/crear-sesion-checkout', {
                 method: 'POST',
                 body: JSON.stringify({
                     items: $cart,
