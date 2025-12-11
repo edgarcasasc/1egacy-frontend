@@ -1,32 +1,24 @@
 <script>
-    /**
-     * ====================================================================================
-     * Canvas Arquitectónico: Proyecto 1egacy - Página de Inicio
-     * ====================================================================================
-     */
-
     import { onMount } from 'svelte';
     import { browser } from '$app/environment';
     import { gsap } from 'gsap';
     import { MotionPathPlugin } from 'gsap/MotionPathPlugin';
 
-   // *** Importar datos del servidor ***
-    // Esta variable 'data' será poblada por la función 'load' en +page.server.js
+    // *** Importar datos del servidor ***
     export let data;
-    // Extraemos los productos destacados. Si no hay, usamos un array vacío.
     $: featuredProducts = data?.featuredProducts || [];
     // *** FIN ***
 
     // --- CÓDIGO GSAP PARA ANIMACIONES (Corregido y Blindado) ---
     onMount(() => {
-        let animationTimeoutId; // Variable para guardar el ID del temporizador
+        let animationTimeoutId; 
 
         // Solo ejecutar GSAP en el navegador
         if (browser) {
-            gsap.registerPlugin(MotionPathPlugin); // Registrar el plugin necesario
+            gsap.registerPlugin(MotionPathPlugin); 
             console.log('Entorno de navegador detectado. Preparando animaciones GSAP...');
 
-            // Diferir la ejecución de las animaciones para mejorar la carga inicial y asegurar renderizado
+            // Diferir la ejecución para asegurar que el DOM esté listo
             animationTimeoutId = setTimeout(() => {
                 console.log('Iniciando animaciones GSAP ahora.');
                 
@@ -34,10 +26,10 @@
                     // 1. Buscamos el elemento CRÍTICO físicamente en el DOM
                     const hiloPathElement = document.querySelector('#hilo-path');
 
-                    // 2. BLINDAJE: Solo ejecutamos las animaciones de ruta si el path existe
+                    // 2. BLINDAJE: Solo ejecutamos si el elemento EXISTE
                     if (hiloPathElement) {
                         
-                        // --- A. Animación de flotación vertical (General) ---
+                        // --- A. Animación de flotación vertical ---
                         gsap.to('.hilo-destino-container', {
                             y: 10, 
                             duration: 7, 
@@ -53,7 +45,7 @@
                             particulasSingle.forEach((particle, i) => {
                                 gsap.to(particle, {
                                     motionPath: {
-                                        path: hiloPathElement, // Usamos el elemento directo (Más seguro)
+                                        path: hiloPathElement, // Referencia directa al elemento
                                         align: hiloPathElement,
                                         alignOrigin: [0.5, 0.5]
                                     },
@@ -62,9 +54,7 @@
                                     repeat: -1,
                                     ease: 'linear',
                                     opacity: 0,
-                                    // Al empezar, hacer fade in
                                     onStart: () => gsap.to(particle, { opacity: 1, duration: 1 }),
-                                    // Al repetir, resetear opacidad y hacer fade in de nuevo
                                     onRepeat: () => {
                                         gsap.set(particle, { opacity: 0 });
                                         gsap.to(particle, { opacity: 1, duration: 1, delay: 0.1 });
@@ -91,7 +81,7 @@
                                 ease: 'sine.inOut' 
                             });
 
-                            // --- D. Partículas dentro del Enjambre (Movimiento caótico local) ---
+                            // --- D. Partículas dentro del Enjambre ---
                             const particulasEnjambre = gsap.utils.toArray('.particle-enjambre');
                             particulasEnjambre.forEach((particle) => {
                                 gsap.to(particle, {
@@ -107,19 +97,18 @@
                         }
 
                     } else {
-                        // Si no encuentra el path, avisamos pero NO rompemos la página
-                        console.warn("⚠️ Animación saltada: #hilo-path no se encontró en esta carga.");
+                        // Si no encuentra el path, simplemente no hace nada y no explota
+                        console.log("⚠️ Animación saltada: #hilo-path no está en esta página.");
                     }
 
                 } catch (e) {
-                    // Capturar y mostrar errores si GSAP falla por otra razón
                     console.error('Error controlado al inicializar animaciones:', e);
                 }
             }, 300); // Ejecutar después de 300ms
 
-            // Función de limpieza: se ejecuta cuando el componente se destruye (cambio de página)
+            // Función de limpieza al salir de la página
             return () => {
-                 console.log('Limpiando animaciones GSAP y timeout...');
+                 console.log('Limpiando animaciones GSAP...');
                  clearTimeout(animationTimeoutId); 
                  gsap.killTweensOf('.hilo-destino-container, .particle-single, .enjambre-container, .particle-enjambre');
              };
@@ -127,23 +116,15 @@
     });
     // --- FIN CÓDIGO GSAP ---
 
-    // *** Lógica para expandir/colapsar testimonios ***
-    let expandedStates = {}; // Objeto para guardar el estado (expandido/colapsado)
-
+    // *** Lógica Testimonios ***
+    let expandedStates = {}; 
     const testimonials = [
-        { id: 'ana', name: 'Ana Sofía Martínez', title: 'Emprendedora y Guardiana de un Símbolo', image: '/imagenes_clientes/ana_sofia.webp', quote: "Quería un símbolo para mi familia que fuera más allá de un logo genérico. El proceso de 1egacy fue una revelación: el equipo del Maestro Ovidio no solo investigó la heráldica auténtica de mi linaje, sino que luego, como verdaderos artesanos, la rediseñaron con una elegancia moderna, explicándome el 'porqué' de cada elemento. El resultado no es solo un diseño, es nuestro estandarte. Una pieza de arte que se siente histórica y completamente actual, y que ahora usamos con un orgullo inmenso como la firma de nuestra familia." },
-        { id: 'santiago', name: 'Santiago Camarillo', title: 'Jefe del clan Camarillo', image: '/imagenes_clientes/chagocama.webp', quote: "Cuando 1egacy me entregó el Códice de mi linaje, sentí que sostenía no solo un libro, sino un mapa del alma de mi familia. Su equipo demostró una maestría excepcional, desenterrando 'Fragmentos de Vida' desde la Castilla del siglo XIV hasta la California del XIX, tejiéndolos en una narrativa que va más allá de las fechas. Lo que realmente valoro es cómo capturaron la esencia de nuestro legado —la lealtad, la resiliencia, la lección de la tarraya — y lo convirtieron en una obra de arte tangible. No es solo investigación; es la materialización de la identidad, una brújula que honra nuestro pasado y fortalece nuestro camino hacia el futuro." },
-        { id: 'carlos', name: 'Carlos Rivas Villareal', title: 'Hijo y Custodio de una Historia', image: '/imagenes_clientes/carlosrivas.webp', quote: "Buscábamos honrar la vida de mi padre, el fundador de nuestra empresa, por su 80 aniversario. 1egacy FILMS superó todas nuestras expectativas. Su equipo no solo tiene una calidad cinematográfica impecable, sino una sensibilidad de 'Maestro' para encontrar el alma de la historia. No crearon un video corporativo; capturaron la filosofía de vida de mi padre en un documental biográfico que nos conmovió a todos. Han inmortalizado su voz y su legado de una forma que trasciende el tiempo." }
+        { id: 'ana', name: 'Ana Sofía Martínez', title: 'Emprendedora y Guardiana de un Símbolo', image: '/imagenes_clientes/ana_sofia.webp', quote: "Quería un símbolo para mi familia que fuera más allá de un logo genérico. El proceso de 1egacy fue una revelación..." },
+        { id: 'santiago', name: 'Santiago Camarillo', title: 'Jefe del clan Camarillo', image: '/imagenes_clientes/chagocama.webp', quote: "Cuando 1egacy me entregó el Códice de mi linaje, sentí que sostenía no solo un libro, sino un mapa del alma..." },
+        { id: 'carlos', name: 'Carlos Rivas Villareal', title: 'Hijo y Custodio de una Historia', image: '/imagenes_clientes/carlosrivas.webp', quote: "Buscábamos honrar la vida de mi padre... 1egacy FILMS superó todas nuestras expectativas..." }
     ];
-
-    // Inicializar el estado de todos los testimonios como colapsados (false)
     testimonials.forEach(t => expandedStates[t.id] = false);
-
-    // Función para cambiar el estado de expansión de un testimonio específico
-    function toggleExpand(id) {
-        expandedStates[id] = !expandedStates[id];
-    }
-    // *** FIN LÓGICA TESTIMONIOS ***
+    function toggleExpand(id) { expandedStates[id] = !expandedStates[id]; }
 </script>
 
 <svelte:head>
