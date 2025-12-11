@@ -10,118 +10,126 @@
     import { gsap } from 'gsap';
     import { MotionPathPlugin } from 'gsap/MotionPathPlugin';
 
-    onMount(() => {
-      
-    });
-    // *** Importar datos del servidor ***
+   // *** Importar datos del servidor ***
     // Esta variable 'data' será poblada por la función 'load' en +page.server.js
     export let data;
     // Extraemos los productos destacados. Si no hay, usamos un array vacío.
-    $: featuredProducts = data.featuredProducts || [];
+    $: featuredProducts = data?.featuredProducts || [];
     // *** FIN ***
 
-    // --- CÓDIGO GSAP PARA ANIMACIONES (Existente) ---
+    // --- CÓDIGO GSAP PARA ANIMACIONES (Corregido y Blindado) ---
     onMount(() => {
         let animationTimeoutId; // Variable para guardar el ID del temporizador
 
         // Solo ejecutar GSAP en el navegador
         if (browser) {
             gsap.registerPlugin(MotionPathPlugin); // Registrar el plugin necesario
-            console.log('Entorno de navegador detectado. Animaciones GSAP diferidas...');
+            console.log('Entorno de navegador detectado. Preparando animaciones GSAP...');
 
-            // Diferir la ejecución de las animaciones para mejorar la carga inicial
+            // Diferir la ejecución de las animaciones para mejorar la carga inicial y asegurar renderizado
             animationTimeoutId = setTimeout(() => {
                 console.log('Iniciando animaciones GSAP ahora.');
+                
                 try {
-                    // Animación de flotación vertical para el contenedor del hilo
-                    gsap.to('.hilo-destino-container', {
-                        y: 10, // Mover 10px hacia abajo
-                        duration: 7, // Duración de cada ciclo
-                        repeat: -1, // Repetir infinitamente
-                        yoyo: true, // Hacer que la animación vaya de ida y vuelta
-                        ease: 'sine.inOut' // Suavizado de la animación
-                    });
+                    // 1. Buscamos el elemento CRÍTICO físicamente en el DOM
+                    const hiloPathElement = document.querySelector('#hilo-path');
 
-                    // Seleccionar todas las partículas individuales
-                    const particulasSingle = gsap.utils.toArray('.particle-single');
-                    // Animar cada partícula individual a lo largo del path SVG
-                    particulasSingle.forEach((particle, i) => {
-                         gsap.to(particle, {
-                            motionPath: {
-                                path: '#hilo-path', // El ID del path SVG a seguir
-                                align: '#hilo-path', // Alinear al path
-                                alignOrigin: [0.5, 0.5] // Alinear desde el centro de la partícula
-                            },
-                            duration: 8 + Math.random() * 4, // Duración aleatoria entre 8 y 12 segundos
-                            delay: i * 0.5 + Math.random() * 1, // Retraso escalonado y aleatorio
-                            repeat: -1, // Repetir infinitamente
-                            ease: 'linear', // Movimiento constante
-                            opacity: 0, // Empezar invisible (para el fade in)
-                            // Al empezar, hacer fade in
-                            onStart: () => gsap.to(particle, { opacity: 1, duration: 1 }),
-                            // Al repetir, resetear opacidad y hacer fade in de nuevo
-                            onRepeat: () => {
-                                gsap.set(particle, { opacity: 0 }); // Volver invisible instantáneamente
-                                gsap.to(particle, { opacity: 1, duration: 1, delay: 0.1 }); // Fade in después de un pequeño retraso
-                            }
+                    // 2. BLINDAJE: Solo ejecutamos las animaciones de ruta si el path existe
+                    if (hiloPathElement) {
+                        
+                        // --- A. Animación de flotación vertical (General) ---
+                        gsap.to('.hilo-destino-container', {
+                            y: 10, 
+                            duration: 7, 
+                            repeat: -1, 
+                            yoyo: true, 
+                            ease: 'sine.inOut' 
                         });
-                     });
 
-                    // Seleccionar el contenedor del enjambre y las partículas dentro
-                    const enjambreContainer = '.enjambre-container';
-                    const particulasEnjambre = gsap.utils.toArray('.particle-enjambre');
-                    // Animar el contenedor del enjambre a lo largo de una sección del path
-                    gsap.to(enjambreContainer, {
-                        motionPath: {
-                            path: '#hilo-path',
-                            align: '#hilo-path',
-                            alignOrigin: [0.5, 0.5],
-                            start: 0.1, // Empezar al 10% del path
-                            end: 0.9 // Terminar al 90% del path
-                        },
-                        duration: 20, // Duración más larga para un movimiento más lento
-                        repeat: -1, // Repetir infinitamente
-                        yoyo: true, // Movimiento de ida y vuelta
-                        ease: 'sine.inOut' // Suavizado
-                    });
+                        // --- B. Partículas Individuales ---
+                        const particulasSingle = gsap.utils.toArray('.particle-single');
+                        
+                        if (particulasSingle.length > 0) {
+                            particulasSingle.forEach((particle, i) => {
+                                gsap.to(particle, {
+                                    motionPath: {
+                                        path: hiloPathElement, // Usamos el elemento directo (Más seguro)
+                                        align: hiloPathElement,
+                                        alignOrigin: [0.5, 0.5]
+                                    },
+                                    duration: 8 + Math.random() * 4,
+                                    delay: i * 0.5 + Math.random() * 1,
+                                    repeat: -1,
+                                    ease: 'linear',
+                                    opacity: 0,
+                                    // Al empezar, hacer fade in
+                                    onStart: () => gsap.to(particle, { opacity: 1, duration: 1 }),
+                                    // Al repetir, resetear opacidad y hacer fade in de nuevo
+                                    onRepeat: () => {
+                                        gsap.set(particle, { opacity: 0 });
+                                        gsap.to(particle, { opacity: 1, duration: 1, delay: 0.1 });
+                                    }
+                                });
+                            });
+                        }
 
-                    // Animar cada partícula del enjambre con un movimiento local aleatorio
-                    particulasEnjambre.forEach((particle) => {
-                        gsap.to(particle, {
-                            x: () => Math.random() * 30 - 15, // Movimiento X aleatorio (-15 a +15px)
-                            y: () => Math.random() * 30 - 15, // Movimiento Y aleatorio (-15 a +15px)
-                            scale: () => 0.8 + Math.random() * 0.4, // Escala aleatoria (0.8 a 1.2)
-                            duration: 1.5 + Math.random() * 1, // Duración aleatoria
-                            repeat: -1, // Repetir infinitamente
-                            yoyo: true, // Movimiento de ida y vuelta
-                            ease: 'sine.inOut' // Suavizado
-                        });
-                    });
+                        // --- C. Contenedor del Enjambre ---
+                        const enjambreContainer = document.querySelector('.enjambre-container');
+                        
+                        if (enjambreContainer) {
+                            gsap.to(enjambreContainer, {
+                                motionPath: {
+                                    path: hiloPathElement,
+                                    align: hiloPathElement,
+                                    alignOrigin: [0.5, 0.5],
+                                    start: 0.1, 
+                                    end: 0.9 
+                                },
+                                duration: 20, 
+                                repeat: -1, 
+                                yoyo: true, 
+                                ease: 'sine.inOut' 
+                            });
+
+                            // --- D. Partículas dentro del Enjambre (Movimiento caótico local) ---
+                            const particulasEnjambre = gsap.utils.toArray('.particle-enjambre');
+                            particulasEnjambre.forEach((particle) => {
+                                gsap.to(particle, {
+                                    x: () => Math.random() * 30 - 15,
+                                    y: () => Math.random() * 30 - 15,
+                                    scale: () => 0.8 + Math.random() * 0.4,
+                                    duration: 1.5 + Math.random() * 1,
+                                    repeat: -1,
+                                    yoyo: true,
+                                    ease: 'sine.inOut'
+                                });
+                            });
+                        }
+
+                    } else {
+                        // Si no encuentra el path, avisamos pero NO rompemos la página
+                        console.warn("⚠️ Animación saltada: #hilo-path no se encontró en esta carga.");
+                    }
 
                 } catch (e) {
-                    // Capturar y mostrar errores si GSAP falla
-                    console.error('Error al inicializar las animaciones GSAP diferidas:', e);
+                    // Capturar y mostrar errores si GSAP falla por otra razón
+                    console.error('Error controlado al inicializar animaciones:', e);
                 }
             }, 300); // Ejecutar después de 300ms
 
-            // Función de limpieza: se ejecuta cuando el componente se destruye
+            // Función de limpieza: se ejecuta cuando el componente se destruye (cambio de página)
             return () => {
                  console.log('Limpiando animaciones GSAP y timeout...');
-                 clearTimeout(animationTimeoutId); // Cancelar el temporizador si aún no se ha ejecutado
-                 // Detener todas las animaciones de los elementos seleccionados
+                 clearTimeout(animationTimeoutId); 
                  gsap.killTweensOf('.hilo-destino-container, .particle-single, .enjambre-container, .particle-enjambre');
              };
         }
-
-        // Si no estamos en el navegador, la limpieza es vacía
-        return () => {};
     });
     // --- FIN CÓDIGO GSAP ---
 
     // *** Lógica para expandir/colapsar testimonios ***
-    let expandedStates = {}; // Objeto para guardar el estado (expandido/colapsado) de cada testimonio
+    let expandedStates = {}; // Objeto para guardar el estado (expandido/colapsado)
 
-    // Datos de los testimonios (podrían venir de 'data' si los cargas en +page.server.js)
     const testimonials = [
         { id: 'ana', name: 'Ana Sofía Martínez', title: 'Emprendedora y Guardiana de un Símbolo', image: '/imagenes_clientes/ana_sofia.webp', quote: "Quería un símbolo para mi familia que fuera más allá de un logo genérico. El proceso de 1egacy fue una revelación: el equipo del Maestro Ovidio no solo investigó la heráldica auténtica de mi linaje, sino que luego, como verdaderos artesanos, la rediseñaron con una elegancia moderna, explicándome el 'porqué' de cada elemento. El resultado no es solo un diseño, es nuestro estandarte. Una pieza de arte que se siente histórica y completamente actual, y que ahora usamos con un orgullo inmenso como la firma de nuestra familia." },
         { id: 'santiago', name: 'Santiago Camarillo', title: 'Jefe del clan Camarillo', image: '/imagenes_clientes/chagocama.webp', quote: "Cuando 1egacy me entregó el Códice de mi linaje, sentí que sostenía no solo un libro, sino un mapa del alma de mi familia. Su equipo demostró una maestría excepcional, desenterrando 'Fragmentos de Vida' desde la Castilla del siglo XIV hasta la California del XIX, tejiéndolos en una narrativa que va más allá de las fechas. Lo que realmente valoro es cómo capturaron la esencia de nuestro legado —la lealtad, la resiliencia, la lección de la tarraya — y lo convirtieron en una obra de arte tangible. No es solo investigación; es la materialización de la identidad, una brújula que honra nuestro pasado y fortalece nuestro camino hacia el futuro." },
@@ -136,7 +144,6 @@
         expandedStates[id] = !expandedStates[id];
     }
     // *** FIN LÓGICA TESTIMONIOS ***
-
 </script>
 
 <svelte:head>
