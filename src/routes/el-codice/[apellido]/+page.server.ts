@@ -1,31 +1,44 @@
 import { client } from '$lib/sanityClient.js';
 import { error } from '@sveltejs/kit';
 
-export async function load({ params, url }) { // <-- Importante: 'url' para leer el token
+export async function load({ params, url }) { 
     const slug = params.apellido.toLowerCase();
-    const token = url.searchParams.get('k'); // Leemos el parámetro '?k='
+    const token = url.searchParams.get('k'); 
 
-    // 1. VALIDACIÓN DE SEGURIDAD
-    // Si no hay token, rechazamos la entrada inmediatamente
+    // --- 1. SEGURIDAD BÁSICA ---
     if (!token) {
         throw error(403, 'Acceso denegado. Se requiere una llave de acceso válida.');
     }
 
-    // 2. VERIFICACIÓN CRUZADA EN SANITY
-    // Preguntamos: "¿Existe una orden con este token QUE ESTÉ VINCULADA a este linaje?"
-    // Nota: Asumimos que en la orden ya vinculaste el 'linajeVinculado'
-    const accessQuery = `count(*[_type == "order" && accessToken == $token && linajeVinculado->slug.current == $slug]) > 0`;
-    
-    const hasAccess = await client.fetch(accessQuery, { token, slug });
+    // --- 2. LISTA DE TOKENS HISTÓRICOS (SALVAVIDAS) ---
+    // Aquí pones los tokens antiguos que NO quieres que dejen de funcionar nunca,
+    // independientemente de lo que diga la base de datos nueva.
+    const LEGACY_TOKENS = [
+        '3ff94e4a-6803-485a-b188-1ad168904b0f', // Token original de Casas
+        // 'otro-token-antiguo-aqui'
+    ];
+
+    const isLegacyToken = LEGACY_TOKENS.includes(token);
+
+    // --- 3. VERIFICACIÓN DE ACCESO ---
+    let hasAccess = false;
+
+    if (isLegacyToken) {
+        // A. Si está en la lista blanca, le damos pase VIP directo
+        console.log(`🔓 Acceso permitido por Token Histórico: ${token}`);
+        hasAccess = true;
+    } else {
+        // B. Si no es histórico, verificamos en Sanity (Lógica Nueva)
+        // Preguntamos: "¿Existe una orden con este token QUE ESTÉ VINCULADA a este linaje?"
+        const accessQuery = `count(*[_type == "order" && accessToken == $token && linajeVinculado->slug.current == $slug]) > 0`;
+        hasAccess = await client.fetch(accessQuery, { token, slug });
+    }
 
     if (!hasAccess) {
-        // Opcional: Permitir acceso si es una orden "Bespoke" terminada aunque el slug no coincida exacto (casos especiales)
-        // Pero por ahora, somos estrictos.
         throw error(403, 'Tu llave de acceso no corresponde a este linaje o la sesión ha expirado.');
     }
 
-    // 3. SI PASÓ LA SEGURIDAD, DESCARGAMOS EL CONTENIDO
-    // (Esta es la misma query de antes)
+    // --- 4. DESCARGAR EL CONTENIDO (Si pasó la seguridad) ---
     const query = `*[_type == "linaje" && slug.current == $slug][0]{
         _id,
         title,
@@ -63,7 +76,6 @@ export async function load({ params, url }) { // <-- Importante: 'url' para leer
         };
 
     } catch (err) {
-        // Si el error ya es 403 o 404, lo dejamos pasar
         if (err.status === 403 || err.status === 404) {
              throw err;
         }
