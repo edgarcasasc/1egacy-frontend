@@ -22,7 +22,10 @@ import { cart } from '$lib/stores/cart';
 
 <div class="success-container">
   {#if loading}
-    <p class="loading-text">Verificando tu legado...</p>
+    <div class="loading-state" in:fade>
+        <span class="loader"></span>
+        <p class="loading-text text-dorado">Registrando tu legado en los archivos...</p>
+    </div>
   {:else}
     <div class="card" in:fly={{ y: 50, duration: 1000 }}>
       <div class="icon-wrapper">
@@ -33,13 +36,16 @@ import { cart } from '$lib/stores/cart';
       <p class="subtitle">Tu orden ha sido confirmada con éxito.</p>
       
       <div class="order-info">
-        <p class="text-sm text-gray-400">ID de Referencia:</p>
-        <code class="order-id">{sessionId.slice(0, 10)}...</code>
+        <p class="text-sm text-gray-400 mb-1">Estado del Pedido:</p>
+        <div class="status-badge">
+            <span class="dot"></span> PAGADO Y CONFIRMADO
+        </div>
       </div>
 
       <p class="message">
-        Hemos enviado un correo de confirmación con los detalles.
-        Tu historia comienza ahora.
+        Hemos enviado un correo electrónico con tu recibo y los siguientes pasos.
+        <br><br>
+        Nuestro equipo de artesanos comenzará a preparar tu historia de inmediato.
       </p>
 
       <div class="actions">
