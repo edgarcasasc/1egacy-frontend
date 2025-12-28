@@ -78,6 +78,11 @@ export async function load({ params, url }) {
 
     } catch (err) {
         console.error('[SERVER LOAD ERROR]', err);
-        return { post: null, error: err.message };
+        // --- CAMBIO CRÍTICO: Nunca mandes un 500 ---
+        return { 
+            post: null, 
+            baseUrl,
+            error: "Estamos recuperando este legado, por favor refresca la página." 
+        };
     }
 }
