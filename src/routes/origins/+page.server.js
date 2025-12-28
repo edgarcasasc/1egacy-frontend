@@ -1,11 +1,12 @@
 // src/routes/origins/+page.server.js
 import { client } from '$lib/sanityClient';
 
+// --- LÍNEA MÁGICA: Esto evita los errores 5xx ---
+export const prerender = true; 
+
 export async function load() {
-  // Esta es una consulta en el lenguaje de Sanity (GROQ)
-  // Pide todos los documentos de tipo 'linaje'
   const query = `*[_type == "linaje"]{
-    "id": title, // Usamos el título como 'id'
+    "id": title,
     "slug": slug.current,
     introduccion,
     "escudoUrl": escudo.asset->url
@@ -15,12 +16,12 @@ export async function load() {
 
   if (linajes) {
     return {
-      linajes // Enviamos los datos a la página
+      linajes
     };
   }
 
+  // Si algo falla, SvelteKit manejará el error de forma limpia
   return {
-    status: 500,
-    body: new Error("Error interno del servidor")
+    linajes: []
   };
 }
