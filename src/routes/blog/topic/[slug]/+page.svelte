@@ -12,7 +12,6 @@
 	/>
 	</svelte:head>
 
-<Navbar />
 
 <div class="topic-page-container">
 	{#if topic}
