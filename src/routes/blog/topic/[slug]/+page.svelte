@@ -1,5 +1,4 @@
 <script>
-	import Navbar from '../../../../components/Navbar.svelte'; // Ajusta la ruta si es necesario
 
 	export let data;
 	const { topic } = data; // Recibimos el objeto 'topic' que incluye el array 'posts'
