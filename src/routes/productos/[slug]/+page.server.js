@@ -3,8 +3,7 @@ import { error } from '@sveltejs/kit';
 
 export async function load({ params, url }) {
   const { slug } = params;
-  const baseUrl = url.origin;
-
+const baseUrl = 'https://somos1egacy.com';
   const query = `*[_type == "product" && slug.current == $slug][0]{
     _id,
     title,

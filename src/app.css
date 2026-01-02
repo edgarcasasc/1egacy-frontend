@@ -1,74 +1,117 @@
-/* Reset básico */
-body {
-    margin: 0;
-    font-family: 'EB Garamond', serif; /* Tu fuente global */
-    background-color: #1d1d1b; /* Tu color de fondo oscuro por defecto */
-    color: #e0e0e0;
-}
+<!doctype html>
+<html lang="es">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		
+		<script>
+			(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+			new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+			j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+			'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+			})(window,document,'script','dataLayer','GTM-W783R3C7');
+		</script>
 
-/* --- TUS CLASES DE UTILIDAD (Manuales) --- */
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Source+Sans+3:wght@400;600&family=EB+Garamond:wght@400;700&display=swap" rel="stylesheet">
 
-/* Layout & Posicionamiento */
-.relative { position: relative; }
-.absolute { position: absolute; }
-.inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
-.z-0 { z-index: 0; }
-.z-10 { z-index: 10; }
-.flex { display: flex; }
-.items-center { align-items: center; }
-.justify-center { justify-content: center; }
-.overflow-hidden { overflow: hidden; }
-.inline-block { display: inline-block; }
-.min-h-screen { min-height: 100vh; }
-.w-full { width: 100%; }
-.h-full { height: 100%; }
+		<link rel="icon" href="/favicon.svg" />
+		<meta property="og:site_name" content="1egacy" />
+		<meta name="twitter:card" content="summary_large_image" />
 
-/* Tipografía */
-.text-center { text-align: center; }
-.text-white { color: #fff; }
-.font-serif { font-family: 'EB Garamond', serif; }
-.font-bold { font-weight: 700; }
-.font-semibold { font-weight: 600; }
-.font-light { font-weight: 300; }
-.leading-tight { line-height: 1.25; }
+		<style>
+			/* Reset básico */
+			body {
+				margin: 0;
+				font-family: 'Source Sans 3', sans-serif; /* Fallback base */
+				background-color: #121212; /* Color oscuro 1egacy */
+				color: #e0e0e0;
+				-webkit-font-smoothing: antialiased;
+			}
 
-/* Tamaños de Texto Responsivos */
-.text-lg { font-size: 1.125rem; line-height: 1.75rem; }
-.text-xl { font-size: 1.25rem; line-height: 1.75rem; }
-.text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
+			/* --- CLASES DE UTILIDAD (Manuales) --- */
 
-@media (min-width: 768px) {
-    .md\:text-2xl { font-size: 1.5rem; line-height: 2rem; }
-    .md\:text-6xl { font-size: 3.75rem; line-height: 1; }
-}
+			/* Layout & Posicionamiento */
+			.relative { position: relative; }
+			.absolute { position: absolute; }
+			.inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
+			.z-0 { z-index: 0; }
+			.z-10 { z-index: 10; }
+			.flex { display: flex; }
+			.items-center { align-items: center; }
+			.justify-center { justify-content: center; }
+			.overflow-hidden { overflow: hidden; }
+			.inline-block { display: inline-block; }
+			.min-h-screen { min-height: 100vh; }
+			.w-full { width: 100%; }
+			.h-full { height: 100%; }
 
-@media (min-width: 1024px) {
-    .lg\:text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
-    .lg\:text-7xl { font-size: 4.5rem; line-height: 1; }
-}
+			/* Tipografía (Identidad de Marca) */
+			.text-center { text-align: center; }
+			.text-white { color: #fff; }
+			.text-primary { color: #c0a062; } /* Dorado 1egacy */
+			
+			/* Fuentes Específicas */
+			.font-serif { font-family: 'EB Garamond', serif; }
+			.font-display { font-family: 'Playfair Display', serif; }
+			.font-sans { font-family: 'Source Sans 3', sans-serif; }
+			
+			.font-bold { font-weight: 700; }
+			.font-semibold { font-weight: 600; }
+			.font-light { font-weight: 300; }
+			.leading-tight { line-height: 1.25; }
 
-/* Espaciado */
-.p-4 { padding: 1rem; }
-.py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
-.px-8 { padding-left: 2rem; padding-right: 2rem; }
-.mb-4 { margin-bottom: 1rem; }
-.mb-8 { margin-bottom: 2rem; }
-.mx-auto { margin-left: auto; margin-right: auto; }
-.max-w-4xl { max-width: 56rem; }
+			/* Tamaños Responsivos */
+			.text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+			.text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+			.text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
 
-/* Visuales */
-.object-cover { object-fit: cover; }
-.rounded-md { border-radius: 0.375rem; }
-.shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+			@media (min-width: 768px) {
+				.md\:text-2xl { font-size: 1.5rem; line-height: 2rem; }
+				.md\:text-6xl { font-size: 3.75rem; line-height: 1; }
+			}
 
-/* Filtros */
-.filter { filter: var(--tw-filter); }
-.brightness-50 { filter: brightness(.5); }
+			@media (min-width: 1024px) {
+				.lg\:text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+				.lg\:text-7xl { font-size: 4.5rem; line-height: 1; }
+			}
 
-/* Colores Personalizados 1egacy */
-.bg-primary-500 { background-color: #c0a062; /* Tu color dorado */ }
-.hover\:bg-primary-600:hover { background-color: #a08450; }
+			/* Espaciado */
+			.p-4 { padding: 1rem; }
+			.py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+			.px-8 { padding-left: 2rem; padding-right: 2rem; }
+			.mb-4 { margin-bottom: 1rem; }
+			.mb-8 { margin-bottom: 2rem; }
+			.mx-auto { margin-left: auto; margin-right: auto; }
+			.max-w-4xl { max-width: 56rem; }
 
-/* Transiciones */
-.transition { transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
-.duration-300 { transition-duration: 300ms; }
+			/* Visuales */
+			.object-cover { object-fit: cover; }
+			.rounded-md { border-radius: 0.375rem; }
+			.shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+
+			/* Filtros */
+			.brightness-50 { filter: brightness(.5); }
+
+			/* Colores Personalizados 1egacy */
+			.bg-dark { background-color: #121212; }
+			.bg-primary-500 { background-color: #c0a062; }
+			.hover\:bg-primary-600:hover { background-color: #a08450; }
+
+			/* Transiciones */
+			.transition { transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1); }
+			.duration-300 { transition-duration: 300ms; }
+		</style>
+
+		%sveltekit.head%
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<noscript>
+			<iframe src="https://www.googletagmanager.com/ns.html?id=GTM-W783R3C7"
+			height="0" width="0" style="display:none;visibility:hidden"></iframe>
+		</noscript>
+
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
+</html>

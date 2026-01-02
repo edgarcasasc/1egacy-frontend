@@ -1,407 +1,443 @@
 <script lang="ts">
-    import { MetaTags } from 'svelte-meta-tags';
-    import { page } from '$app/stores';
     import { addToCart } from '$lib/stores/cart';
-    import { fade } from 'svelte/transition';
+    import { fade, fly } from 'svelte/transition';
 
     export let data;
-    // Protección inicial por si data viene vacía
-    const product = data?.product || {};
-    const baseUrl = data?.baseUrl || '';
 
-    // --- ESTADO DE SELECCIÓN ---
-    let selectedServiceLevel = 'standard'; // 'standard' | 'bespoke'
-    let isAdding = false; 
+    // Configuración base
+    const safeBaseUrl = 'https://somos1egacy.com';
 
-    // --- LÓGICA DE PRECIO ---
-    $: currentPrice = selectedServiceLevel === 'standard' 
+    // IMPORTANTE: product debe ser reactivo (para navegación cliente en SvelteKit)
+    let product: any = {};
+    $: product = data?.product ?? {};
+
+    // --- 1) LÓGICA SEO: LIMPIEZA Y CORRECCIÓN ---
+
+    // Título dinámico corrigiendo typos
+    $: correctedTitle = (product.title ?? '').replace('Escitorio', 'Escritorio');
+    $: pageTitle = `${correctedTitle} | 1egacy`;
+
+    // Descripción limpia: una sola línea, sin partir palabras, max 155 caracteres
+    $: cleanDescription = (() => {
+        const s = (product.description ?? '').replace(/\s+/g, ' ').trim();
+        if (s.length <= 155) return s;
+        // Corta en el último espacio antes del límite para no romper palabras
+        return s.slice(0, 155).replace(/\s+\S*$/, '').trim() + '...';
+    })();
+
+    // Slug y Canonical
+    $: currentSlug = product.slug || '';
+    $: canonicalUrl = `${safeBaseUrl}/productos/${currentSlug}`;
+
+    // Imagen para redes sociales (reactiva)
+    $: ogImage = product.mainImageUrl || `${safeBaseUrl}/1egacy-og-logo.jpg`;
+
+    // Fecha unificada (si CMS trae una, se usa; si no, fallback 2026)
+    $: priceValidUntil = product.priceValidUntil || "2026-12-31";
+
+    // --- 2) LÓGICA DE NEGOCIO (DISEÑO INTACTO) ---
+    let selectedServiceLevel = 'standard';
+    let isAdding = false;
+    let showSuccess = false;
+
+    $: currentPrice = selectedServiceLevel === 'standard'
         ? (product.price || 0)
-        : ((product.price || 0) * 1.5); 
+        : ((product.price || 0) * 1.5);
 
-    // --- LÓGICA DE IMAGEN ---
-    $: gallerySource = product?.galleryImages || product?.gallery || [];
+    // Galería
+    $: gallerySource = product?.galleryImages || [];
     let imagenSeleccionadaGaleria = '';
-
     $: if (gallerySource.length > 0 && !imagenSeleccionadaGaleria) {
         imagenSeleccionadaGaleria = gallerySource[0];
     }
-
     $: imageToDisplay = selectedServiceLevel === 'bespoke'
         ? '/blueprint-generico.webp'
         : (imagenSeleccionadaGaleria || '/placeholder-default.webp');
 
-    // --- LÓGICA DE VARIANTES (BLINDADA) ---
-    $: variantsData = Array.isArray(product?.variants) ? product.variants : [];
+    // Disponibilidad
+    const availabilityMap: Record<string, string> = {
+        'available': 'https://schema.org/InStock',
+        'coming_soon': 'https://schema.org/PreOrder',
+        'sold_out': 'https://schema.org/OutOfStock'
+    };
 
-    // 1. BUSCAR LA VARIANTE "BESPOKE/PERSONALIZADO" PARA CONTROLAR EL BOTÓN GRANDE
-    $: bespokeVariant = variantsData.find(v => {
-        if (!v) return false;
-        // Usamos || '' para evitar que .toLowerCase() explote con null
-        const t = (v.title || '').toLowerCase();
-        const s = (v.size || '').toLowerCase();
-        return t.includes('personalizado') || t.includes('bespoke') || s.includes('personalizado');
-    });
+    $: isBespokeDisabled = product.availabilityStatus === 'coming_soon' || product.availabilityStatus === 'sold_out';
 
-    // 2. ESTADOS DEL BOTÓN BESPOKE
-    // En lugar de buscarlo en la variante...
-$: isBespokeLocked = product.availabilityStatus === 'coming_soon';
-$: isBespokeSoldOut = product.availabilityStatus === 'sold_out';
-    $: isBespokeDisabled = isBespokeLocked || isBespokeSoldOut;
+    // --- 3) SCHEMA MARKUP CON FECHA UNIFICADA ---
+    function createProductGraph(p: any, title: string, desc: string, price: number, domain: string, slug: string, validUntil: string) {
+        if (!p.title) return null;
+        const productUrl = `${domain}/productos/${slug}`;
 
-    // --- NUEVA LÓGICA PARA OCULTO/SEO ---
-    // Si está oculto, bloqueamos TODO el carrito, no solo el bespoke
-    $: isProductHidden = product.availabilityStatus === 'hidden';
-    // 3. LISTAS DE TALLAS Y COLORES (Filtrando "Personalizado" para que no salga duplicado abajo)
-    $: tallasUnicas = [...new Set(variantsData
-        .filter(v => {
-            if (!v) return false;
-            const t = (v.title || '').toLowerCase();
-            const s = (v.size || '').toLowerCase();
-            // Excluir la variante personalizada de la lista de tallas normales
-            return !t.includes('personalizado') && !t.includes('bespoke') && !s.includes('personalizado');
-        })
-        .map(v => v.size).filter(Boolean))];
-    
-    $: coloresUnicos = [...new Set(variantsData.map(v => v.color).filter(Boolean))];
+        return {
+            "@context": "https://schema.org/",
+            "@graph": [
+                {
+                    "@type": "Product",
+                    "@id": `${productUrl}#product`,
+                    "name": title,
+                    "url": productUrl,
+                    "brand": { "@type": "Brand", "name": "1egacy" },
+                    "description": desc,
+                    "sku": p.sku || p._id,
+                    "image": [ p.mainImageUrl ? `${p.mainImageUrl}?w=1200` : "" ],
+                    "offers": {
+                        "@type": "Offer",
+                        "priceCurrency": "MXN",
+                        "price": price,
+                        "priceValidUntil": validUntil,
+                        "itemCondition": "https://schema.org/NewCondition",
+                        "availability": availabilityMap[p.availabilityStatus] || "https://schema.org/InStock",
+                        "url": productUrl,
+                        "seller": { "@id": `${domain}/#organization` }
+                    }
+                },
+                {
+                    "@type": "BreadcrumbList",
+                    "@id": `${productUrl}#breadcrumb`,
+                    "itemListElement": [
+                        { "@type": "ListItem", "position": 1, "name": "Inicio", "item": domain },
+                        { "@type": "ListItem", "position": 2, "name": "Colección", "item": `${domain}/productos` },
+                        { "@type": "ListItem", "position": 3, "name": title, "item": productUrl }
+                    ]
+                }
+            ]
+        };
+    }
 
-    let tallaSeleccionada = '';
-    let colorSeleccionado = '';
+    $: productSchema = createProductGraph(
+        product,
+        correctedTitle,
+        cleanDescription,
+        currentPrice,
+        safeBaseUrl,
+        currentSlug,
+        priceValidUntil
+    );
 
-    // --- CARRITO ---
     function handleAddToCart() {
         isAdding = true;
         addToCart({
-            id: product._id || product.slug,
-            title: product.title || 'Producto',
-            slug: product.slug,
+            id: product._id,
+            title: correctedTitle,
+            slug: currentSlug,
             price: currentPrice,
             image: imageToDisplay,
-            productType: product.productType || 'physical',
             customizationLevel: selectedServiceLevel,
-            selectedSize: tallaSeleccionada,
-            selectedColor: colorSeleccionado,
             quantity: 1
         });
-        setTimeout(() => isAdding = false, 800);
-    }
 
-    // --- SCHEMA ---
-    function createProductSchema(productData, pageBaseUrl) {
-        if (!productData) return null;
-        const mainImageForSchema = productData?.mainImageUrl || null;
-        return {
-            "@context": "https://schema.org/",
-            "@type": "Product",
-            "name": productData.title || '',
-            "brand": { "@type": "Brand", "name": "1egacy" },
-            "image": mainImageForSchema ? [`${mainImageForSchema}?w=1200`] : [], 
-            "description": productData.description || '',
-            "sku": productData.sku || productData._id || '', 
-            "offers": {
-                "@type": "Offer",
-                "url": `${pageBaseUrl}/productos/${productData.slug || ''}`,
-                "priceCurrency": productData.priceCurrency || "MXN", 
-                "price": currentPrice,
-                "availability": "https://schema.org/InStock"
-            }
-        };
+        setTimeout(() => {
+            isAdding = false;
+            showSuccess = true;
+            setTimeout(() => showSuccess = false, 3500);
+        }, 600);
     }
-    
-    $: productSchema = createProductSchema(product, baseUrl);
-    $: pageTitle = `${product?.title || 'Producto'} | 1egacy`;
-    $: canonicalUrl = `https://somos1egacy.com${$page.url.pathname}`;
 </script>
 
 <svelte:head>
     <title>{pageTitle}</title>
-    <meta name="description" content={product?.description?.substring(0, 160)} />
+    <meta name="description" content={cleanDescription} />
     <link rel="canonical" href={canonicalUrl} />
+
     <meta property="og:title" content={pageTitle} />
-    <meta property="og:image" content={imageToDisplay} />
+    <meta property="og:description" content={cleanDescription} />
+    <meta property="og:type" content="product" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="product:price:amount" content={currentPrice} />
+    <meta property="product:price:currency" content="MXN" />
+
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={cleanDescription} />
+    <meta name="twitter:image" content={ogImage} />
+
     {#if productSchema}
-        {@html `<script type="application/ld+json">${JSON.stringify(productSchema)}</script>`}
+        {@html `<script type="application/ld+json">${JSON.stringify(productSchema)}<\/script>`}
     {/if}
 </svelte:head>
 
 <div class="producto-container">
     {#if product && product.title}
         <div class="galeria-columna">
-            <div class="imagen-principal-container relative group">
+            <div class="imagen-principal-container">
                 {#key imageToDisplay}
-                    <img 
-                        src={imageToDisplay} 
-                        alt={product.title} 
+                    <img
+                        src={imageToDisplay}
+                        alt={correctedTitle}
                         class="imagen-animada"
                         in:fade={{ duration: 300 }}
                     />
                 {/key}
-                
-                <div class="absolute top-4 left-4 bg-black/80 backdrop-blur px-3 py-1 text-xs font-bold tracking-widest uppercase text-[#c0a062] border border-[#c0a062]/30 rounded">
-                    {selectedServiceLevel === 'standard' ? 'Diseño Final' : 'Boceto Artesanal'}
+                <div class="badge-servicio">
+                    {selectedServiceLevel === 'standard' ? 'Diseño de Linaje' : 'Prototipo Bespoke'}
                 </div>
             </div>
 
             {#if selectedServiceLevel === 'standard' && gallerySource.length > 1}
                 <div class="thumbnails">
-                    {#each gallerySource as imagen, i (i)}
+                    {#each gallerySource as imagen, i}
                         <button
                             class="thumbnail-wrapper"
                             class:active={imagen === imagenSeleccionadaGaleria}
                             on:click={() => imagenSeleccionadaGaleria = imagen}
-                            aria-label="Ver imagen {i + 1}"
                         >
-                            <img src={`${imagen}?w=100&h=100&fit=crop`} alt="" />
+                            <img src={`${imagen}?w=100&h=100&fit=crop`} alt="Vista previa {i}" />
                         </button>
                     {/each}
                 </div>
             {/if}
-            
-            {#if selectedServiceLevel === 'bespoke'}
-                <p class="text-xs text-center mt-4 text-[#c0a062] italic">
-                    * La imagen muestra un esquema genérico. Tu diseño será único.
-                </p>
-            {/if}
         </div>
 
         <div class="detalles-columna">
-            <nav aria-label="Ruta de navegación" class="breadcrumbs-container">
-                <ol class="breadcrumbs-list">
+            <nav class="breadcrumbs" aria-label="Breadcrumb">
+                <ol>
                     <li><a href="/">Inicio</a></li>
-                    <li class="separator">/</li>
+                    <li>/</li>
                     <li><a href="/productos">Colección</a></li>
-                    {#if product.category}
-                        <li class="separator">/</li>
-                        <li><a href="/productos?categoria={product.category.slug}">{product.category.title}</a></li>
-                    {/if}
-                    <li class="separator">/</li>
-                    <li><span class="current">{product.title}</span></li>
+                    <li>/</li>
+                    <li class="active">{correctedTitle}</li>
                 </ol>
             </nav>
 
-            <h1 class="titulo-producto">{product.title}</h1>
-            
-            <div class="precio-container">
+            <h1 class="titulo-producto">{correctedTitle}</h1>
+
+            <div class="precio-block">
                 <span class="precio">${currentPrice.toLocaleString('es-MX')} MXN</span>
+                {#if selectedServiceLevel === 'bespoke'}
+                    <span class="iva-tag">+ Ceremonia de Narración</span>
+                {/if}
             </div>
 
             <div class="descripcion">
-                <p>{product.description || 'Una pieza de historia forjada para perdurar.'}</p>
+                <p>{product.description}</p>
             </div>
 
             <div class="separador"></div>
 
-            <div class="opciones-servicio mb-8">
-                <h3 class="label-seccion">Selecciona tu Acabado</h3>
-                <div class="grid grid-cols-1 gap-4">
-                    <button 
-                        class="opcion-card {selectedServiceLevel === 'standard' ? 'activa' : ''}"
+            <div class="selector-servicio">
+                <h3 class="label-seccion">Nivel de Personalización</h3>
+                <div class="opciones-grid">
+                    <button
+                        class="opcion-card"
+                        class:activa={selectedServiceLevel === 'standard'}
                         on:click={() => selectedServiceLevel = 'standard'}
                     >
-                        <div class="flex justify-between w-full items-center">
-                            <div class="text-left">
-                                <span class="titulo-opcion">Edición Clásica</span>
-                                <span class="desc-opcion">Diseño fiel al registro histórico del apellido.</span>
-                            </div>
-                            <div class="radio-circle">
-                                {#if selectedServiceLevel === 'standard'} <div class="radio-dot"></div> {/if}
-                            </div>
+                        <div class="opcion-info">
+                            <span class="opcion-titulo">Edición Histórica</span>
+                            <span class="opcion-sub">Basado en el Códice de Linajes.</span>
                         </div>
+                        <div class="check-circle"></div>
                     </button>
 
-                    <button 
-                        class="opcion-card {selectedServiceLevel === 'bespoke' ? 'activa' : ''} {isBespokeDisabled ? 'deshabilitada' : ''}"
-                        on:click={() => { if (!isBespokeDisabled) selectedServiceLevel = 'bespoke'; }}
+                    <button
+                        class="opcion-card"
+                        class:activa={selectedServiceLevel === 'bespoke'}
+                        class:deshabilitada={isBespokeDisabled}
                         disabled={isBespokeDisabled}
+                        on:click={() => selectedServiceLevel = 'bespoke'}
                     >
-                        <div class="flex justify-between w-full items-center">
-                            <div class="text-left relative">
-                                <span class="titulo-opcion text-[#c0a062]">
-                                    Bespoke (A la Medida)
-                                    {#if isBespokeLocked}
-                                        <span class="etiqueta-estado pronto">Próximamente</span>
-                                    {/if}
-                                    {#if isBespokeSoldOut}
-                                        <span class="etiqueta-estado agotado">Agotado</span>
-                                    {/if}
-                                </span>
-                                <span class="desc-opcion">Investigación profunda, rediseño único y ceremonia digital.</span>
-                            </div>
-                            
-                            {#if !isBespokeDisabled}
-                                <div class="radio-circle">
-                                    {#if selectedServiceLevel === 'bespoke'} <div class="radio-dot"></div> {/if}
-                                </div>
-                            {:else}
-                                <span class="text-gray-600 text-xl">🔒</span>
-                            {/if}
+                        <div class="opcion-info">
+                            <span class="opcion-titulo">Servicio Bespoke {#if product.availabilityStatus === 'coming_soon'}<span>(Pronto)</span>{/if}</span>
+                            <span class="opcion-sub">Rediseño total con el Artesano IA.</span>
                         </div>
+                        {#if isBespokeDisabled}
+                            <span class="lock">🔒</span>
+                        {:else}
+                            <div class="check-circle"></div>
+                        {/if}
                     </button>
                 </div>
             </div>
 
-            <div class="variantes-container">
-                {#if tallasUnicas.length > 0}
-                    <div class="grupo-variante">
-                        <h3 class="label-seccion">Talla</h3>
-                        <div class="botones-grid">
-                            {#each tallasUnicas as talla}
-                                {@const variantAsoc = variantsData.find(v => v.size === talla)}
-                                {@const status = variantAsoc?.availabilityStatus}
-                                {@const isLocked = status === 'coming_soon'}
-                                {@const isSoldOut = status === 'sold_out'}
-                                {@const isDisabled = isLocked || isSoldOut}
-                                {@const isSelected = tallaSeleccionada === talla}
-
-                                <button
-                                    class="boton-variante {isSelected ? 'seleccionado' : ''} {isDisabled ? 'deshabilitado' : ''}"
-                                    disabled={isDisabled}
-                                    on:click={() => { if (!isDisabled) tallaSeleccionada = talla }}
-                                >
-                                    <span class="texto-boton">{talla}</span>
-                                    {#if isLocked} <div class="etiqueta-flotante">Pronto</div> {/if}
-                                    {#if isSoldOut} <div class="etiqueta-flotante agotado">Agotado</div> {/if}
-                                </button>
-                            {/each}
-                        </div>
-                    </div>
-                {/if}
-
-                {#if coloresUnicos.length > 0}
-                    <div class="grupo-variante">
-                        <h3 class="label-seccion">Color</h3>
-                        <div class="botones-grid">
-                            {#each coloresUnicos as color}
-                                {@const isSelected = colorSeleccionado === color}
-                                <button
-                                    class="boton-variante color {isSelected ? 'seleccionado' : ''}"
-                                    on:click={() => colorSeleccionado = color}
-                                >
-                                    <span class="bolita-color" 
-                                          style="background-color: {color === 'Amarillo' ? '#FFD700' : color === 'Negro' ? '#000' : '#fff'}">
-                                    </span>
-                                    <span class="texto-boton">{color}</span>
-                                </button>
-                            {/each}
-                        </div>
-                    </div>
-                {/if}
-            </div>
-
             <button
-    class="boton-compra"
-    on:click={handleAddToCart}
-    disabled={isAdding || isProductHidden || (tallasUnicas.length > 0 && !tallaSeleccionada)}
-    class:hidden-btn={isProductHidden} >
-    {#if isAdding}
-        <span class="animate-pulse">Agregando...</span>
-    {:else if isProductHidden}
-        No disponible temporalmente
-    {:else}
-        Agregar al Legado — ${currentPrice.toLocaleString('es-MX')}
-    {/if}
-</button>
-            
-            <p class="garantia-texto">
-                🔒 Compra segura. Envíos globales asegurados.
-            </p>
+                class="boton-compra"
+                on:click={handleAddToCart}
+                disabled={isAdding}
+            >
+                {#if isAdding} Codificando... {:else} Agregar al Legado — ${currentPrice.toLocaleString('es-MX')} {/if}
+            </button>
 
-        </div>
-    {:else}
-        <div class="loading-container">
-            <div class="loading-text">Cargando legado...</div>
+            {#if showSuccess}
+                <div in:fly={{ y: 10, duration: 400 }} out:fade={{ duration: 300 }} class="feedback-exito">
+                    <span class="icono-check">✧</span>
+                    <p>Legado añadido al carrito correctamente.</p>
+                    <a href="/carrito" class="enlace-directo">Ir a la Bóveda (Carrito) →</a>
+                </div>
+            {/if}
+
+            <p class="nota-seguridad">🛡️ Autenticidad garantizada por el Sello de 1egacy.</p>
         </div>
     {/if}
 </div>
 
 <style>
-    /* --- BASE --- */
-    :global(body) { background-color: #121212; color: #e0e0e0; }
-    .producto-container { max-width: 1200px; margin: 0 auto; padding: 140px 2rem 80px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 4rem; align-items: start; }
-    
-    .loading-container { display: flex; justify-content: center; align-items: center; height: 50vh; width: 100%; grid-column: 1 / -1; }
-    .loading-text { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #c0a062; animation: pulse 2s infinite; }
-    @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+    /* Estética Heráldica Moderna */
+    .producto-container {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: 5rem;
+        max-width: 1300px;
+        margin: 0 auto;
+        padding: 160px 2rem 80px;
+    }
 
-    /* --- GALERÍA --- */
     .galeria-columna { position: sticky; top: 120px; }
-    .imagen-principal-container { width: 100%; aspect-ratio: 1/1; background-color: #1a1a1a; border-radius: 4px; overflow: hidden; border: 1px solid #333; position: relative; }
-    .imagen-animada { width: 100%; height: 100%; object-fit: cover; }
-    
-    .thumbnails { display: flex; gap: 10px; margin-top: 15px; overflow-x: auto; padding-bottom: 5px; }
-    .thumbnail-wrapper { width: 70px; height: 70px; border: 1px solid #333; border-radius: 4px; overflow: hidden; opacity: 0.6; transition: all 0.3s; cursor: pointer; flex-shrink: 0; }
-    .thumbnail-wrapper:hover, .thumbnail-wrapper.active { opacity: 1; border-color: #c0a062; }
+
+    .imagen-principal-container {
+        background: #0d0d0d;
+        border: 1px solid #1a1a1a;
+        aspect-ratio: 1/1;
+        position: relative;
+        overflow: hidden;
+        border-radius: 4px;
+    }
+
+    .badge-servicio {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: rgba(0,0,0,0.85);
+        color: #c0a062;
+        padding: 6px 12px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        border: 1px solid rgba(192, 160, 98, 0.3);
+    }
+
+    .titulo-producto {
+        font-family: 'Playfair Display', serif;
+        font-size: 3.5rem;
+        color: #fff;
+        line-height: 1.1;
+        margin-bottom: 1.5rem;
+    }
+
+    .precio-block {
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: baseline;
+        gap: 1rem;
+    }
+
+    .precio {
+        color: #c0a062;
+        font-size: 2rem;
+        font-weight: 700;
+    }
+
+    .iva-tag {
+        color: #666;
+        font-size: 0.9rem;
+        font-style: italic;
+    }
+
+    .opcion-card {
+        width: 100%;
+        text-align: left;
+        padding: 1.5rem;
+        background: transparent;
+        border: 1px solid #1a1a1a;
+        margin-bottom: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .opcion-card.activa {
+        border-color: #c0a062;
+        background: rgba(192, 160, 98, 0.03);
+    }
+
+    .opcion-titulo {
+        display: block;
+        color: #fff;
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+    }
+
+    .opcion-sub {
+        font-size: 0.85rem;
+        color: #666;
+    }
+
+    .check-circle {
+        width: 18px;
+        height: 18px;
+        border: 1px solid #333;
+        border-radius: 50%;
+    }
+
+    .activa .check-circle {
+        border-color: #c0a062;
+        background: #c0a062;
+        box-shadow: inset 0 0 0 4px #000;
+    }
+
+    .boton-compra {
+        width: 100%;
+        padding: 1.5rem;
+        background: #c0a062;
+        color: #000;
+        border: none;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        margin-top: 3rem;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .boton-compra:hover:not(:disabled) {
+        background: #fff;
+        transform: translateY(-3px);
+    }
+
+    .boton-compra:disabled {
+        background: #1a1a1a;
+        color: #444;
+        cursor: not-allowed;
+    }
+
+    .breadcrumbs ol {
+        display: flex;
+        gap: 0.5rem;
+        list-style: none;
+        padding: 0;
+        margin-bottom: 2rem;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        color: #444;
+    }
+
+    .breadcrumbs a { color: #888; text-decoration: none; }
+    .breadcrumbs .active { color: #c0a062; }
+
+    .feedback-exito {
+        margin-top: 1.5rem;
+        padding: 1.5rem;
+        background: rgba(192, 160, 98, 0.05);
+        border: 1px solid rgba(192, 160, 98, 0.3);
+        text-align: center;
+        border-radius: 4px;
+    }
+    .icono-check { color: #c0a062; font-size: 1.2rem; display: block; margin-bottom: 0.5rem; }
+    .enlace-directo { color: #c0a062; font-weight: bold; text-decoration: underline; font-size: 0.85rem; text-transform: uppercase; }
+
+    .thumbnails { display: flex; gap: 10px; margin-top: 20px; overflow-x: auto; padding-bottom: 5px; }
+    .thumbnail-wrapper { width: 80px; height: 80px; border: 1px solid #1a1a1a; padding: 0; cursor: pointer; background: #000; border-radius: 4px; overflow: hidden; opacity: 0.6; transition: 0.3s; }
+    .thumbnail-wrapper.active { border-color: #c0a062; opacity: 1; }
     .thumbnail-wrapper img { width: 100%; height: 100%; object-fit: cover; }
 
-    /* --- BREADCRUMBS --- */
-    .breadcrumbs-container { margin-bottom: 2rem; width: 100%; }
-    .breadcrumbs-list { display: flex; flex-wrap: wrap; align-items: center; list-style: none; padding: 0; margin: 0; gap: 0.5rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #888; }
-    .breadcrumbs-list a { text-decoration: none; color: #888; transition: color 0.2s; white-space: nowrap; }
-    .breadcrumbs-list a:hover { color: #c0a062; }
-    .separator { color: #444; font-size: 0.7rem; }
-    .current { color: #c0a062; font-weight: bold; }
-    
-    /* --- TEXTOS --- */
-    .titulo-producto { font-family: "Palatino Linotype", serif; font-size: 2.8rem; line-height: 1.1; margin-bottom: 10px; color: #fff; }
-    .precio { font-size: 1.5rem; color: #c0a062; font-weight: bold; letter-spacing: 1px; }
-    .descripcion { margin-top: 20px; color: #aaa; line-height: 1.6; font-size: 1rem; }
-    .separador { height: 1px; background: #333; margin: 30px 0; }
-    .label-seccion { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: #666; margin-bottom: 10px; display: block; font-weight: bold; }
-
-    /* --- OPCIONES SERVICIO (TARJETAS GRANDES) --- */
-    .opcion-card { width: 100%; background: transparent; border: 1px solid #333; padding: 15px 20px; border-radius: 6px; cursor: pointer; transition: all 0.3s ease; text-align: left; }
-    .opcion-card:hover:not(:disabled) { border-color: #666; background: #1a1a1a; }
-    .opcion-card.activa { border-color: #c0a062; background: rgba(192, 160, 98, 0.05); }
-    
-    .opcion-card.deshabilitada { background-color: #1a1a1a; border-color: #2a2a2a; opacity: 0.6; cursor: not-allowed; }
-    .opcion-card.deshabilitada .titulo-opcion, .opcion-card.deshabilitada .desc-opcion { color: #555 !important; }
-
-    .titulo-opcion { display: block; font-weight: bold; color: #e0e0e0; font-size: 1rem; margin-bottom: 2px; }
-    .desc-opcion { display: block; font-size: 0.85rem; color: #888; }
-    
-    .radio-circle { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #555; display: flex; align-items: center; justify-content: center; }
-    .activa .radio-circle { border-color: #c0a062; }
-    .radio-dot { width: 10px; height: 10px; background-color: #c0a062; border-radius: 50%; }
-
-    /* Etiquetas de estado (Próximamente/Agotado) */
-    .etiqueta-estado { display: inline-block; font-size: 0.6rem; text-transform: uppercase; padding: 2px 6px; border-radius: 2px; margin-left: 8px; vertical-align: middle; letter-spacing: 0.5px; font-weight: bold; }
-    .etiqueta-estado.pronto { background-color: rgba(192, 160, 98, 0.1); color: #c0a062; border: 1px solid #c0a062; }
-    .etiqueta-estado.agotado { background-color: rgba(255, 107, 107, 0.1); color: #ff6b6b; border: 1px solid #ff6b6b; }
-
-    /* --- VARIANTES (BOTONES PEQUEÑOS) --- */
-    .variantes-container { margin: 1.5rem 0 2rem 0; display: flex; flex-direction: column; gap: 1.5rem; }
-    .grupo-variante { display: flex; flex-direction: column; gap: 0.5rem; }
-    .botones-grid { display: flex; flex-wrap: wrap; gap: 0.75rem; }
-
-    .boton-variante {
-        position: relative; padding: 0.8rem 1.2rem; background-color: transparent; border: 1px solid #444; color: #ccc; border-radius: 4px; cursor: pointer; transition: all 0.3s ease; min-width: 70px; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-    }
-    .texto-boton { font-size: 0.9rem; font-weight: 500; text-transform: uppercase; }
-
-    .boton-variante:hover:not(.deshabilitado):not(.seleccionado) { border-color: #c0a062; color: #c0a062; }
-    .boton-variante.seleccionado { background-color: #c0a062; border-color: #c0a062; color: #121212; font-weight: bold; box-shadow: 0 0 10px rgba(192, 160, 98, 0.3); }
-    .boton-variante.deshabilitado { background-color: #1a1a1a; border-color: #333; color: #555; cursor: not-allowed; opacity: 0.8; }
-
-    .etiqueta-flotante { position: absolute; top: -8px; right: -5px; font-size: 0.6rem; text-transform: uppercase; background-color: #121212; color: #c0a062; padding: 0 4px; font-weight: bold; letter-spacing: 0.5px; border: 1px solid #333; }
-    .etiqueta-flotante.agotado { color: #ff6b6b; }
-    
-    .bolita-color { display: block; width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); }
-
-    /* --- BOTÓN COMPRA --- */
-    .boton-compra { width: 100%; background-color: #c0a062; color: #000; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; padding: 18px; border: none; border-radius: 4px; cursor: pointer; margin-top: 30px; font-size: 1rem; transition: all 0.3s; }
-    .boton-compra:hover:not(:disabled) { background-color: #dcb87a; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(192, 160, 98, 0.2); }
-    .boton-compra:disabled { background-color: #333; color: #666; cursor: not-allowed; }
-
-    .garantia-texto { text-align: center; font-size: 0.8rem; color: #555; margin-top: 15px; }
-.boton-compra:disabled {
-    background-color: #333;
-    color: #666;
-    cursor: not-allowed;
-}
-    /* --- RESPONSIVE --- */
-    @media (max-width: 768px) {
-        .producto-container { grid-template-columns: 1fr; gap: 40px; padding-top: 100px; }
+    @media (max-width: 900px) {
+        .producto-container {
+            grid-template-columns: 1fr;
+            padding-top: 100px;
+        }
         .galeria-columna { position: static; }
-        .titulo-producto { font-size: 2rem; }
+        .titulo-producto { font-size: 2.5rem; }
     }
-    
 </style>

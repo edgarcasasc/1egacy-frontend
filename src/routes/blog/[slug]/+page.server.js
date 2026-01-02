@@ -12,8 +12,7 @@ export async function entries() {
 
 export async function load({ params, url }) {
     const { slug } = params;
-    const baseUrl = url.origin;
-
+const baseUrl = 'https://somos1egacy.com';
     const query = `*[_type == "post" && slug.current == $slug][0]{
         title,
         subtitle,
