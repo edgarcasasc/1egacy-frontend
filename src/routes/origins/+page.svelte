@@ -132,13 +132,13 @@
             <svg id="constelacion-svg" bind:this={svgElement} />
         </div>
         
-        <nav class="sr-only" aria-hidden="true">
-            <ul>
-                {#each data.linajes as l}
-                    <li><a href="/origins/{l.slug}">{l.id}</a></li>
-                {/each}
-            </ul>
-        </nav>
+<nav class="sr-only" aria-label="Lista de linajes disponibles">
+  <ul>
+    {#each data.linajes as l}
+      <li><a href="/origins/{l.slug}">{l.id}</a></li>
+    {/each}
+  </ul>
+</nav>
     {:else if terminoBusqueda !== ''}
         <div class="no-resultados-wrapper">
             <h3>El apellido "{terminoBusqueda}" aún no está en nuestra constelación.</h3>
@@ -161,23 +161,34 @@
 {/if}
 
 <style>
-	/* ✅ Estilo para ocultar elementos del ojo humano pero dejarlos para el bot */
-    .sr-only {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        white-space: nowrap;
-        border: 0;
-    }
+.origins-container {
+    /* Usamos la altura del header variable + margen */
+    padding-top: calc(var(--header-h, 80px) + 2rem);
+    padding-bottom: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    min-height: 100vh;
+    box-sizing: border-box;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
 	/* Estilos para el formulario mejorado */
 	.formulario-interes button:disabled { background-color: #555; cursor: not-allowed; }
 	.form-status { margin-top: 1rem; font-size: 0.9rem; color: #c0a062; }
 
-	.origins-container { padding-top: 120px; padding-bottom: 60px; display: flex; flex-direction: column; align-items: center; width: 100%; min-height: 100vh; box-sizing: border-box; }
 	.manifesto { text-align: center; max-width: 800px; margin-bottom: 2rem; }
 	.constelacion-wrapper { width: 100%; max-width: 1200px; height: 600px; border: 1px solid #333; border-radius: 8px; overflow: hidden; }
 	#constelacion-svg { width: 100%; height: 100%; }
@@ -192,7 +203,11 @@
 		.constelacion-wrapper, .no-resultados-wrapper, .cargando-wrapper { height: 500px; }
 	}
 	@media (max-width: 576px) {
-		.origins-container { padding: 100px 1rem 40px 1rem; }
+		.origins-container {
+      padding-top: calc(var(--header-h, 60px) + 1.5rem);
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
 		.constelacion-wrapper, .no-resultados-wrapper, .cargando-wrapper { height: 60vh; }
 	}
 	

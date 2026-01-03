@@ -1,50 +1,77 @@
 <script>
     import { PortableText } from '@portabletext/svelte';
-
     export let data;
     const { linaje } = data;
-    $: relatedProducts = linaje?.relatedProducts || [];
 
-    // ESTADO PARA EL TEXTO COLAPSABLE
+    const SITE = 'https://somos1egacy.com';
+
+    // --- HELPERS DE LIMPIEZA SEO ---
+    const cleanText = (s = '') =>
+        s
+            .replace(/\s+/g, ' ')
+            .replace(/[“”"]/g, '') // Quita comillas problemáticas
+            .trim();
+
+    const truncate = (s, max = 160) => {
+        const t = cleanText(s);
+        if (t.length <= max) return t;
+        const cut = t.slice(0, max + 1);
+        const lastSpace = cut.lastIndexOf(' ');
+        const end = lastSpace > 60 ? lastSpace : max;
+        return cut.slice(0, end).trimEnd() + '...';
+    };
+
+    // --- VARIABLES REACTIVAS PARA EL HEAD ---
+    $: slug = linaje?.slug || '';
+    $: canonicalUrl = slug ? `${SITE}/origins/${slug}` : `${SITE}/origins`;
+    
+    // Generamos la descripción basada en el blasón o la introducción
+    $: seoDescription = truncate(
+        linaje?.blasonTexto || linaje?.introduccion || `Explora el origen y heráldica del linaje ${linaje?.title || ''}.`, 
+        160
+    );
+
+    // Construcción del Breadcrumb (JSON-LD)
+    $: breadcrumbJsonLd = slug
+        ? {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                { "@type": "ListItem", "position": 1, "name": "Inicio", "item": `${SITE}/` },
+                { "@type": "ListItem", "position": 2, "name": "Origins", "item": `${SITE}/origins` },
+                { "@type": "ListItem", "position": 3, "name": linaje.title, "item": canonicalUrl }
+            ]
+        }
+        : null;
+
+    // --- LÓGICA DE INTERFAZ ---
+    let relatedProducts = linaje?.relatedProducts || [];
     let mostrarDetallesEscudo = false;
     function toggleEscudoDetails() {
         mostrarDetallesEscudo = !mostrarDetallesEscudo;
     }
-    const safeBaseUrl = 'https://somos1egacy.com';
-    $: slug = linaje?.slug?.current || linaje?.slug || '';
-    $: canonicalUrl = `${safeBaseUrl}/origins/${slug}`;
-// Limpieza de descripción para SEO
-    $: cleanDesc = linaje?.blasonTexto 
-        ? linaje.blasonTexto.replace(/\s+/g, ' ').trim().slice(0, 160) 
-        : `Explora el origen, heráldica e historia del linaje ${linaje?.title || 'noble'}.`;
 </script>
 
 <svelte:head>
-    <title>{linaje?.title ? `${linaje.title} | 1egacy Origins` : 'Linaje | 1egacy Origins'}</title>
-    <meta name="description" content={cleanDesc} />
+    <title>{linaje?.title || 'Linaje'} | 1egacy Origins</title>
+    <meta name="description" content={seoDescription} />
     <link rel="canonical" href={canonicalUrl} />
 
-    <meta property="og:title" content={`${linaje?.title} | 1egacy Origins`} />
-    <meta property="og:description" content={cleanDesc} />
+    <meta property="og:title" content={`${linaje?.title || 'Linaje'} | 1egacy Origins`} />
+    <meta property="og:description" content={seoDescription} />
     <meta property="og:url" content={canonicalUrl} />
-    <meta property="og:type" content="article" />
-    <meta property="og:image" content={linaje?.escudoUrl || `${safeBaseUrl}/og-origins.jpg`} />
+    <meta property="og:type" content="website" />
+    {#if linaje?.escudoUrl}
+        <meta property="og:image" content={linaje.escudoUrl} />
+        <meta name="twitter:image" content={linaje.escudoUrl} />
+    {/if}
 
-    <meta name="twitter:title" content={`${linaje?.title} | 1egacy Origins`} />
-    <meta name="twitter:description" content={cleanDesc} />
-    <meta name="twitter:image" content={linaje?.escudoUrl || `${safeBaseUrl}/og-origins.jpg`} />
+    <meta name="twitter:title" content={`${linaje?.title || 'Linaje'} | 1egacy Origins`} />
+    <meta name="twitter:description" content={seoDescription} />
 
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "BreadcrumbList",
-        "itemListElement": [
-            { "@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://somos1egacy.com" },
-            { "@type": "ListItem", "position": 2, "name": "Origins", "item": "https://somos1egacy.com/origins" },
-            { "@type": "ListItem", "position": 3, "name": "{linaje?.title}", "item": "{canonicalUrl}" }
-        ]
-    }
-    </script>
+    {#if breadcrumbJsonLd}
+        {@html `<script type="application/ld+json">${JSON.stringify(breadcrumbJsonLd)}<\/script>`}
+    {/if}
 </svelte:head>
 
 <div class="linaje-container">
@@ -57,7 +84,7 @@
             <div class="escudo-columna">
                 {#if linaje.escudoUrl}
                     <div class="escudo-wrapper">
-                       <img src={linaje.escudoUrl} alt="Escudo de Armas del apellido {linaje.title}" />
+                        <img src={linaje.escudoUrl} alt={`Escudo de Armas de ${linaje.title}`} />
                     </div>
                 {/if}
 
@@ -125,20 +152,12 @@
                         </div>
                     </div>
                 {/if}
-
             </div> 
         </div> 
     {:else}
         <p>Cargando información del linaje...</p>
     {/if}
 </div>
-{#if data.linajes && data.linajes.length > 0}
-    <ul class="sr-only" aria-hidden="true">
-        {#each data.linajes as l}
-            <li><a href="/origins/{l.slug || l.id.toLowerCase()}">{l.id}</a></li>
-        {/each}
-    </ul>
-{/if}
 <style>
     /* Estilo para ocultar la lista visualmente sin quitarla del DOM */
     .sr-only {
