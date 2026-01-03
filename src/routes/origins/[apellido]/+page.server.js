@@ -2,6 +2,7 @@ import { client } from '$lib/sanityClient.js';
 import { error } from '@sveltejs/kit';
 
 export async function load({ params }) {
+    // Normalizamos el slug para evitar duplicidad por mayúsculas
     const slug = params.apellido.toLowerCase();
 
     const query = `*[_type == "linaje" && slug.current == $slug][0]{
@@ -9,13 +10,14 @@ export async function load({ params }) {
         title,
         "slug": slug.current,
         introduccion,
+        // Traemos el escudo con metadatos de dimensiones para el SEO Social
         "escudoUrl": escudo.asset->url,
+        "escudoMeta": escudo.asset->metadata.dimensions,
         
-        // --- AQUÍ ESTÁ EL CAMBIO ---
-        // Pedimos 'blason' (el nuevo campo de texto rico)
+        // Texto rico para el diseño
         blason, 
         
-        // Opcional: Pedimos también el texto plano por si algo falla con el rico
+        // Texto plano limpio para Meta Description (fundamental)
         "blasonTexto": pt::text(blason),
 
         articulosRelacionados[]->{
@@ -36,18 +38,28 @@ export async function load({ params }) {
         const linajeData = await client.fetch(query, { slug });
 
         if (!linajeData) {
-            throw error(404, 'Linaje no encontrado');
+            // Un 404 limpio es vital para que Google no indexe páginas vacías
+            throw error(404, {
+                message: `El linaje '${params.apellido}' no está en nuestros registros aún.`
+            });
         }
 
+        // Limpieza extra del texto para meta-tags (quitar saltos de línea)
+        const cleanSEOList = linajeData.blasonTexto 
+            ? linajeData.blasonTexto.replace(/\n/g, ' ').trim() 
+            : '';
+
         return {
-            linaje: linajeData
+            linaje: {
+                ...linajeData,
+                blasonTexto: cleanSEOList
+            }
         };
 
     } catch (err) {
-         if (err.status === 404) {
-             throw err;
-         }
-        console.error(`Error loading data for linaje page (${slug}):`, err);
-        throw error(500, 'No se pudo cargar la información del linaje');
+        if (err.status === 404) throw err;
+        
+        console.error(`Error en Origins [${slug}]:`, err);
+        throw error(500, 'Error de conexión con la Bóveda de Linajes');
     }
 }

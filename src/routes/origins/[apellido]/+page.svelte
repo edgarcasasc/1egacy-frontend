@@ -10,11 +10,41 @@
     function toggleEscudoDetails() {
         mostrarDetallesEscudo = !mostrarDetallesEscudo;
     }
+    const safeBaseUrl = 'https://somos1egacy.com';
+    $: slug = linaje?.slug?.current || linaje?.slug || '';
+    $: canonicalUrl = `${safeBaseUrl}/origins/${slug}`;
+// Limpieza de descripción para SEO
+    $: cleanDesc = linaje?.blasonTexto 
+        ? linaje.blasonTexto.replace(/\s+/g, ' ').trim().slice(0, 160) 
+        : `Explora el origen, heráldica e historia del linaje ${linaje?.title || 'noble'}.`;
 </script>
 
 <svelte:head>
-    <title>{linaje?.title || 'Linaje'} | 1egacy Origins</title>
-    <meta name="description" content={linaje?.blasonTexto?.substring(0, 160) || `Explora la historia del linaje ${linaje?.title}.`} />
+    <title>{linaje?.title ? `${linaje.title} | 1egacy Origins` : 'Linaje | 1egacy Origins'}</title>
+    <meta name="description" content={cleanDesc} />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <meta property="og:title" content={`${linaje?.title} | 1egacy Origins`} />
+    <meta property="og:description" content={cleanDesc} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:type" content="article" />
+    <meta property="og:image" content={linaje?.escudoUrl || `${safeBaseUrl}/og-origins.jpg`} />
+
+    <meta name="twitter:title" content={`${linaje?.title} | 1egacy Origins`} />
+    <meta name="twitter:description" content={cleanDesc} />
+    <meta name="twitter:image" content={linaje?.escudoUrl || `${safeBaseUrl}/og-origins.jpg`} />
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://somos1egacy.com" },
+            { "@type": "ListItem", "position": 2, "name": "Origins", "item": "https://somos1egacy.com/origins" },
+            { "@type": "ListItem", "position": 3, "name": "{linaje?.title}", "item": "{canonicalUrl}" }
+        ]
+    }
+    </script>
 </svelte:head>
 
 <div class="linaje-container">
@@ -27,7 +57,7 @@
             <div class="escudo-columna">
                 {#if linaje.escudoUrl}
                     <div class="escudo-wrapper">
-                        <img src={linaje.escudoUrl} alt="Escudo de Armas de {linaje.title}" />
+                       <img src={linaje.escudoUrl} alt="Escudo de Armas del apellido {linaje.title}" />
                     </div>
                 {/if}
 
@@ -102,8 +132,26 @@
         <p>Cargando información del linaje...</p>
     {/if}
 </div>
-
+{#if data.linajes && data.linajes.length > 0}
+    <ul class="sr-only" aria-hidden="true">
+        {#each data.linajes as l}
+            <li><a href="/origins/{l.slug || l.id.toLowerCase()}">{l.id}</a></li>
+        {/each}
+    </ul>
+{/if}
 <style>
+    /* Estilo para ocultar la lista visualmente sin quitarla del DOM */
+    .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
     /* --- ESTILOS DEL TEXTO BLASÓN --- */
     .texto-blason {
         color: #aaa;
