@@ -1,11 +1,9 @@
-# --- 1. Redirección Crítica de Dominio (SEO & Canonicalización) ---
-# Fusión de www y no-www
+# --- 1. Redirección de Dominio (Segura) ---
 https://www.somos1egacy.com/* https://somos1egacy.com/:splat  301!
 
-# --- 2. Blindaje de Assets y URLs (Trailing Slash) ---
-# Esto quita la diagonal final para que los assets ./_app/... no se rompan
-/*/  /:splat  301!
-
-# --- 3. Redirecciones de Legado (Preservar tráfico antiguo) ---
+# --- 2. Redirecciones de Legado (Seguras) ---
 /el-codice                  /blog  301
 /el-chiringuito-del-codice  /blog  301
+
+# Nota: Hemos quitado la regla /*/ porque Netlify con "Pretty URLs" 
+# ya gestiona las diagonales correctamente sin entrar en bucles.
