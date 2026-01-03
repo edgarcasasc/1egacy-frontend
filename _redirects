@@ -1,7 +1,0 @@
-# --- 1. Redirección Crítica de Dominio (SEO & Canonicalización) ---
-# Esto evita el error de "Contenido Duplicado" fusionando www y no-www
-https://www.somos1egacy.com/* https://somos1egacy.com/:splat  301!
-
-# --- 2. Tus Redirecciones de Legado (Preservar tráfico antiguo) ---
-/el-codice                 /blog    301
-/el-chiringuito-del-codice /blog    301
