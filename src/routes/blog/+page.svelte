@@ -1,68 +1,94 @@
-<script>
+<script lang="ts">
     import { page } from '$app/stores';
     import { fade, fly } from 'svelte/transition';
     
     export let data;
-    
-    // Extraemos las 3 fuentes de datos del servidor:
-    // 1. topics: Los grupos temáticos con sus 3 primeros posts.
-    // 2. mostRead: Los 5 artículos destacados de la barra lateral.
-    // 3. searchIndex: La lista COMPLETA de artículos para que el buscador encuentre todo.
     const { topics, mostRead, searchIndex } = data; 
 
     const safeBaseUrl = 'https://somos1egacy.com';
-    $: canonicalUrl = `${safeBaseUrl}${$page.url.pathname}`;
+    $: canonicalUrl = `${safeBaseUrl}/blog`;
+    const ogImage = `${safeBaseUrl}/og-blog-codice.jpg`;
 
-    // --- LÓGICA DE BÚSQUEDA GLOBAL ---
+    // --- 1) LÓGICA DE BÚSQUEDA (Solo UI) ---
     let searchTerm = '';
-    
-    // El filtro busca en el 'searchIndex' (que tiene todos los posts de Sanity)
-    // Busca coincidencias en: Título, Subtítulo y la lista de Apellidos vinculados.
     $: searchResults = searchTerm 
         ? searchIndex.filter(p => {
             const term = searchTerm.toLowerCase();
-            const inTitle = p.title?.toLowerCase().includes(term);
-            const inSubtitle = p.subtitle?.toLowerCase().includes(term);
-            // Busca si el apellido está en el array de apellidos del post
-            const inApellidos = p.apellidos?.some(apellido => 
-                apellido.toLowerCase().includes(term)
-            );
-
-            return inTitle || inSubtitle || inApellidos;
+            return p.title?.toLowerCase().includes(term) || 
+                   p.subtitle?.toLowerCase().includes(term) ||
+                   p.apellidos?.some(a => a.toLowerCase().includes(term));
         })
         : [];
+
+    // --- 2) SCHEMA REACTIVO Y ESTÁTICO (Fuente de Verdad) ---
+    // ✅ Reactive ($:): Se actualiza si la data cambia, pero es independiente del buscador
+    $: staticSchemaItems = topics
+        .flatMap(t => t.posts)
+        .slice(0, 10)
+        .map((post, i) => ({
+            "@type": "ListItem",
+            "position": i + 1,
+            "url": `${safeBaseUrl}/blog/${post.slug}`,
+            "name": post.title
+        }));
+
+    $: fullSchema = {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "CollectionPage",
+                "@id": `${safeBaseUrl}/blog/#webpage`,
+                "url": canonicalUrl,
+                "name": "El Códice: Sabiduría y Linaje | 1egacy",
+                "isPartOf": { "@id": `${safeBaseUrl}/#website` },
+                "inLanguage": "es-MX",
+                "description": "Repositorio de sabiduría heráldica y narrativa de legados.",
+                "mainEntity": {
+                    "@type": "ItemList",
+                    "numberOfItems": staticSchemaItems.length,
+                    "itemListElement": staticSchemaItems
+                }
+            },
+            {
+                "@type": "BreadcrumbList",
+                "@id": `${safeBaseUrl}/blog/#breadcrumb`,
+                "itemListElement": [
+                    { "@type": "ListItem", "position": 1, "name": "Inicio", "item": safeBaseUrl },
+                    { "@type": "ListItem", "position": 2, "name": "El Códice", "item": canonicalUrl }
+                ]
+            }
+        ]
+    };
 </script>
 
 <svelte:head>
     <title>El Códice: Sabiduría y Linaje | 1egacy</title>
-    <meta name="description" content="Busca tu apellido y explora el archivo vivo de 1egacy: historias de legado, investigación de linajes y narrativa heráldica." />
+    <meta name="description" content="Busca tu apellido y explora el archivo vivo de 1egacy: historias de legado e investigación de linajes." />
     <link rel="canonical" href={canonicalUrl} />
 
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@graph": [
-            {
-                "@type": "Blog",
-                "@id": "https://somos1egacy.com/blog/#blog",
-                "name": "El Códice | 1egacy",
-                "url": "https://somos1egacy.com/blog",
-                "description": "Repositorio de sabiduría heráldica y narrativa de legados.",
-                "publisher": { "@id": "https://somos1egacy.com/#organization" },
-                "inLanguage": "es-MX"
-            },
-            {
-                "@type": "WebPage",
-                "@id": "https://somos1egacy.com/blog/#webpage",
-                "url": "https://somos1egacy.com/blog",
-                "name": "El Códice: Sabiduría y Linaje | 1egacy",
-                "isPartOf": { "@id": "https://somos1egacy.com/#website" },
-                "about": { "@id": "https://somos1egacy.com/#organization" },
-                "description": "Explora los clústeres temáticos de 1egacy: Historias de legado e investigación de linajes."
-            }
-        ]
-    }
-    </script>
+    <link rel="alternate" hreflang="es-MX" href={canonicalUrl} />
+    <link rel="alternate" hreflang="es" href={canonicalUrl} />
+    <link rel="alternate" hreflang="x-default" href={canonicalUrl} />
+
+    <meta property="og:site_name" content="1egacy" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="es_MX" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content="El Códice: Sabiduría y Linaje | 1egacy" />
+    <meta property="og:description" content="Busca tu apellido y explora el archivo vivo de 1egacy." />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:alt" content="Portada de El Códice: Archivo vivo de 1egacy" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@somos1egacy" />
+    <meta name="twitter:creator" content="@somos1egacy" />
+    <meta name="twitter:title" content="El Códice: Sabiduría y Linaje | 1egacy" />
+    <meta name="twitter:description" content="Busca tu apellido y explora el archivo vivo de 1egacy." />
+    <meta name="twitter:image" content={ogImage} />
+
+    {@html `<script type="application/ld+json">${JSON.stringify(fullSchema)}<\/script>`}
 </svelte:head>
 
 <div class="blog-main-layout">
@@ -71,12 +97,7 @@
             <div class="search-section">
                 <h3 class="sidebar-label">Rastrear mi Linaje</h3>
                 <div class="search-input-wrapper">
-                    <input 
-                        type="text" 
-                        bind:value={searchTerm} 
-                        placeholder="Ej: Aguilar, Heráldica..."
-                        aria-label="Buscar artículos o apellidos"
-                    />
+                    <input type="text" bind:value={searchTerm} placeholder="Ej: Aguilar..." aria-label="Buscar" />
                     <span class="search-icon">🔍</span>
                 </div>
             </div>
@@ -84,19 +105,15 @@
             <div class="most-read-section">
                 <h3 class="sidebar-label">Sabiduría Destacada</h3>
                 <div class="most-read-list">
-                    {#if mostRead && mostRead.length > 0}
-                        {#each mostRead as post, i}
-                            <a href="/blog/{post.slug}" class="most-read-item">
-                                <span class="rank">{i + 1}</span>
-                                <div class="item-info">
-                                    <h4>{post.title}</h4>
-                                    <span class="topic-tag">{post.topicTitle || 'Destacado'}</span>
-                                </div>
-                            </a>
-                        {/each}
-                    {:else}
-                        <p class="empty-msg">Explora los clústeres para descubrir los legados más profundos.</p>
-                    {/if}
+                    {#each mostRead as post, i}
+                        <a href="/blog/{post.slug}" class="most-read-item">
+                            <span class="rank">{i + 1}</span>
+                            <div class="item-info">
+                                <h4>{post.title}</h4>
+                                <span class="topic-tag">{post.topicTitle || 'Destacado'}</span>
+                            </div>
+                        </a>
+                    {/each}
                 </div>
             </div>
         </div>
@@ -107,85 +124,58 @@
             <section class="search-results-view" in:fade>
                 <header class="results-header">
                     <h2>Hallazgos para: "{searchTerm}"</h2>
-                    <p>{searchResults.length} registros encontrados en el Códice</p>
-                    <button class="clear-search" on:click={() => searchTerm = ''}>Volver al Códice Completo</button>
+                    <p>{searchResults.length} registros encontrados</p>
+                    <button class="clear-search" on:click={() => searchTerm = ''}>Volver</button>
                 </header>
-
-                {#if searchResults.length > 0}
-                    <div class="posts-grid">
-                        {#each searchResults as post (post.slug)}
-                            <a href="/blog/{post.slug}" class="post-preview-card" in:fly={{ y: 20 }}>
-                                <div class="card-image-wrapper">
-                                    <img src={`${post.mainImageUrl}?w=500&h=300&fit=crop&auto=format`} alt={post.title} />
-                                </div>
-                                <div class="post-info">
-                                    <span class="topic-label">{post.topicTitle || 'Legado'}</span>
-                                    <h3>{post.title}</h3>
-                                    <span class="read-more">Leer Registro &rarr;</span>
-                                </div>
-                            </a>
-                        {/each}
-                    </div>
-                {:else}
-                    <div class="no-results">
-                        <p>No hay fragmentos en el Códice que coincidan con ese término.</p>
-                    </div>
-                {/if}
+                <div class="posts-grid">
+                    {#each searchResults as post (post.slug)}
+                        <a href="/blog/{post.slug}" class="post-preview-card">
+                            <div class="card-image-wrapper">
+                                <img src={`${post.mainImageUrl}?w=500&h=300&fit=crop`} alt={post.title} width="500" height="300" loading="lazy" />
+                            </div>
+                            <div class="post-info">
+                                <h3>{post.title}</h3>
+                                <span class="read-more">Leer Registro &rarr;</span>
+                            </div>
+                        </a>
+                    {/each}
+                </div>
             </section>
         {:else}
             <header class="clusters-header"> 
                 <h1>El Códice</h1>
                 <p>Un archivo vivo: ideas, hallazgos y fragmentos que merecen permanecer.</p>
             </header>
-
-            {#if topics && topics.length > 0}
-                {#each topics as topic (topic._id)} 
-                    <section class="topic-cluster">
-                        <div class="topic-header">
-                            <a href="/blog/topic/{topic.slug}"><h2>{topic.title}</h2></a>
-                            {#if topic.description} <p>{topic.description}</p> {/if}
-                        </div>
-                        
-                        <div class="posts-grid"> 
-                            {#each topic.posts as post (post.slug)} 
-                                <a href="/blog/{post.slug}" class="post-preview-card"> 
-                                    {#if post.mainImageUrl}
-                                        <div class="card-image-wrapper">
-                                            <img src={`${post.mainImageUrl}?w=500&h=300&fit=crop&auto=format`} alt={post.title} loading="lazy" />
-                                        </div>
-                                    {/if}
-                                    <div class="post-info">
-                                        <h3>{post.title}</h3> 
-                                        <span class="read-more">Leer más &rarr;</span>
-                                    </div>
-                                </a>
-                            {/each}
-                        </div>
-                    </section>
-                {/each}
-            {:else}
-                <p class="no-topics">Restaurando los archivos del Santuario...</p>
-            {/if}
+            {#each topics as topic (topic._id)} 
+                <section class="topic-cluster">
+                    <div class="topic-header">
+                        <a href="/blog/topic/{topic.slug}"><h2>{topic.title}</h2></a>
+                    </div>
+                    <div class="posts-grid"> 
+                        {#each topic.posts as post (post.slug)} 
+                            <a href="/blog/{post.slug}" class="post-preview-card"> 
+                                <div class="card-image-wrapper">
+                                    <img src={`${post.mainImageUrl}?w=500&h=300&fit=crop`} alt={post.title} width="500" height="300" loading="lazy" />
+                                </div>
+                                <div class="post-info">
+                                    <h3>{post.title}</h3> 
+                                    <span class="read-more">Leer más &rarr;</span>
+                                </div>
+                            </a>
+                        {/each}
+                    </div>
+                </section>
+            {/each}
         {/if}
     </main>
 </div>
 
 <style>
     /* LAYOUT TIPO AMAZON (SIDEBAR + CONTENIDO) */
-    .blog-main-layout {
-        display: grid;
-        grid-template-columns: 320px 1fr;
-        gap: 5rem;
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 160px 2rem 80px;
-    }
-
+    .blog-main-layout { display: grid; grid-template-columns: 320px 1fr; gap: 5rem; max-width: 1400px; margin: 0 auto; padding: 160px 2rem 80px; }
     .blog-sidebar { border-right: 1px solid #1a1a1a; padding-right: 2rem; }
     .sidebar-sticky-content { position: sticky; top: 120px; }
-    .sidebar-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.2em; color: #c0a062; margin-bottom: 1.5rem; font-weight: 800; }
-
-    /* BUSCADOR */
+    .sidebar-label { font-size: 0.7rem; text-transform: uppercase; color: #c0a062; font-weight: 800; }
     .search-section { margin-bottom: 4rem; }
     .search-input-wrapper { background: #0d0d0d; border: 1px solid #2a2a2a; border-radius: 4px; padding: 0.8rem; display: flex; align-items: center; }
     .search-input-wrapper input { background: transparent; border: none; color: #fff; width: 100%; outline: none; font-size: 0.9rem; }
@@ -219,9 +209,20 @@
     .results-header { margin-bottom: 3rem; }
     .clear-search { background: none; border: 1px solid #c0a062; color: #c0a062; padding: 0.5rem 1rem; margin-top: 1rem; cursor: pointer; font-size: 0.8rem; border-radius: 4px; }
 
+    /* RESPONSIVO */
     @media (max-width: 1024px) {
-        .blog-main-layout { grid-template-columns: 1fr; }
-        .blog-sidebar { border-right: none; border-bottom: 1px solid #1a1a1a; padding-right: 0; padding-bottom: 3rem; margin-bottom: 4rem; }
+        .blog-main-layout { grid-template-columns: 1fr; gap: 2rem; }
+        .blog-sidebar { border-right: none; border-bottom: 1px solid #1a1a1a; padding-right: 0; padding-bottom: 2rem; margin-bottom: 3rem; }
         .sidebar-sticky-content { position: relative; top: 0; }
+        
+        /* [CAMBIO] Ocultar Sabiduría Destacada en móvil */
+        .most-read-section { display: none; }
+        .search-section { margin-bottom: 1rem; }
+    }
+
+    @media (max-width: 768px) {
+        /* [CAMBIO] Fotos más pequeñas en móvil */
+        .card-image-wrapper { height: 140px; }
+        .blog-main-layout { padding-top: 120px; }
     }
 </style>
