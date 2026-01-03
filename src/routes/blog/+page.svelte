@@ -80,6 +80,7 @@
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
 
+    <meta name="twitter:site" content="@somos1egacy" />
     <meta name="twitter:creator" content="@somos1egacy" />
     <meta name="twitter:title" content="El Códice: Sabiduría y Linaje | 1egacy" />
     <meta name="twitter:description" content="Busca tu apellido y explora el archivo vivo de 1egacy." />
