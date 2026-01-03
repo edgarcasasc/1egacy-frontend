@@ -1,7 +1,6 @@
 <script>
   import Navbar from '../components/Navbar.svelte';
   import Footer from '../components/Footer.svelte';
-  // GTM ya vive en app.html, no se requiere lógica aquí.
 </script>
 
 <svelte:head>
@@ -10,6 +9,7 @@
   <meta property="og:site_name" content="1egacy" />
   <meta name="twitter:card" content="summary_large_image" />
 
+  <link rel="preconnect" href="https://cdn.sanity.io" crossorigin>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
@@ -44,10 +44,7 @@
 </svelte:head>
 
 <Navbar />
-
-<main id="main-content">
-  <slot />
-</main>
+<main id="main-content"><slot /></main>
 
 <Footer /> 
 

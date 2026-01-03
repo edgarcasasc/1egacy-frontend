@@ -110,10 +110,13 @@
     <meta name="description" content={post?.seoDescription || post?.subtitle || ''} />
     <link rel="canonical" href={canonicalUrl} />
     
+    <meta property="og:type" content="article" />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={post?.seoDescription || post?.subtitle || ''} />
     <meta property="og:image" content={ogImage} />
     <meta property="og:url" content={canonicalUrl} />
+    <meta property="article:published_time" content={post.publishedAt} />
+    <meta property="article:author" content={post.author?.name || '1egacy Studio'} />
 
     <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={post?.seoDescription || post?.subtitle || ''} />
@@ -123,7 +126,6 @@
         {@html `<script type="application/ld+json">${JSON.stringify(schema)}</script>`}
     {/if}
 </svelte:head>
-
 <div class="layout-container">
     {#if post}
         <article class="post-container">

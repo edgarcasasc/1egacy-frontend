@@ -2,4 +2,16 @@
   command = "npm run build"
   publish = "build"
 
+[build.processing]
+  skip_processing = false
 
+[build.processing.html]
+  pretty_urls = true
+
+# REGLA DE ORO: Forzar la eliminación del trailing slash
+# Esto protege tus assets con rutas relativas (./_app/...)
+[[redirects]]
+  from = "/*/"
+  to = "/:splat"
+  status = 301
+  force = true
