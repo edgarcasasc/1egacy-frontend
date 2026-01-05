@@ -422,11 +422,7 @@
 		color: #e57373; /* Rojo suave para urgencia */
 		margin-top: 0.5rem;
 	}
-:root {
-		--gold: #c0a062;
-		--dark-grey: #1a1a1a;
-		--black: #0a0a0a;
-	}
+
 
 	.landing-page {
 		width: 100%;

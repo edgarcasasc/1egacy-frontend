@@ -1,13 +1,38 @@
 <script>
+  import '../app.css'; // Importa el CSS global
   import Navbar from '../components/Navbar.svelte';
   import Footer from '../components/Footer.svelte';
+  import { page } from '$app/stores';
+
+  // SEO Globals
+  const SITE_URL = 'https://somos1egacy.com';
+
+  // Recomendado: crea este archivo en /static
+  // /static/og-default.jpg (1200x630)
+  const DEFAULT_OG_IMAGE = `${SITE_URL}/og-default.jpg`;
+
+  $: canonical = `${SITE_URL}${$page.url.pathname}`;
 </script>
 
 <svelte:head>
   <link rel="icon" href="/favicon.svg" />
 
+  <!-- Canonical global (dinámico por ruta, sin query/hash) -->
+  <link rel="canonical" href={canonical} />
+
   <meta property="og:site_name" content="1egacy" />
   <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- Recomendado: URL canónica para OG -->
+  <meta property="og:url" content={canonical} />
+
+  <!-- OG/Twitter image global (URL absoluta) -->
+  <meta property="og:image" content={DEFAULT_OG_IMAGE} />
+  <meta property="og:image:secure_url" content={DEFAULT_OG_IMAGE} />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+
+  <meta name="twitter:image" content={DEFAULT_OG_IMAGE} />
 
   <link rel="preconnect" href="https://cdn.sanity.io" crossorigin>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -43,59 +68,8 @@
   </script>
 </svelte:head>
 
-<Navbar />
-<main id="main-content"><slot /></main>
-
-<Footer /> 
-
-<style>
-  /* --- ESTILOS GLOBALES (Diseño original preservado) --- */
-  :global(body) {
-    background-color: #121212;
-    color: #e0e0e0;
-    font-family: 'Source Sans 3', sans-serif; 
-    font-weight: 400;
-    line-height: 1.6;
-    margin: 0; 
-    padding: 0; 
-    box-sizing: border-box;
-    -webkit-font-smoothing: antialiased;
-  }
-
-  :global(*, *:before, *:after) {
-    box-sizing: inherit;
-  }
-
-  :global(h1), :global(h2), :global(h3) {
-    font-family: 'Playfair Display', serif; 
-    font-weight: 400;
-    color: #c0a062; 
-    line-height: 1.2;
-    margin-top: 0; 
-    margin-bottom: 1rem;
-  }
-
-  :global(h1) { font-size: clamp(2.5rem, 6vw, 3.5rem); font-weight: 700; }
-  :global(h2) { font-size: clamp(2rem, 5vw, 2.5rem); margin-top: 3rem; }
-  :global(h3) { font-size: clamp(1.5rem, 4vw, 1.8rem); margin-top: 2.5rem; }
-
-  :global(p) {
-    max-width: 70ch;
-    margin-top: 0; 
-    margin-bottom: 1.5rem;
-    color: #b0b0b0; 
-    line-height: 1.7;
-  }
-
-  :global(a) {
-    color: #c0a062;
-    text-decoration: none;
-    transition: color 0.3s ease;
-  }
-
-  :global(a:hover) { color: #ffffff; text-decoration: underline; }
-
-  main { display: block; min-height: 100vh;}
-  
-  :global(img, svg, video) { max-width: 100%; height: auto; display: block; }
-</style>
+<div class="app-shell">
+  <Navbar />
+  <main id="main-content"><slot /></main>
+  <Footer /> 
+</div>

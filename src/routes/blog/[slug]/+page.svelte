@@ -239,7 +239,7 @@
     .layout-container {
         max-width: 1200px;
         margin: 0 auto;
-        padding: 150px 2rem 60px 2rem;
+        padding: 0px 2rem 60px 2rem;
         display: grid;
         grid-template-columns: 2.5fr 1fr;
         gap: 4rem;

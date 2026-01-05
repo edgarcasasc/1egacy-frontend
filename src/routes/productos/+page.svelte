@@ -161,7 +161,7 @@
 
 <style>
     /* UNIFICACIÓN DE ESTILOS - Sin cambiar tu diseño */
-    .catalog-container { display: grid; grid-template-columns: 250px 1fr; gap: 40px; max-width: 1400px; margin: 0 auto; padding: 100px 40px 60px 40px; }
+    .catalog-container { display: grid; grid-template-columns: 250px 1fr; gap: 40px; max-width: 1400px; margin: 0 auto; padding: 0px 40px 60px 40px; }
     .catalog-header { text-align: center; margin-bottom: 60px; border-bottom: 1px solid rgba(192, 160, 98, 0.2); padding-bottom: 30px; }
     .catalog-header h1 { font-size: 2.8em; margin-bottom: 15px; }
     .catalog-header p { font-size: 1.2em; color: #bdbdbd; max-width: 700px; margin: 0 auto; text-transform: capitalize; }

@@ -163,7 +163,6 @@
 <style>
 .origins-container {
     /* Usamos la altura del header variable + margen */
-    padding-top: calc(var(--header-h, 80px) + 2rem);
     padding-bottom: 60px;
     display: flex;
     flex-direction: column;

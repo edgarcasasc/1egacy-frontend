@@ -170,7 +170,7 @@
 
 <style>
     /* LAYOUT TIPO AMAZON (SIDEBAR + CONTENIDO) */
-    .blog-main-layout { display: grid; grid-template-columns: 320px 1fr; gap: 5rem; max-width: 1400px; margin: 0 auto; padding: 160px 2rem 80px; }
+    .blog-main-layout { display: grid; grid-template-columns: 320px 1fr; gap: 5rem; max-width: 1400px; margin: 0 auto; padding: 0px 2rem 80px; }
     .blog-sidebar { border-right: 1px solid #1a1a1a; padding-right: 2rem; }
     .sidebar-sticky-content { position: sticky; top: 120px; }
     .sidebar-label { font-size: 0.7rem; text-transform: uppercase; color: #c0a062; font-weight: 800; }

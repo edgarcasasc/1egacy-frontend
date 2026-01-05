@@ -278,7 +278,7 @@
         gap: 5rem;
         max-width: 1300px;
         margin: 0 auto;
-        padding: 160px 2rem 80px;
+        padding: 0px 2rem 80px;
     }
 
     .galeria-columna { position: sticky; top: 120px; }
