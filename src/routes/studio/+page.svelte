@@ -1,11 +1,6 @@
 <script>
   import { fade } from 'svelte/transition';
-  import { onMount } from 'svelte';
-
-  let mounted = false;
-  onMount(() => {
-    mounted = true;
-  });
+  // Eliminamos onMount y la variable mounted para que Google vea el contenido al instante
 </script>
 
 <svelte:head>
@@ -39,67 +34,64 @@
   </section>
 
   <section class="productos-grid" aria-label="Servicios y piezas de Studio">
-    {#if mounted}
-      <a href="/codice-del-legado" class="producto-card" in:fade={{ delay: 200, duration: 800 }}>
-        <div class="image-wrapper">
-          <img
-            src="/articulos/El-Cedice-del-Legado.webp"
-            alt="El Códice del Legado"
-            loading="lazy"
-            decoding="async"
-          />
-        </div>
-        <div class="card-content">
-          <h3>El Códice del Legado</h3>
-          <p>
-            No es un libro; es el testamento visual de tu linaje. Una obra de archivo, encuadernada a mano con calidad museística, destinada a ser la pieza central de tu biblioteca.
-          </p>
-          <div class="boton-visual">Descubrir el Códice</div>
-        </div>
-      </a>
+    <a href="/codice-del-legado" class="producto-card" in:fade={{ delay: 200, duration: 800 }}>
+      <div class="image-wrapper">
+        <img
+          src="/articulos/El-Cedice-del-Legado.webp"
+          alt="El Códice del Legado"
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+      <div class="card-content">
+        <h3>El Códice del Legado</h3>
+        <p>
+          No es un libro; es el testamento visual de tu linaje. Una obra de archivo, encuadernada a mano con calidad museística, destinada a ser la pieza central de tu biblioteca.
+        </p>
+        <div class="boton-visual">Descubrir el Códice</div>
+      </div>
+    </a>
 
-      <a href="/productos" class="producto-card" in:fade={{ delay: 400, duration: 800 }}>
-        <div class="image-wrapper">
-          <img
-            src="/articulos/camisas-legado.webp"
-            alt="Piezas de Legado Físico"
-            loading="lazy"
-            decoding="async"
-          />
-        </div>
-        <div class="card-content">
-          <h3>Piezas de Legado Físico</h3>
-          <p>
-            Transformamos el símbolo de tu linaje en un tótem personal. Desde un escudo para presidir tu estudio, hasta textiles que susurran historias en cada hilo.
-          </p>
-          <div class="boton-visual">Explorar colección</div>
-        </div>
-      </a>
+    <a href="/productos" class="producto-card" in:fade={{ delay: 400, duration: 800 }}>
+      <div class="image-wrapper">
+        <img
+          src="/articulos/camisas-legado.webp"
+          alt="Piezas de Legado Físico"
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+      <div class="card-content">
+        <h3>Piezas de Legado Físico</h3>
+        <p>
+          Transformamos el símbolo de tu linaje en un tótem personal. Desde un escudo para presidir tu estudio, hasta textiles que susurran historias en cada hilo.
+        </p>
+        <div class="boton-visual">Explorar colección</div>
+      </div>
+    </a>
 
-      <a href="/contacto" class="producto-card" in:fade={{ delay: 600, duration: 800 }}>
-        <div class="image-wrapper">
-          <img
-            src="/articulos/proyectos.webp"
-            alt="Proyectos Especiales"
-            loading="lazy"
-            decoding="async"
-          />
-        </div>
-        <div class="card-content">
-          <h3>Proyectos Especiales</h3>
-          <p>
-            Custodiamos memoria corporativa o alma familiar mediante documentales, archivos digitales o instalaciones artísticas para quienes construyen sobre un pasado bien contado.
-          </p>
-          <div class="boton-visual">Iniciar un proyecto</div>
-        </div>
-      </a>
-    {/if}
+    <a href="/contacto" class="producto-card" in:fade={{ delay: 600, duration: 800 }}>
+      <div class="image-wrapper">
+        <img
+          src="/articulos/proyectos.webp"
+          alt="Proyectos Especiales"
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+      <div class="card-content">
+        <h3>Proyectos Especiales</h3>
+        <p>
+          Custodiamos memoria corporativa o alma familiar mediante documentales, archivos digitales o instalaciones artísticas para quienes construyen sobre un pasado bien contado.
+        </p>
+        <div class="boton-visual">Iniciar un proyecto</div>
+      </div>
+    </a>
   </section>
 </div>
 
 <style>
 .studio-container {
-    /* QUITAMOS padding-top: calc(...) */
     width: 100%;
     max-width: 1400px;
     margin: 0 auto;
@@ -111,7 +103,7 @@
   }
 
   .manifesto {
-    text-align: center; /* Centra el título */
+    text-align: center; 
     max-width: 850px;
     margin-bottom: 6rem;
   }
@@ -128,7 +120,7 @@
     line-height: 1.8;
     color: #b0b0b0;
     margin-bottom: 1.5rem;
-    text-align: center; /* FUERZA EL CENTRADO DEL TEXTO */
+    text-align: center;
     margin-left: auto;
     margin-right: auto;
   }
@@ -140,10 +132,9 @@
     width: 100%;
   }
 
-  /* LA TARJETA AHORA ES UN ENLACE */
   .producto-card {
-    text-decoration: none; /* Quita subrayado */
-    color: inherit; /* Mantiene color de texto */
+    text-decoration: none;
+    color: inherit;
     background-color: #161616;
     border: 1px solid #252525;
     border-radius: 12px;
@@ -188,21 +179,20 @@
   }
 
   .card-content h3 {
-    margin-top: 0;         
+    margin-top: 0; 
     margin-bottom: 1.2rem;
     font-size: 1.6rem;
     color: var(--gold);
   }
 
   .card-content p {
-    max-width: none;       
+    max-width: none; 
     font-size: 0.95rem;
     line-height: 1.6;
     margin-bottom: 2rem;
     flex-grow: 1;
   }
 
-  /* BOTÓN VISUAL (YA NO ES UN ENLACE PORQUE LA TARJETA YA LO ES) */
   .boton-visual {
     align-self: center;
     background-color: var(--gold);
@@ -220,11 +210,8 @@
     background-color: #ffffff;
   }
 
-/* Corrección en Studio/+page.svelte */
 @media (max-width: 768px) {
   .studio-container {
-    /* Eliminamos el padding-top de aquí */
-    /* El #main-content en app.css ya se encarga del espacio */
     padding-bottom: 60px; 
   }
   .card-content {
