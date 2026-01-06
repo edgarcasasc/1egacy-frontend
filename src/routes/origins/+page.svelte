@@ -94,11 +94,11 @@
         "description": "Explora el mapa estelar de la heráldica y el origen de los apellidos.",
         "mainEntity": {
             "@type": "ItemList",
-            "itemListElement": data.linajes.map((l, i) => ({
-                "@type": "ListItem",
-                "position": i + 1,
-                "url": `${safeBaseUrl}/origins/${l.slug}`
-            }))
+            "itemListElement": (data.linajes || []).map((l, i) => ({
+    "@type": "ListItem",
+    "position": i + 1,
+    "url": `${safeBaseUrl}/origins/${l.slug}`
+}))
         }
     };
 </script>
