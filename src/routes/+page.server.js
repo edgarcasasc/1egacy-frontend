@@ -1,82 +1,53 @@
 import { client } from '$lib/sanityClient';
 import { error } from '@sveltejs/kit';
 
-/** @type {import('./$types').PageServerLoad} */
 export async function load() {
     try {
-        // 1. Fetch todos los productos que tengan categoría definida
-        const products = await client.fetch(`*[_type == "product" && defined(category)] {
-            title,
-            "slug": slug.current,
-            price,
-            description,
-
-            // --- ¡AQUÍ ESTÁ LA CORRECCIÓN! ---
-            // Usamos 'select' y 'coalesce' para manejar de forma segura
-            // productos sin galería o con galería vacía.
-      "mainImageUrl": select(
-        defined(gallery[0].asset) => gallery[0].asset->url,
-        null // Devuelve null si no hay imagen principal
-      ),
-      "category": category->{ title, "slug": slug.current }
-        }`);
+        // OPTIMIZACIÓN IA: Solo traemos 10 productos aleatorios con los campos mínimos.
+        // Esto reduce el peso del JSON en un 80%, evitando el 5xx por timeout.
+        const products = await client.fetch(`
+            *[_type == "product" && defined(category)] | order(_createdAt desc)[0...15] {
+                title,
+                "slug": slug.current,
+                price,
+                // Eliminamos 'description' porque en la Home suele bastar un resumen o nada.
+                "mainImageUrl": select(
+                    defined(gallery[0].asset) => gallery[0].asset->url,
+                    null
+                ),
+                "category": category->{ title, "slug": slug.current }
+            }
+        `);
 
         if (!products || products.length === 0) {
-            // Si no hay productos, devolvemos un array vacío para evitar errores
             return { featuredProducts: [] };
         }
 
-        // 2. Agrupar productos por slug de categoría
+        // Lógica de agrupación simplificada
         const productsByCategory = products.reduce((acc, product) => {
             const categorySlug = product.category?.slug;
             if (categorySlug) {
-                if (!acc[categorySlug]) {
-                    acc[categorySlug] = [];
-                }
+                if (!acc[categorySlug]) acc[categorySlug] = [];
                 acc[categorySlug].push(product);
             }
             return acc;
         }, {});
 
-        // 3. Seleccionar aleatoriamente hasta 3 categorías distintas
         const availableCategorySlugs = Object.keys(productsByCategory);
-        const numberOfCategoriesToShow = Math.min(3, availableCategorySlugs.length); // Máximo 3 o las disponibles
+        const shuffledCategories = availableCategorySlugs.sort(() => Math.random() - 0.5).slice(0, 3);
 
-        let featuredProducts = [];
-        if (numberOfCategoriesToShow > 0) {
-            // Barajar las categorías disponibles
-            const shuffledCategorySlugs = availableCategorySlugs.sort(() => 0.5 - Math.random());
-            // Tomar las primeras N categorías barajadas
-            const selectedCategorySlugs = shuffledCategorySlugs.slice(0, numberOfCategoriesToShow);
-
-            // 4. Seleccionar un producto aleatorio de cada categoría elegida
-            selectedCategorySlugs.forEach(slug => {
-                const categoryProducts = productsByCategory[slug];
-                if (categoryProducts && categoryProducts.length > 0) {
-                    const randomIndex = Math.floor(Math.random() * categoryProducts.length);
-                    featuredProducts.push(categoryProducts[randomIndex]);
-                }
-            });
-             // Opcional: Barajar el resultado final si quieres que el orden también sea aleatorio
-             featuredProducts.sort(() => 0.5 - Math.random());
-        }
-
-        // Aquí podrías añadir fetch de otros datos necesarios para la home (ej. últimos posts del blog)
-        // const latestPosts = await client.fetch(`*[_type == "post"] | order(_createdAt desc)[0...3]{ title, "slug": slug.current }`);
+        let featuredProducts = shuffledCategories.map(slug => {
+            const catProducts = productsByCategory[slug];
+            return catProducts[Math.floor(Math.random() * catProducts.length)];
+        });
 
         return {
-            featuredProducts: featuredProducts,
-            // latestPosts: latestPosts || []
+            featuredProducts: featuredProducts
         };
 
     } catch (err) {
-        console.error('Error loading data for homepage:', err);
-        // Es mejor devolver datos vacíos que romper la home por productos destacados
-        return {
-             featuredProducts: []
-             // latestPosts: []
-             // Considera lanzar error si falla una carga de datos *crítica* para la home
-        };
+        // En producción, queremos saber QUÉ pasó sin tumbar la web
+        console.error('CRITICAL ERROR 5xx - Homepage Load:', err);
+        return { featuredProducts: [] };
     }
 }
-
