@@ -7,3 +7,8 @@ https://www.somos1egacy.com/* https://somos1egacy.com/:splat  301!
 
 # Nota: Hemos quitado la regla /*/ porque Netlify con "Pretty URLs" 
 # ya gestiona las diagonales correctamente sin entrar en bucles.
+
+# Bloqueo básico de bots de WordPress para ahorrar memoria del servidor
+/*.php  /404  404
+/wp-admin/* /404  404
+/.env  /404  404

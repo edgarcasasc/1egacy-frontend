@@ -106,12 +106,10 @@
 <svelte:head>
     <title>Constelación de Linajes | 1egacy Origins</title>
     <meta name="description" content="Explora la historia y el legado de tu apellido en nuestra constelación estelar de linajes. Descubre el origen, escudo y narrativa de tu familia." />
-    <link rel="canonical" href={canonicalUrl} />
     
     <meta property="og:title" content="Constelación de Linajes | 1egacy" />
     <meta property="og:description" content="Busca tu apellido en el mapa estelar del legado familiar." />
     <meta property="og:image" content="{safeBaseUrl}/og-origins.jpg" />
-    <meta property="og:url" content={canonicalUrl} />
     <meta property="og:type" content="website" />
 
     {@html `<script type="application/ld+json">${JSON.stringify(schema)}<\/script>`}

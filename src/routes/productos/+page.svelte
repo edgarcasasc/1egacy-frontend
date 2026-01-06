@@ -60,11 +60,9 @@
 <svelte:head>
     <title>{pageTitle}</title>
     <meta name="description" content={pageDescription} />
-    <link rel="canonical" href={canonicalUrl} />
     
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={pageDescription} />
-    <meta property="og:url" content={canonicalUrl} />
     <meta property="og:site_name" content="1egacy" />
     <meta property="og:image" content="{safeBaseUrl}/1egacy-og-logo.jpg" />
     

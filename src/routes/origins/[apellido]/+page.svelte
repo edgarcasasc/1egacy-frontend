@@ -55,11 +55,9 @@
 <svelte:head>
     <title>{linaje?.title || 'Linaje'} | 1egacy Origins</title>
     <meta name="description" content={seoDescription} />
-    <link rel="canonical" href={canonicalUrl} />
 
     <meta property="og:title" content={`${linaje?.title || 'Linaje'} | 1egacy Origins`} />
     <meta property="og:description" content={seoDescription} />
-    <meta property="og:url" content={canonicalUrl} />
     <meta property="og:type" content="website" />
     {#if linaje?.escudoUrl}
         <meta property="og:image" content={linaje.escudoUrl} />

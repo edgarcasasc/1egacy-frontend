@@ -64,7 +64,6 @@
 <svelte:head>
     <title>El Códice: Sabiduría y Linaje | 1egacy</title>
     <meta name="description" content="Busca tu apellido y explora el archivo vivo de 1egacy: historias de legado e investigación de linajes." />
-    <link rel="canonical" href={canonicalUrl} />
 
     <link rel="alternate" hreflang="es-MX" href={canonicalUrl} />
     <link rel="alternate" hreflang="es" href={canonicalUrl} />
@@ -72,7 +71,6 @@
 
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="es_MX" />
-    <meta property="og:url" content={canonicalUrl} />
     <meta property="og:title" content="El Códice: Sabiduría y Linaje | 1egacy" />
     <meta property="og:description" content="Busca tu apellido y explora el archivo vivo de 1egacy." />
     <meta property="og:image" content={ogImage} />

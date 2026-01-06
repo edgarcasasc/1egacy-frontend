@@ -137,12 +137,10 @@
 <svelte:head>
     <title>{pageTitle}</title>
     <meta name="description" content={cleanDescription} />
-    <link rel="canonical" href={canonicalUrl} />
 
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={cleanDescription} />
     <meta property="og:type" content="product" />
-    <meta property="og:url" content={canonicalUrl} />
     <meta property="og:image" content={ogImage} />
     <meta property="product:price:amount" content={currentPrice} />
     <meta property="product:price:currency" content="MXN" />

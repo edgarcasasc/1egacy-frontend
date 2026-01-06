@@ -17,8 +17,9 @@
         : `${post?.seoTitle || post?.title || 'Artículo'} | 1egacy`;
 
     // Imagen para redes sociales: Prioriza la del post
-    const ogImage = post?.mainImage?.url || `${safeBaseUrl}/1egacy-og-logo.jpg`;
-
+const ogImage = post?.mainImage?.url 
+    ? `${post.mainImage.url}?w=1200&h=630&fit=crop&auto=format` 
+    : `${safeBaseUrl}/1egacy-og-logo.jpg`;
     const components = {
         types: {
             image: SanityImage
@@ -108,13 +109,11 @@
 <svelte:head>
     <title>{pageTitle}</title>
     <meta name="description" content={post?.seoDescription || post?.subtitle || ''} />
-    <link rel="canonical" href={canonicalUrl} />
     
     <meta property="og:type" content="article" />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={post?.seoDescription || post?.subtitle || ''} />
     <meta property="og:image" content={ogImage} />
-    <meta property="og:url" content={canonicalUrl} />
     <meta property="article:published_time" content={post.publishedAt} />
     <meta property="article:author" content={post.author?.name || '1egacy Studio'} />
 
@@ -154,7 +153,10 @@
                     />
                 {/if}
             </header>
-
+ <div class="cta-box">
+    <p>¿Quieres rastrear tu linaje hoy mismo?</p>
+    <a href="/origins" class="cta-button">Verificar mi Apellido</a>
+</div>
             <div class="post-content">
                 {#if post.body}
                     <PortableText value={post.body} {components} />
@@ -204,6 +206,7 @@
                     </div>
                 </section>
             {/if}
+           
         </article>
 
         <aside class="sidebar">
@@ -235,6 +238,34 @@
 </div>
 
 <style>
+    .cta-box {
+    background: #1a1a1a;
+    border: 1px solid #c0a062;
+    padding: 1.5rem;
+    text-align: center;
+    border-radius: 8px;
+    margin: 2rem 0;
+}
+.cta-box p {
+    margin-bottom: 1rem;
+    font-weight: bold;
+    color: #fff;
+}
+.cta-button {
+    display: inline-block;
+    background: #c0a062;
+    color: #121212;
+    padding: 0.8rem 2rem;
+    text-decoration: none;
+    font-weight: 800;
+    text-transform: uppercase;
+    border-radius: 4px;
+    transition: 0.3s;
+}
+.cta-button:hover {
+    background: #fff;
+    transform: scale(1.05);
+}
     /* --- MANTENEMOS TUS ESTILOS ORIGINALES --- */
     .layout-container {
         max-width: 1200px;
