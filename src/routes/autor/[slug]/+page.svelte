@@ -16,7 +16,7 @@
          bio: `Permítanme presentarme, soy Ovidio Casas, pero después de una vida en las aulas, me he quedado con el título más grande de todos: "Maestro".\n\nNací en Monterrey en 1950, pero mi alma pertenece a la sierra de Laguna de Sánchez, en Santiago, de donde eran mis padres. De ellos aprendí que las raíces importan.\n\nMi vocación siempre fue clara. Dediqué 44 años a la educación primaria en la SEP, primero como maestro de grupo y luego como director de escuela.\n\nA los 65 años, me retiré. Pero, ¿saben una cosa? Un Maestro nunca se retira de verdad. Simplemente cambia de materia.\n\nHoy, esa misma pasión por la enseñanza la aplico en 1egacy. Cambié el pizarrón por los archivos históricos para ayudar a las personas a leer el mapa de su pasado y honrar la historia de su linaje.\n\nPorque estoy convencido de que para saber a dónde vamos, muchachos, primero debemos entender, con orgullo, de quiénes venimos.`,
          socialLink: null
      };
-    const baseUrl = 'https://somos1legacy.com';
+    const baseUrl = 'https://somos1egacy.com';
     // --- FIN DATOS DE EJEMPLO ---
 
 

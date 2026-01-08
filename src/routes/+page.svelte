@@ -13,23 +13,12 @@
     onMount(() => {
         let animationTimeoutId; 
 
-        // Solo ejecutar GSAP en el navegador
         if (browser) {
             gsap.registerPlugin(MotionPathPlugin); 
-            console.log('Entorno de navegador detectado. Preparando animaciones GSAP...');
-
-            // Diferir la ejecución para asegurar que el DOM esté listo
             animationTimeoutId = setTimeout(() => {
-                console.log('Iniciando animaciones GSAP ahora.');
-                
                 try {
-                    // 1. Buscamos el elemento CRÍTICO físicamente en el DOM
                     const hiloPathElement = document.querySelector('#hilo-path');
-
-                    // 2. BLINDAJE: Solo ejecutamos si el elemento EXISTE
                     if (hiloPathElement) {
-                        
-                        // --- A. Animación de flotación vertical ---
                         gsap.to('.hilo-destino-container', {
                             y: 10, 
                             duration: 7, 
@@ -38,14 +27,12 @@
                             ease: 'sine.inOut' 
                         });
 
-                        // --- B. Partículas Individuales ---
                         const particulasSingle = gsap.utils.toArray('.particle-single');
-                        
                         if (particulasSingle.length > 0) {
                             particulasSingle.forEach((particle, i) => {
                                 gsap.to(particle, {
                                     motionPath: {
-                                        path: hiloPathElement, // Referencia directa al elemento
+                                        path: hiloPathElement,
                                         align: hiloPathElement,
                                         alignOrigin: [0.5, 0.5]
                                     },
@@ -63,9 +50,7 @@
                             });
                         }
 
-                        // --- C. Contenedor del Enjambre ---
                         const enjambreContainer = document.querySelector('.enjambre-container');
-                        
                         if (enjambreContainer) {
                             gsap.to(enjambreContainer, {
                                 motionPath: {
@@ -81,7 +66,6 @@
                                 ease: 'sine.inOut' 
                             });
 
-                            // --- D. Partículas dentro del Enjambre ---
                             const particulasEnjambre = gsap.utils.toArray('.particle-enjambre');
                             particulasEnjambre.forEach((particle) => {
                                 gsap.to(particle, {
@@ -95,28 +79,19 @@
                                 });
                             });
                         }
-
-                    } else {
-                        // Si no encuentra el path, simplemente no hace nada y no explota
-                        console.log("⚠️ Animación saltada: #hilo-path no está en esta página.");
                     }
-
                 } catch (e) {
-                    console.error('Error controlado al inicializar animaciones:', e);
+                    console.error('Error animaciones:', e);
                 }
-            }, 300); // Ejecutar después de 300ms
+            }, 300);
 
-            // Función de limpieza al salir de la página
             return () => {
-                 console.log('Limpiando animaciones GSAP...');
                  clearTimeout(animationTimeoutId); 
                  gsap.killTweensOf('.hilo-destino-container, .particle-single, .enjambre-container, .particle-enjambre');
              };
         }
     });
-    // --- FIN CÓDIGO GSAP ---
 
-    // *** Lógica Testimonios ***
     let expandedStates = {}; 
     const testimonials = [
         { id: 'ana', name: 'Ana Sofía Martínez', title: 'Emprendedora y Guardiana de un Símbolo', image: '/imagenes_clientes/ana_sofia.webp', quote: "Quería un símbolo para mi familia que fuera más allá de un logo genérico. El proceso de 1egacy fue una revelación..." },
@@ -128,70 +103,123 @@
 </script>
 
 <svelte:head>
-    
-    <!-- Metadata para SEO y redes sociales --><title>1egacy: Estudio Creativo | Descubre y Materializa tu Legado</title>
-    <meta name="description" content="Estudio creativo que narra lo que no se ha narrado. Investigamos tu linaje, rediseñamos tu escudo y narramos tu historia. Transforma tu pasado en arte tangible." />
-    
-    <link rel="canonical" href="https://somos1egacy.com/" />
-    
+  <title>1egacy | Investigación de Linajes y Heráldica Contemporánea</title>
+  <meta name="description" content="Investigamos tu linaje latín, reinterpretamos tu escudo y lo convertimos en un Códice digital de alta gama. Servicio exclusivo para familias en USA y México." />
 
-    <!-- Favicon (ya lo tenías en +layout.svelte, puedes quitarlo de aquí si prefieres) --><!-- <link rel="icon" href="/favicon.svg" /> --><!-- Preconexión a Google Fonts (ya lo tenías en +layout.svelte) --><!-- <link rel="preconnect" href="https://fonts.googleapis.com"> --><!-- <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> --><!-- Carga diferida de fuentes (ya lo tenías en +layout.svelte) --><!-- <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet" media="print" on:load={(event) => event.target.media='all'} > --><!-- Fallback de fuentes para noscript (ya lo tenías en +layout.svelte) --><!-- <noscript><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet"></noscript> --></svelte:head>
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="es_MX" />
+  <meta property="og:title" content="1egacy | Linaje, Escudo Heráldico y Códice Digital" />
+  <meta property="og:description" content="Transformamos historias de linaje en activos tangibles de valor eterno." />
+  <meta property="og:url" content="https://somos1egacy.com/" />
+  
+  <meta name="twitter:title" content="1egacy | Investigación de Linajes y Heráldica" />
+  <meta name="twitter:description" content="Recupera la identidad de tu familia para las futuras generaciones." />
 
-<!-- Contenedor principal de la página --><div class="page-wrapper">
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "ProfessionalService",
+          "@id": "https://somos1egacy.com/#business",
+          "name": "1egacy: Estudio Creativo",
+          "url": "https://somos1egacy.com/",
+          "image": "https://somos1egacy.com/og-default.jpg",
+          "priceRange": "$$$",
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Monterrey",
+            "addressRegion": "NL",
+            "addressCountry": "MX"
+          },
+          "areaServed": [
+            { "@type": "Country", "name": "United States" },
+            { "@type": "Country", "name": "Mexico" }
+          ],
+          "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": "Servicios de Legado",
+            "itemListElement": [
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "id": "https://somos1egacy.com/#origins",
+                  "name": "1egacy Origins",
+                  "description": "Investigación de linajes y heráldica para hogares latinos en USA."
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "id": "https://somos1egacy.com/#films",
+                  "name": "1egacy Films",
+                  "description": "Cortometrajes biográficos para preservar la memoria familiar."
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  </script>
+</svelte:head>
 
-    <!-- Sección Hero Principal con Animación --><div class="home-container">
-        <!-- Fondo animado con nebulosas --><div class="animated-background">
+<div class="page-wrapper">
+    <section class="home-container">
+        <div class="animated-background">
             <div class="nebula nebula-blue"></div>
             <div class="nebula nebula-gold"></div>
         </div>
-        <!-- Contenedor para el SVG del hilo y las partículas animadas --><div class="hilo-destino-container">
+        <div class="hilo-destino-container">
             <svg width="100%" height="100%" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <defs>
-                    <!-- Filtro SVG para el efecto de brillo --><filter id="glow">
-                        <!-- Aumentado stdDeviation para un brillo más visible --><feGaussianBlur stdDeviation="3" result="coloredBlur" />
+                    <filter id="glow">
+                        <feGaussianBlur stdDeviation="3" result="coloredBlur" />
                         <feMerge> <feMergeNode in="coloredBlur" /> <feMergeNode in="SourceGraphic" /> </feMerge>
                     </filter>
                 </defs>
-                <!-- El path SVG que siguen las partículas --><path id="hilo-path" class="hilo-glow" d="M0,591.2s400.9-336.8,831.4-134.7,561.4,197.9,1088.6-32.6" />
+                <path id="hilo-path" class="hilo-glow" d="M0,591.2s400.9-336.8,831.4-134.7,561.4,197.9,1088.6-32.6" />
             </svg>
-            <!-- Crear 15 partículas individuales (antes 5) -->{#each Array(15) as _} <div class="particle particle-single"></div> {/each}
-            <!-- Contenedor para el enjambre de partículas --><div class="enjambre-container">
-                 <!-- Crear 10 partículas para el enjambre -->{#each Array(10) as _} <div class="particle particle-enjambre"></div> {/each}
+            {#each Array(15) as _} <div class="particle particle-single"></div> {/each}
+            <div class="enjambre-container">
+                 {#each Array(10) as _} <div class="particle particle-enjambre"></div> {/each}
             </div>
         </div>
-        <!-- Contenido textual del Hero --><main class="hero-content">
-            <h1>Tu apellido no es el final de tu historia.<br /> Es el comienzo de tu legado.</h1>
+        <section class="hero-content">
+            <h1>Tu <span style="color: var(--gold)">Linaje</span> no es el final de tu historia.<br /> Es el comienzo de tu <strong>Legado Familiar</strong>.</h1>
             <p>
                 En 1egacy, desenterramos la historia de tus ancestros, revelando las pruebas que superaron y
                 los triunfos que alcanzaron, para forjar el mapa de tu futuro.
             </p>
             <a href="/origins" class="cta-button"> Descubre tu origen </a>
-        </main>
-    </div>
+        </section>
+    </section>
 
-    <!-- *** INICIO NUEVA SECCIÓN DE PRODUCTOS DESTACADOS *** --><!-- Solo mostrar esta sección si hay productos cargados desde el servidor -->{#if featuredProducts.length > 0}
+    {#if featuredProducts.length > 0}
     <section class="featured-products">
         <h2 class="section-title title-serif">Materializa Tu Legado</h2>
         <p class="section-subtitle">Descubre algunas de nuestras creaciones emblemáticas donde la historia cobra vida.</p>
 
-        <!-- Cuadrícula para mostrar los productos --><div class="product-grid-home">
-            <!-- Iterar sobre cada producto destacado -->{#each featuredProducts as product (product.slug)}
-                <!-- Enlace a la página del producto individual --><a href="/productos/{product.slug}" class="product-card-home">
-                    <!-- Contenedor de la imagen --><div class="product-image-container-home">
+        <div class="product-grid-home">
+            {#each featuredProducts as product (product.slug)}
+                <a href="/productos/{product.slug}" class="product-card-home">
+                    <div class="product-image-container-home">
                         {#if product.mainImageUrl}
-                            <!-- Mostrar imagen si existe --><img src={product.mainImageUrl} alt={product.title}>
+                            <img src={product.mainImageUrl} alt="Diseño Heráldico Moderno de {product.title} - 1egacy Origins" loading="lazy">
                         {:else}
-                            <!-- Mostrar placeholder si no hay imagen --><div class="placeholder-image-home">
+                            <div class="placeholder-image-home">
                                 <span>Imagen<br>Próximamente</span>
                             </div>
                         {/if}
                     </div>
-                    <!-- Información del producto --><div class="product-info-home">
+                    <div class="product-info-home">
                         <h3>{product.title}</h3>
-                        <!-- Mostrar categoría si existe -->{#if product.category}
+                        {#if product.category}
                             <span class="product-category-home">{product.category.title}</span>
                         {/if}
-                        <!-- Mostrar precio formateado o texto alternativo --><div class="product-price-home">
+                        <div class="product-price-home">
                             {product.price ? `$MXN ${product.price.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'Consultar Precio'}
                         </div>
                     </div>
@@ -199,29 +227,42 @@
             {/each}
         </div>
 
-        <!-- Botón para ver el catálogo completo --><div class="cta-catalog">
+        <div class="cta-catalog">
             <a href="/productos" class="button-secondary">Ver Catálogo Completo</a>
         </div>
     </section>
     {/if}
-    <!-- *** FIN NUEVA SECCIÓN *** --><!-- Sección de Testimonios --><section class="social-proof-section">
+    
+    <section class="editorial-seo-container">
+        <div class="editorial-content">
+            <h2>La Victoria Definitiva sobre el Olvido</h2>
+            <p>
+                En <strong>1egacy</strong>, operamos como un estudio creativo y casa productora de alta gama dedicada a materializar el concepto de legado. Para la comunidad latina en <strong>Estados Unidos</strong> y familias de alto perfil en <strong>México</strong>, transformamos narrativas históricas en activos digitales y tangibles de valor eterno.
+            </p>
+            <p>
+                A través de <strong>1egacy Origins</strong>, realizamos investigaciones genealógicas precisas y rediseños heráldicos minimalistas, asegurando que la historia de tu linaje se conserve para las futuras generaciones.
+            </p>
+        </div>
+    </section>
+
+    <section class="social-proof-section">
         <div class="container">
-            <!-- Título y subtítulo (existentes) --><h2>Lo que los Guardianes de Legados Dicen</h2>
+            <h2>Lo que los Guardianes de Legados Dicen</h2>
             <p class="section-subtitle">
                 Historias reales de quienes han transformado su pasado en un legado tangible.
             </p>
-            <!-- Contenedor del carrusel --><div class="testimonial-carousel-wrapper">
+            <div class="testimonial-carousel-wrapper">
                 <div class="testimonial-carousel">
-                    <!-- Iterar sobre los datos de testimonios -->{#each testimonials as testimonial (testimonial.id)}
+                    {#each testimonials as testimonial (testimonial.id)}
                         <article class="testimonial-card">
                             <span class="quote-icon">“</span>
-                            <!-- Cita: aplicar clase 'collapsed' si el estado es false --><blockquote class:collapsed={!expandedStates[testimonial.id]}>
+                            <blockquote class:collapsed={!expandedStates[testimonial.id]}>
                                 {testimonial.quote}
                             </blockquote>
-                            <!-- Botón para expandir/colapsar --><button class="toggle-button" on:click={() => toggleExpand(testimonial.id)}>
-                                <!-- Cambiar texto del botón según el estado -->{expandedStates[testimonial.id] ? 'Ver menos' : 'Ver más'}
+                            <button class="toggle-button" on:click={() => toggleExpand(testimonial.id)}>
+                                {expandedStates[testimonial.id] ? 'Ver menos' : 'Ver más'}
                             </button>
-                            <!-- Footer con información del autor --><footer>
+                            <footer>
                                 <img src={testimonial.image} alt="Foto de perfil de {testimonial.name}" class="author-avatar" />
                                 <div>
                                     <p class="author-name">{testimonial.name}</p>
@@ -234,12 +275,9 @@
             </div>
         </div>
     </section>
-
-    <!-- Puedes añadir más secciones aquí si es necesario --></div>
+</div>
 
 <style>
-    /* --- ESTILOS GLOBALES Y DE SECCIONES EXISTENTES --- */
-    /* Asegúrate de tener :global(body), :global(h1), etc. definidos aquí o en +layout.svelte */
     :global(body) { background-color: #121212; color: #e0e0e0; font-family: 'Source Sans 3', sans-serif; font-weight: 400; line-height: 1.6; margin: 0; padding: 0; box-sizing: border-box; }
     :global(*, *:before, *:after) { box-sizing: inherit; }
     :global(h1), :global(h2), :global(h3) { font-family: 'Playfair Display', serif; font-weight: 400; color: #c0a062; line-height: 1.2; margin-top: 0; margin-bottom: 1rem; }
@@ -250,212 +288,109 @@
     :global(a) { color: #c0a062; text-decoration: none; transition: color 0.3s ease; }
     :global(a:hover) { color: #ffffff; text-decoration: underline; }
     :global(img, svg, video) { max-width: 100%; height: auto; display: block; }
-    :global(ul, ol) { list-style: none; padding: 0; margin: 0 0 1.5rem 0; }
-    :global(li) { margin-bottom: 0.5rem; }
 
-     .title-serif { font-family: 'Playfair Display', serif; font-weight: 400; /* Asume color de :global(h*) */ }
+     .title-serif { font-family: 'Playfair Display', serif; font-weight: 400; }
 
-    .home-container { min-height: 100vh; position: relative; display: flex; justify-content: center; align-items: center; overflow: hidden; background-color: hsl(225, 20%, 8%); }
-    .hero-content { position: relative; z-index: 10; text-align: center; padding: 2rem; max-width: 800px; color: #e0e0e0; }
-    .hero-content h1 { font-size: clamp(2.5rem, 6vw, 4rem); margin-bottom: 1.5rem; font-weight: 700; line-height: 1.3; text-shadow: 0 0 15px rgba(0, 0, 0, 0.5); color: #f5f5f5; /* Color específico si es diferente */}
+    .home-container { 
+        min-height: 100vh; 
+        position: relative; 
+        display: flex; 
+        justify-content: center; 
+        align-items: center; 
+        overflow: hidden; 
+        background-color: hsl(225, 20%, 8%); 
+        text-align: center;
+        padding: 0 1.5rem;
+    }
+    .hero-content { position: relative; z-index: 10; text-align: center; padding: 2rem; max-width: 900px; width: 100%; margin: 0 auto; color: #e0e0e0; }
+    .hero-content h1 { font-size: clamp(2.5rem, 6vw, 4rem); margin-bottom: 1.5rem; font-weight: 700; line-height: 1.3; text-shadow: 0 0 15px rgba(0, 0, 0, 0.5); color: #f5f5f5; }
     .hero-content p { font-size: clamp(1rem, 2.5vw, 1.2rem); color: #b0b0b0; margin-bottom: 2.5rem; max-width: 650px; margin-left: auto; margin-right: auto; }
     .cta-button { display: inline-block; background-color: #c0a062; color: #121212; padding: 1rem 2.5rem; font-size: 1.1rem; font-weight: 600; text-decoration: none; border-radius: 4px; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; }
     .cta-button:hover { background-color: #ffffff; transform: translateY(-3px); box-shadow: 0 10px 20px rgba(192, 160, 98, 0.2); }
+    
     .animated-background { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
     .nebula { position: absolute; border-radius: 50%; filter: blur(120px); }
     .nebula-blue { width: 80vw; height: 80vw; background: radial-gradient(circle, hsla(220, 50%, 60%, 0.1) 0%, transparent 70%); top: 10%; left: -20%; animation: drift 45s infinite linear alternate; }
     .nebula-gold { width: 60vw; height: 60vw; background: radial-gradient(circle, hsla(35, 100%, 75%, 0.8) 0%, transparent 70%); opacity: 0.1; bottom: 5%; right: -15%; animation: pulse 12s infinite ease-in-out alternate; }
     @keyframes drift { from { transform: translateX(-20%) translateY(-5%); } to { transform: translateX(20%) translateY(5%); } }
     @keyframes pulse { from { transform: scale(0.95); opacity: 0.08; } to { transform: scale(1.05); opacity: 0.12; } }
-    .hilo-destino-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; mix-blend-mode: screen; pointer-events: none; }
-    .hilo-destino-container svg { display: block; width: 100%; height: 100%; position: absolute; }
-    .hilo-glow { fill: none; stroke: #c0a062; stroke-width: 3px; /* Mantener o ajustar el grosor del trazo */ filter: url(#glow); }
-    .particle { position: absolute; border-radius: 50%; background-color: #c0a062; opacity: 0; }
-    /* Ajustes para particle-single */
-    .particle-single {
-        width: 10px; /* Aumentado de 6px a 10px */
-        height: 10px; /* Aumentado de 6px a 10px */
-        box-shadow: 0 0 12px 6px hsla(45, 100%, 70%, 0.7); /* Sombra más grande y extendida */
+
+    .hilo-destino-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none; 
+        overflow: hidden;
+        z-index: 2;
     }
+    .hilo-destino-container svg { display: block; width: 100%; height: 100%; position: absolute; }
+    .hilo-glow { fill: none; stroke: #c0a062; stroke-width: 3px; filter: url(#glow); }
+    .particle { position: absolute; border-radius: 50%; background-color: #c0a062; opacity: 0; }
+    .particle-single { width: 10px; height: 10px; box-shadow: 0 0 12px 6px hsla(45, 100%, 70%, 0.7); }
     .enjambre-container { position: absolute; }
-    .particle-enjambre { position: absolute; width: 3px; height: 3px; opacity: 1; box-shadow: 0 0 5px 2px hsla(45, 100%, 70%, 0.5); /* Sombra para las del enjambre también */}
-    @media (max-width: 768px) { .hero-content h1 { font-size: clamp(2rem, 8vw, 2.8rem); } .hero-content p { font-size: clamp(0.9rem, 4vw, 1rem); } .cta-button { padding: 0.8rem 1.8rem; font-size: 1rem; } }
+    .particle-enjambre { position: absolute; width: 3px; height: 3px; opacity: 1; box-shadow: 0 0 5px 2px hsla(45, 100%, 70%, 0.5); }
 
-    .page-wrapper { /* Contenedor general si es necesario */ }
-
-
-    /* --- *** INICIO NUEVOS ESTILOS PARA PRODUCTOS DESTACADOS *** --- */
     .featured-products {
         max-width: 1200px;
-        margin: 80px auto; /* Margen vertical separador */
-        padding: 0 40px; /* Padding horizontal */
-        text-align: center; /* Centrar título y subtítulo */
+        margin: 100px auto;
+        padding: 0 2rem;
+        text-align: center;
     }
-     .featured-products .section-title {
-        /* Hereda de :global(h2) o define específicamente */
-        /* font-size: 2.8em; */
-        margin-bottom: 15px;
-        color: #f5f5f5; /* Asegurar color claro */
-    }
-     .featured-products .section-subtitle {
-         font-size: 1.2em;
-         color: #bdbdbd;
-         margin-bottom: 60px; /* Espacio antes de la cuadrícula */
-         max-width: 700px; /* Ancho máximo para el subtítulo */
-         margin-left: auto;
-         margin-right: auto;
-         font-family: 'Source Sans 3', sans-serif; /* Asegurar fuente correcta */
-         font-weight: 400; /* Asegurar peso correcto */
-    }
+    .featured-products .section-subtitle { font-size: 1.2em; color: #bdbdbd; margin-bottom: 60px; max-width: 700px; margin-left: auto; margin-right: auto; }
 
     .product-grid-home {
         display: grid;
-        /* Columnas automáticas: intentará meter columnas de min 300px */
-        grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
-        gap: 40px; /* Espacio entre tarjetas */
-        margin-bottom: 60px; /* Espacio antes del botón Ver Catálogo */
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        justify-content: center; 
+        gap: 40px;
+        margin-bottom: 60px;
     }
 
-    /* Estilos para la tarjeta de producto en la Home */
-    .product-card-home {
-        background-color: #1a1a1a; /* Fondo oscuro de tarjeta */
-        border-radius: 10px; /* Bordes redondeados */
-        overflow: hidden; /* Para que la imagen respete los bordes */
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); /* Sombra sutil */
-        transition: transform 0.3s ease, box-shadow 0.3s ease; /* Transición hover */
-        text-decoration: none; /* Quitar subrayado del enlace */
-        color: inherit; /* Heredar color de texto */
-        display: flex; /* Flexbox para alinear contenido */
-        flex-direction: column; /* Apilar imagen e info */
-        text-align: left; /* Alinear texto a la izquierda */
-    }
-     .product-card-home:hover {
-        transform: translateY(-8px); /* Efecto elevación al pasar el ratón */
-        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.5); /* Sombra más pronunciada */
-     }
-     /* Contenedor de imagen con ratio 1:1 */
-     .product-image-container-home {
+    .product-card-home { background-color: #1a1a1a; border-radius: 10px; overflow: hidden; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); transition: transform 0.3s ease, box-shadow 0.3s ease; text-decoration: none; color: inherit; display: flex; flex-direction: column; text-align: left; }
+    .product-card-home:hover { transform: translateY(-8px); box-shadow: 0 12px 25px rgba(0, 0, 0, 0.5); }
+    .product-image-container-home { width: 100%; padding-top: 100%; position: relative; background-color: #222; }
+    .product-image-container-home img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+    .placeholder-image-home { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background-color: #2a2a2a; color: #777; font-size: 0.9em; text-align: center; line-height: 1.3; padding: 10px; box-sizing: border-box; }
+    .product-info-home { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
+    .product-info-home h3 { font-family: 'Source Sans 3', sans-serif; font-size: 1.25em; font-weight: 600; color: #e0e0e0; margin: 0 0 8px 0; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; min-height: calc(1.3em * 2); }
+    .product-category-home { font-size: 0.85em; color: #aaa; margin-bottom: 15px; display: block; }
+    .product-price-home { font-size: 1.15em; font-weight: bold; color: #c0a062; margin-top: auto; text-align: right; }
+
+    .button-secondary { display: inline-block; padding: 12px 30px; background-color: transparent; color: #c0a062; border: 1px solid #c0a062; text-decoration: none; border-radius: 5px; font-weight: 600; transition: all 0.3s ease; }
+    .button-secondary:hover { background-color: #c0a062; color: #121212; }
+
+    .editorial-seo-container {
         width: 100%;
-        padding-top: 100%; /* Para ratio 1:1 */
-        position: relative; /* Para posicionar la imagen absoluta */
-        background-color: #222; /* Fondo mientras carga la imagen */
-     }
-     .product-image-container-home img {
-        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-        object-fit: cover; /* Cubrir el espacio sin deformar */
+        padding: 80px 2rem;
+        background-color: rgba(255, 255, 255, 0.02);
+        display: flex;
+        justify-content: center;
     }
-     /* Placeholder visual si no hay imagen */
-     .placeholder-image-home {
-        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-        display: flex; align-items: center; justify-content: center;
-        background-color: #2a2a2a; color: #777; font-size: 0.9em; text-align: center;
-        line-height: 1.3; padding: 10px; box-sizing: border-box;
-    }
-    /* Contenedor para la información (título, categoría, precio) */
-    .product-info-home {
-        padding: 20px; /* Espaciado interno */
-        flex-grow: 1; /* Ocupa el espacio restante */
-        display: flex; flex-direction: column; /* Apilar elementos internos */
-    }
-    /* Estilo para el título del producto */
-    .product-info-home h3 {
-        font-family: 'Source Sans 3', sans-serif; /* Usar fuente sans-serif */
-        font-size: 1.25em; font-weight: 600; /* Más peso que el texto normal */
-        color: #e0e0e0; /* Color claro */
-        margin: 0 0 8px 0; /* Margen inferior */
-        line-height: 1.3; /* Altura de línea */
-         /* Limitar a 2 líneas con puntos suspensivos */
-         display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-         overflow: hidden; text-overflow: ellipsis; min-height: calc(1.3em * 2); /* Reserva espacio */
-    }
-    /* Estilo para la categoría (opcional) */
-    .product-category-home {
-        font-size: 0.85em; color: #aaa; /* Color tenue */
-        margin-bottom: 15px; /* Espacio antes del precio */
-        display: block; /* Asegurar que esté en su línea */
-    }
-     /* Estilo para el precio */
-     .product-price-home {
-        font-size: 1.15em; font-weight: bold; color: #c0a062; /* Color de acento */
-        margin-top: auto; /* Empuja el precio al final de la tarjeta */
-        text-align: right; /* Alinear a la derecha */
-    }
+    .editorial-content { max-width: 750px; text-align: center; }
+    .editorial-content h2 { color: #c0a062; margin-bottom: 2rem; font-size: clamp(2rem, 5vw, 2.5rem); }
+    .editorial-content p { margin-left: auto; margin-right: auto; color: #aaa; font-size: 1.1rem; }
 
-    /* Estilo para el contenedor del botón 'Ver Catálogo' */
-    .cta-catalog { text-align: center; }
-    /* Estilo para el botón secundario */
-    .button-secondary {
-        display: inline-block; padding: 12px 30px; background-color: transparent;
-        color: #c0a062; border: 1px solid #c0a062; /* Borde con color de acento */
-        text-decoration: none; border-radius: 5px; font-weight: 600; font-size: 1em;
-        transition: all 0.3s ease; /* Transición suave */
-    }
-    .button-secondary:hover {
-        background-color: #c0a062; /* Fondo de acento al pasar el ratón */
-        color: #121212; /* Texto oscuro */
-    }
-
-     /* --- RESPONSIVIDAD PARA PRODUCTOS DESTACADOS --- */
-     @media (max-width: 768px) {
-        .featured-products { margin: 60px auto; padding: 0 20px; }
-        .featured-products .section-title { font-size: 2.2em; } /* Título más pequeño */
-        .featured-products .section-subtitle { font-size: 1.1em; margin-bottom: 40px; } /* Subtítulo más pequeño */
-        .product-grid-home { gap: 30px; } /* Espacio menor entre tarjetas */
-     }
-      @media (max-width: 480px) {
-        .featured-products { margin: 40px auto; } /* Menos margen vertical */
-         .featured-products .section-title { font-size: 1.9em; } /* Título aún más pequeño */
-         .featured-products .section-subtitle { font-size: 1em; margin-bottom: 30px; } /* Subtítulo aún más pequeño */
-        .product-grid-home { gap: 20px; } /* Espacio menor entre tarjetas */
-      }
-    /* --- *** FIN NUEVOS ESTILOS *** --- */
-
-
-    /* --- ESTILOS TESTIMONIOS (CON AJUSTES PARA EXPANSIÓN) --- */
     .social-proof-section { background-color: #111111; padding: 6rem 0; color: #e0e0e0; overflow: hidden; position: relative; }
-    .container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; text-align: center; }
-    .social-proof-section h2 { font-size: 2.8rem; color: #ffffff; margin-bottom: 1rem; /* Hereda fuente serif global */}
-    .social-proof-section .section-subtitle { font-size: 1.1rem; color: #aaa; max-width: 600px; margin: 0 auto 4rem auto; /* Hereda fuente sans-serif global */}
-    .testimonial-carousel-wrapper { /* Contenedor si necesitas padding extra */ }
-    .testimonial-carousel { display: flex; gap: 2rem; padding: 1rem 0; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -ms-overflow-style: none; /* Ocultar scrollbars */}
+    .testimonial-carousel { display: flex; gap: 2rem; padding: 1rem 0; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
     .testimonial-carousel::-webkit-scrollbar { display: none; }
-    .testimonial-card { flex: 0 0 90%; /* Ancho en móvil */ max-width: 300px; background: linear-gradient(145deg, #1e1e1e, #141414); border: 1px solid #333; padding: 2.5rem; border-radius: 12px; text-align: left; scroll-snap-align: start; /* Alinear tarjetas al inicio */ transition: all 0.4s ease; position: relative; display: flex; flex-direction: column; /* Para alinear footer abajo */}
+    .testimonial-card { flex: 0 0 90%; max-width: 300px; background: linear-gradient(145deg, #1e1e1e, #141414); border: 1px solid #333; padding: 2.5rem; border-radius: 12px; text-align: left; scroll-snap-align: start; transition: all 0.4s ease; position: relative; display: flex; flex-direction: column; }
     .testimonial-card:hover { transform: translateY(-10px); border-color: #c0a062; box-shadow: 0 20px 40px rgba(192, 160, 98, 0.1); }
-    .quote-icon { font-family: 'Playfair Display', serif; font-size: 5rem; color: #c0a062; position: absolute; top: 1rem; left: 1.5rem; opacity: 0.2; z-index: 0; /* Detrás del texto */}
-    /* Blockquote para la cita */
-    .testimonial-card blockquote {
-        font-size: 1.1rem; line-height: 1.6; color: #d0d0d0; margin: 0 0 1rem 0;
-        font-style: normal; border: none; padding: 0; position: relative; z-index: 1;
-        overflow: hidden; /* Ocultar texto extra */
-        transition: max-height 0.5s ease-out; /* Animación suave al expandir/colapsar */
-    }
-    /* Estado colapsado del blockquote */
-    .testimonial-card blockquote.collapsed {
-        /* Limita la altura visible (aprox. 6 líneas) */
-        max-height: calc(1.6em * 6); /* 1.6 (line-height) * 6 (líneas) */
-    }
-    /* Botón Ver más / Ver menos */
-    .toggle-button {
-        background: none; border: none; color: #c0a062; font-weight: bold; cursor: pointer;
-        padding: 0.5rem 0; margin-bottom: 1.5rem; align-self: flex-start; /* Alinear a la izquierda */
-        font-size: 0.9em; text-transform: uppercase; letter-spacing: 0.5px;
-    }
-    .toggle-button:hover { text-decoration: underline; }
-    /* Footer de la tarjeta */
-    .testimonial-card footer { margin-top: auto; /* Empuja al final */ display: flex; align-items: center; gap: 1rem; text-align: left; border-top: 1px solid #333; padding-top: 1.5rem; }
+    .quote-icon { font-family: 'Playfair Display', serif; font-size: 5rem; color: #c0a062; position: absolute; top: 1rem; left: 1.5rem; opacity: 0.2; z-index: 0; }
+    .testimonial-card blockquote { font-size: 1.1rem; line-height: 1.6; color: #d0d0d0; margin: 0 0 1rem 0; position: relative; z-index: 1; overflow: hidden; transition: max-height 0.5s ease-out; }
+    .testimonial-card blockquote.collapsed { max-height: calc(1.6em * 6); }
+    .toggle-button { background: none; border: none; color: #c0a062; font-weight: bold; cursor: pointer; padding: 0.5rem 0; margin-bottom: 1.5rem; align-self: flex-start; font-size: 0.9em; text-transform: uppercase; }
+    .testimonial-card footer { margin-top: auto; display: flex; align-items: center; gap: 1rem; text-align: left; border-top: 1px solid #333; padding-top: 1.5rem; }
     .author-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; background-color: #c0a062; flex-shrink: 0; }
-    .author-name { font-weight: bold; color: #ffffff; margin: 0; font-size: 1em; /* Tamaño normal */}
+    .author-name { font-weight: bold; color: #ffffff; margin: 0; }
     .author-title { font-size: 0.9rem; color: #aaa; margin: 0; }
 
-    /* Responsividad para testimonios */
     @media (min-width: 768px) {
-        .testimonial-card { flex-basis: 45%; max-width: none; /* Permitir que crezca */}
+        .testimonial-card { flex-basis: 45%; max-width: none; }
     }
     @media (min-width: 1024px) {
-        /* Centrar tarjetas si caben todas */
-        .testimonial-carousel { justify-content: center; overflow-x: hidden; /* Desactivar scroll si caben */}
-        .testimonial-card { flex-basis: 30%; /* Tres columnas */}
+        .testimonial-carousel { justify-content: center; overflow-x: hidden; }
+        .testimonial-card { flex-basis: 30%; }
     }
-
 </style>
-
