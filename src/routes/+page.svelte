@@ -288,11 +288,13 @@
     :global(a) { color: #c0a062; text-decoration: none; transition: color 0.3s ease; }
     :global(a:hover) { color: #ffffff; text-decoration: underline; }
     :global(img, svg, video) { max-width: 100%; height: auto; display: block; }
-
+    :global(#main-content) {
+        padding-top: 0 !important;
+    }
      .title-serif { font-family: 'Playfair Display', serif; font-weight: 400; }
 
     .home-container { 
-        min-height: 100vh; 
+        min-height: 100vh; margin-top: 0;
         position: relative; 
         display: flex; 
         justify-content: center; 
