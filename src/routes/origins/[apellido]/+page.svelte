@@ -9,7 +9,7 @@
     const cleanText = (s = '') =>
         s
             .replace(/\s+/g, ' ')
-            .replace(/[“”"]/g, '') // Quita comillas problemáticas
+            .replace(/[“”"]/g, '') 
             .trim();
 
     const truncate = (s, max = 160) => {
@@ -25,13 +25,12 @@
     $: slug = linaje?.slug || '';
     $: canonicalUrl = slug ? `${SITE}/origins/${slug}` : `${SITE}/origins`;
     
-    // Generamos la descripción basada en el blasón o la introducción
     $: seoDescription = truncate(
         linaje?.blasonTexto || linaje?.introduccion || `Explora el origen y heráldica del linaje ${linaje?.title || ''}.`, 
         160
     );
 
-    // Construcción del Breadcrumb (JSON-LD)
+    // Breadcrumb
     $: breadcrumbJsonLd = slug
         ? {
             "@context": "https://schema.org",
@@ -89,7 +88,22 @@
                 {#if linaje.blason}
                     <div class="escudo-descripcion-wrapper" class:expanded={mostrarDetallesEscudo} id="escudo-details">
                         <div class="texto-blason">
+                            
+                            <p class="intro-contexto">
+                                Una versión heráldica atribuida al linaje <strong>{linaje.title}</strong> en fuentes tradicionales.
+                            </p>
+
                             <PortableText value={linaje.blason} />
+
+                            <div class="disclaimer-box">
+                                <p class="nota-precision">
+                                    <strong>Nota:</strong> Un mismo apellido puede tener múltiples linajes y escudos según región y época. Para precisión por rama familiar, se requiere investigación a medida.
+                                </p>
+                                <a href="/solicitar-consulta" class="cta-investigacion">
+                                    Solicitar investigación a medida &rarr;
+                                </a>
+                            </div>
+
                         </div>
                     </div>
                     
@@ -156,36 +170,61 @@
         <p>Cargando información del linaje...</p>
     {/if}
 </div>
+
 <style>
-    /* Estilo para ocultar la lista visualmente sin quitarla del DOM */
     .sr-only {
         position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        white-space: nowrap;
-        border: 0;
+        width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
     }
-    /* --- ESTILOS DEL TEXTO BLASÓN --- */
+
+    /* --- ESTILOS DEL TEXTO BLASÓN Y NOTAS --- */
     .texto-blason {
         color: #aaa;
         line-height: 1.6;
-        text-align: left; /* <--- CAMBIO: Alineado a la izquierda */
+        text-align: left;
         font-size: 0.95rem;
     }
     
-    /* Estilos para los párrafos dentro del texto rico */
-    .texto-blason :global(p) {
-        margin-bottom: 1rem; /* Espacio entre párrafos */
+    .texto-blason :global(p) { margin-bottom: 1rem; }
+    .texto-blason :global(strong) { color: #c0a062; font-weight: 700; }
+
+    /* NUEVO: Estilo para la frase introductoria */
+    .intro-contexto {
+        font-style: italic;
+        color: #e0e0e0;
+        margin-bottom: 1.5rem !important;
+        border-left: 2px solid #c0a062;
+        padding-left: 1rem;
     }
 
-    /* Estilos globales para negritas dentro del PortableText */
-    .texto-blason :global(strong) {
+    /* NUEVO: Caja de Disclaimer y CTA */
+    .disclaimer-box {
+        margin-top: 2rem;
+        padding: 1.5rem;
+        background-color: rgba(255, 255, 255, 0.03);
+        border: 1px solid #333;
+        border-radius: 4px;
+    }
+
+    .nota-precision {
+        font-size: 0.85rem;
+        color: #888;
+        margin-bottom: 1rem !important;
+    }
+
+    .cta-investigacion {
+        display: inline-block;
         color: #c0a062;
-        font-weight: 700;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        border-bottom: 1px solid transparent;
+        transition: all 0.3s ease;
+    }
+    .cta-investigacion:hover {
+        color: #fff;
+        border-bottom-color: #fff;
     }
 
     /* --- ESTILOS GENERALES --- */
@@ -200,7 +239,7 @@
     .escudo-wrapper::before { content: ''; position: absolute; top: 0; left: -85%; width: 50%; height: 100%; background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0) 100%); transform: skewX(-25deg); transition: left 0.8s; }
     .escudo-wrapper:hover::before { left: 120%; }
 
-    .escudo-descripcion-wrapper { max-height: 250px; overflow: hidden; margin-bottom: 0.5rem; padding: 0 1rem; transition: max-height 0.5s ease-in-out; width: 100%; /* Asegurar ancho completo */ }
+    .escudo-descripcion-wrapper { max-height: 250px; overflow: hidden; margin-bottom: 0.5rem; padding: 0 1rem; transition: max-height 0.5s ease-in-out; width: 100%; }
     .escudo-descripcion-wrapper.expanded { max-height: 2000px; }
     
     .boton-toggle-escudo { background: none; border: none; color: #c0a062; cursor: pointer; font-weight: bold; font-size: 0.9rem; text-transform: uppercase; margin-bottom: 2rem; transition: color 0.2s; }

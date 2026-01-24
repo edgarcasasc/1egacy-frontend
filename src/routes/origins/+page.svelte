@@ -2,7 +2,6 @@
     import { onMount } from 'svelte';
     import * as d3 from 'd3';
     import LinajeModal from '../../components/LinajeModal.svelte';
-    // Eliminamos Navbar importado si ya viene del layout global
 
     export let data;
     const safeBaseUrl = 'https://somos1egacy.com';
@@ -95,10 +94,10 @@
         "mainEntity": {
             "@type": "ItemList",
             "itemListElement": (data.linajes || []).map((l, i) => ({
-    "@type": "ListItem",
-    "position": i + 1,
-    "url": `${safeBaseUrl}/origins/${l.slug}`
-}))
+                "@type": "ListItem",
+                "position": i + 1,
+                "url": `${safeBaseUrl}/origins/${l.slug}`
+            }))
         }
     };
 </script>
@@ -117,12 +116,19 @@
 
 <div class="origins-container">
     <header class="manifesto">
-        <h1>El Legado del Linaje</h1>
-        <p>Tu apellido es la clave de un universo de historias no contadas.</p>
+        <h1>Explora tu apellido</h1>
+        <p>Encuentra el Códice, la heráldica y piezas de la colección relacionadas con tu linaje.</p>
     </header>
 
     <div class="buscador-wrapper">
-        <input type="text" placeholder="Busca tu apellido..." bind:value={terminoBusqueda} />
+        <input 
+            type="text" 
+            placeholder="Escribe tu apellido (ej. Mendez, López, Garza)" 
+            bind:value={terminoBusqueda} 
+        />
+        <p class="helper-text">
+            Si tu apellido aún no está publicado, puedes solicitar una investigación a medida.
+        </p>
     </div>
 
     {#if data.linajes && linajesFiltrados.length > 0}
@@ -130,13 +136,13 @@
             <svg id="constelacion-svg" bind:this={svgElement} />
         </div>
         
-<nav class="sr-only" aria-label="Lista de linajes disponibles">
-  <ul>
-    {#each data.linajes as l}
-      <li><a href="/origins/{l.slug}">{l.id}</a></li>
-    {/each}
-  </ul>
-</nav>
+        <nav class="sr-only" aria-label="Lista de linajes disponibles">
+            <ul>
+                {#each data.linajes as l}
+                    <li><a href="/origins/{l.slug}">{l.id}</a></li>
+                {/each}
+            </ul>
+        </nav>
     {:else if terminoBusqueda !== ''}
         <div class="no-resultados-wrapper">
             <h3>El apellido "{terminoBusqueda}" aún no está en nuestra constelación.</h3>
@@ -159,54 +165,58 @@
 {/if}
 
 <style>
-.origins-container {
-    /* Usamos la altura del header variable + margen */
-    padding-bottom: 60px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    min-height: 100vh;
-    box-sizing: border-box;
-  }
-
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-  }
-
-	/* Estilos para el formulario mejorado */
-	.formulario-interes button:disabled { background-color: #555; cursor: not-allowed; }
-	.form-status { margin-top: 1rem; font-size: 0.9rem; color: #c0a062; }
-
-	.manifesto { text-align: center; max-width: 800px; margin-bottom: 2rem; }
-	.constelacion-wrapper { width: 100%; max-width: 1200px; height: 600px; border: 1px solid #333; border-radius: 8px; overflow: hidden; }
-	#constelacion-svg { width: 100%; height: 100%; }
-	.buscador-wrapper { margin-bottom: 2rem; width: 100%; max-width: 400px; }
-	.buscador-wrapper input { width: 100%; padding: 1rem; background-color: #1a1a1a; border: 1px solid #333; color: #e0e0e0; font-size: 1.1rem; text-align: center; border-radius: 4px; }
-	.no-resultados-wrapper, .cargando-wrapper { width: 100%; max-width: 1200px; height: 600px; border: 1px solid #333; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2rem; }
-	.formulario-interes { display: flex; width: 100%; max-width: 500px; }
-	.formulario-interes input { flex-grow: 1; padding: 1rem; background-color: #1a1a1a; border: 1px solid #333; color: #e0e0e0; font-size: 1rem; border-right: none; border-radius: 4px 0 0 4px; }
-	.formulario-interes button { background-color: #c0a062; color: #121212; border: 1px solid #c0a062; padding: 1rem 2rem; font-size: 1rem; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: background-color 0.3s ease; border-radius: 0 4px 4px 0; }
-	
-	@media (max-width: 768px) {
-		.constelacion-wrapper, .no-resultados-wrapper, .cargando-wrapper { height: 500px; }
-	}
-	@media (max-width: 576px) {
-		.origins-container {
-      padding-top: calc(var(--header-h, 60px) + 1.5rem);
-      padding-left: 1rem;
-      padding-right: 1rem;
+    .origins-container {
+        padding-bottom: 60px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        min-height: 100vh;
+        box-sizing: border-box;
     }
-		.constelacion-wrapper, .no-resultados-wrapper, .cargando-wrapper { height: 60vh; }
-	}
-	
-</style>
 
+    .sr-only {
+        position: absolute;
+        width: 1px; height: 1px; padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+    }
+
+    /* Estilos para el formulario mejorado */
+    .formulario-interes button:disabled { background-color: #555; cursor: not-allowed; }
+    .form-status { margin-top: 1rem; font-size: 0.9rem; color: #c0a062; }
+
+    .manifesto { text-align: center; max-width: 800px; margin-bottom: 2rem; }
+    /* Ajuste para que el subtítulo se vea bien */
+    .manifesto p { color: #b0b0b0; font-size: 1.1rem; max-width: 60ch; margin: 0 auto; }
+
+    .constelacion-wrapper { width: 100%; max-width: 1200px; height: 600px; border: 1px solid #333; border-radius: 8px; overflow: hidden; }
+    #constelacion-svg { width: 100%; height: 100%; }
+    
+    .buscador-wrapper { margin-bottom: 2rem; width: 100%; max-width: 400px; text-align: center; }
+    .buscador-wrapper input { width: 100%; padding: 1rem; background-color: #1a1a1a; border: 1px solid #333; color: #e0e0e0; font-size: 1.1rem; text-align: center; border-radius: 4px; }
+    
+    /* Estilo para el nuevo helper text */
+    .helper-text {
+        font-size: 0.85rem;
+        color: #777;
+        margin-top: 0.7rem;
+        margin-bottom: 0;
+    }
+
+    .no-resultados-wrapper, .cargando-wrapper { width: 100%; max-width: 1200px; height: 600px; border: 1px solid #333; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2rem; }
+    .formulario-interes { display: flex; width: 100%; max-width: 500px; }
+    .formulario-interes input { flex-grow: 1; padding: 1rem; background-color: #1a1a1a; border: 1px solid #333; color: #e0e0e0; font-size: 1rem; border-right: none; border-radius: 4px 0 0 4px; }
+    .formulario-interes button { background-color: #c0a062; color: #121212; border: 1px solid #c0a062; padding: 1rem 2rem; font-size: 1rem; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: background-color 0.3s ease; border-radius: 0 4px 4px 0; }
+    
+    @media (max-width: 768px) {
+        .constelacion-wrapper, .no-resultados-wrapper, .cargando-wrapper { height: 500px; }
+    }
+    @media (max-width: 576px) {
+        .origins-container {
+            padding-top: calc(var(--header-h, 60px) + 1.5rem);
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        .constelacion-wrapper, .no-resultados-wrapper, .cargando-wrapper { height: 60vh; }
+    }
+</style>

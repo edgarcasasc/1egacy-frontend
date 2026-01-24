@@ -53,7 +53,7 @@
           "https://www.instagram.com/somos1egacy/",
           "https://x.com/somos1egacy",
           "https://www.youtube.com/@somos1egacy",
-          "https://www.tiktok.com/@somos1egacy_"
+          "https://www.tiktok.com/@somos1egacy"
         ]
       },
       {

@@ -9,12 +9,12 @@
       <a href="/" class="footer-logo-link" aria-label="Ir a la página de inicio de 1egacy">
         <Logo />
       </a>
-      <p class="tagline">Narrando lo que no se ha narrado.</p>
+      <p class="tagline">Historias familiares, listas para heredarse.</p>
     </div>
 
     <div class="footer-socials">
       <a href="https://www.instagram.com/somos1egacy/" target="_blank" rel="noopener noreferrer">Instagram</a>
-      <a href="https://x.com/somos1egacy" target="_blank" rel="noopener noreferrer">X</a>
+      <a href="https://x.com/somos1egacy" target="_blank" rel="noopener noreferrer">X (Twitter)</a>
       <a href="https://www.youtube.com/@somos1egacy" target="_blank" rel="noopener noreferrer">YouTube</a>
       <a href="https://www.tiktok.com/@somos1egacy_" target="_blank" rel="noopener noreferrer">TikTok</a>
       <a href="https://www.facebook.com/profile.php?id=61579103341000" target="_blank" rel="noopener noreferrer">Facebook</a>
@@ -24,17 +24,25 @@
 
   <div class="footer-bottom">
     <div class="legal-info">
-      <p>&copy; {year} 1egacy. Todos los derechos reservados.</p>
+      <p>
+        &copy; {year} 1egacy. Todos los derechos reservados. 
+        <span class="legal-links">
+          <span class="sep">·</span> <a href="/privacidad">Privacidad</a> 
+          <span class="sep">·</span> <a href="/terminos">Términos</a>
+        </span>
+      </p>
+      <a href="/solicitar-consulta" class="footer-cta">Solicitar evaluación</a>
     </div>
+
     <p class="credits">
-      Desarrollado por <a href="https://acclarolabs.com/" target="_blank" rel="noopener noreferrer">Acclaro Labs</a>
+      Sitio por <a href="https://acclarolabs.com/" target="_blank" rel="noopener noreferrer">Acclaro</a>
     </p>
   </div>
 </footer>
 
 <style>
   .footer {
-    padding: 5rem 2rem 2rem;
+    padding: 5rem 2rem 3rem;
     background-color: #0a0a0a;
     border-top: 1px solid #1a1a1a;
   }
@@ -61,7 +69,8 @@
     font-family: 'Playfair Display', serif;
     font-style: italic;
     color: #c0a062;
-    font-size: 0.95rem;
+    font-size: 1rem;
+    letter-spacing: 0.02em;
   }
 
   .footer-socials {
@@ -77,12 +86,14 @@
     font-size: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 0.12em;
-    color: #666; /* Color tenue para redes "pasivas" */
+    color: #666; 
     transition: color 0.3s ease;
+    text-decoration: none;
   }
 
-  .footer-socials a:hover { color: #c0a062; text-decoration: none; }
+  .footer-socials a:hover { color: #c0a062; }
 
+  /* FOOTER BOTTOM */
   .footer-bottom {
     max-width: 1200px;
     margin: 0 auto;
@@ -90,16 +101,51 @@
     border-top: 1px solid #1a1a1a;
     display: flex;
     justify-content: space-between;
+    align-items: center; /* Alineación vertical */
     color: #444;
     font-size: 0.75rem;
   }
 
-  .credits a { color: #666; font-weight: 600; transition: color 0.3s; }
+  .legal-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+
+  .legal-info p { margin: 0; }
+
+  .legal-links a {
+    color: #444;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .legal-links a:hover { color: #888; }
+  .sep { margin: 0 5px; }
+
+  /* Nuevo CTA discreto */
+  .footer-cta {
+    color: #c0a062;
+    font-weight: 700;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.7rem;
+    margin-top: 0.2rem;
+    border-bottom: 1px solid transparent;
+    transition: all 0.3s;
+  }
+  .footer-cta:hover { border-bottom-color: #c0a062; color: #fff; }
+
+  .credits { margin: 0; }
+  .credits a { color: #666; font-weight: 600; text-decoration: none; transition: color 0.3s; }
   .credits a:hover { color: #c0a062; }
 
   @media (max-width: 768px) {
     .footer-content { flex-direction: column; align-items: center; text-align: center; }
     .footer-socials { justify-content: center; }
-    .footer-bottom { flex-direction: column; gap: 1rem; text-align: center; }
+    
+    .footer-bottom { flex-direction: column; gap: 2rem; text-align: center; }
+    .legal-info { align-items: center; }
   }
 </style>

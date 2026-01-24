@@ -10,36 +10,40 @@
         { 
             id: 'instantes', 
             title: 'Instantes', 
-            format: 'Cortometraje (Disponible)', 
-            description: 'Un poema visual sobre la memoria y la conexión humana. Explora cómo los recuerdos más pequeños pueden definir una vida entera. Nuestra ópera prima ahora en línea.', 
+            format: 'Disponible · Cortometraje', 
+            description: 'Un poema visual sobre la memoria y la conexión humana. Explora cómo los recuerdos más pequeños pueden definir una vida entera.', 
             image: 'articulos/instantes.webp',
-            videoUrl: 'https://www.youtube-nocookie.com/embed/tP4V5myfKI0?rel=0&modestbranding=1'
+            videoUrl: 'https://www.youtube-nocookie.com/embed/tP4V5myfKI0?rel=0&modestbranding=1',
+            status: 'available'
         },
         { 
             id: 'receta-abuela', 
             title: 'La Obra del Sabor', 
-            format: 'Cortometraje Documental', 
-            description: 'Más allá de los ingredientes, una receta es una herencia, un lenguaje de amor transmitido a través de generaciones. Este cortometraje es un tributo a esos legados intangibles que se guardan en el corazón de la cocina familiar.', 
-            image: 'articulos/cocina_corazon.webp' 
+            format: 'Disponible · Documental', 
+            description: 'Más allá de los ingredientes, una receta es una herencia. Un tributo a los legados intangibles que se guardan en el corazón de la cocina familiar.', 
+            image: 'articulos/cocina_corazon.webp',
+            status: 'available'
         },
         { 
             id: 'akari', 
-            title: 'Akari: El Susurro de los Olvidados', 
-            format: 'Serie Animada (En Desarrollo)', 
-            description: 'Nuestro proyecto más ambicioso. Una historia épica de memoria, pérdida y redención en un mundo fantástico. Akari es nuestra prueba de que la animación es un medio poderoso para construir mundos complejos.', 
-            image: 'articulos/akari.webp' 
+            title: 'Akari', 
+            format: 'En desarrollo · Serie animada', 
+            description: 'Una historia épica de memoria, pérdida y redención en un mundo fantástico. Nuestra exploración sobre la construcción de mundos complejos.', 
+            image: 'articulos/akari.webp',
+            status: 'dev'
         },
         { 
             id: 'princesa-luna', 
             title: 'La Princesa de la Luna', 
-            format: 'Cortometraje Animado (En Desarrollo)', 
-            description: 'Una fábula atemporal sobre la luz, la promesa y la devoción. Este cuento busca capturar la magia de las historias que nos contaban bajo las estrellas.', 
-            image: 'articulos/princesa.webp' 
+            format: 'En desarrollo · Cortometraje', 
+            description: 'Una fábula atemporal sobre la luz y la promesa. Este cuento busca capturar la magia de las historias orales bajo las estrellas.', 
+            image: 'articulos/princesa.webp',
+            status: 'dev'
         }
     ];
 
-    const pageTitle = "1egacy FILMS | Historias que trascienden";
-    const pageDescription = "En 1egacy FILMS esculpimos legados cinematográficos. Documentales de linaje y archivos cinematográficos.";
+    const pageTitle = "1egacy FILMS | Films que preservan memoria";
+    const pageDescription = "Documentales familiares y archivos cinematográficos para conservar y compartir tu historia.";
 </script>
 
 <svelte:head>
@@ -77,9 +81,10 @@
     </div>
     
     <div class="hero-content">
-        <h1>Historias que trascienden el tiempo</h1>
-        <h2>Documentales de linaje y archivos cinematográficos para preservar tu legado.</h2>
-        <a href="#proyectos" class="cta-button">Ver Producciones</a>
+        <h1>Films que preservan memoria</h1>
+        <h2>Documentales familiares y archivos cinematográficos para conservar y compartir tu historia.</h2>
+        <p class="hero-extra">Para familias que quieren dejar un registro audiovisual serio: íntimo, bello y perdurable.</p>
+        <a href="#proyectos" class="cta-button">Ver proyectos</a>
     </div>
     
     <div class="scroll-down-arrow"></div>
@@ -89,12 +94,18 @@
     <section class="film-philosophy-section">
         <h3 class="title-serif">Creemos en el Cine como un Acto de Memoria.</h3>
         <p>
-            El mundo está lleno de imágenes fugaces. Nosotros buscamos lo eterno. Nuestro propósito es simple: crear piezas audiovisuales con la profundidad de un relato y la belleza de una obra de arte. Fusionamos la sensibilidad de un cineasta de autor con la rigurosidad de un historiador.
+            El mundo está lleno de imágenes fugaces. Nosotros creamos obras con intención: cine con profundidad narrativa y cuidado estético. Combinamos sensibilidad cinematográfica con investigación y curaduría para producir piezas que puedan heredarse.
         </p>
     </section>
 
     <section class="film-projects-section" id="proyectos">
-        <h2 class="title-serif section-title">Nuestro Laboratorio de Historias</h2>
+        <p class="service-pitch">
+            También producimos documentales familiares a medida. Si quieres preservar una historia específica, <a href="/contacto">inicia una evaluación</a>.
+        </p>
+
+        <h2 class="title-serif section-title">Proyectos</h2>
+        <p class="section-micro">Obras publicadas y proyectos en desarrollo.</p>
+
         <div class="projects-grid">
             {#each projects as project (project.id)}
                 <div class="project-card">
@@ -112,15 +123,23 @@
                             </iframe>
                         {:else}
                             <img src={project.image} alt={project.title} loading="lazy" decoding="async">
-                            {#if project.format.includes('(En Desarrollo)')}
+                            {#if project.status === 'dev'}
                                 <span class="status-badge">En Desarrollo</span>
                             {/if}
                         {/if}
                     </div>
                     <div class="card-info">
                         <h4>{project.title}</h4>
-                        <span class="format-label">{project.format.replace(' (En Desarrollo)', '')}</span>
+                        <span class="format-label">{project.format}</span>
                         <p>{project.description}</p>
+                        
+                        <div class="card-action">
+                            {#if project.status === 'available'}
+                                <span class="project-link">Ver ahora &rarr;</span>
+                            {:else}
+                                <span class="project-link inactive">Ver sinopsis</span>
+                            {/if}
+                        </div>
                     </div>
                 </div>
             {/each}
@@ -128,18 +147,19 @@
     </section>
 
     <section class="film-process-section">
-        <h2 class="title-serif section-title">Nuestra Metodología</h2>
+        <h2 class="title-serif section-title">Cómo lo hacemos</h2>
         <ol class="process-steps-list">
-            <li><h4>1. Inmersión</h4><p>Investigación profunda y desarrollo narrativo.</p></li>
-            <li><h4>2. Producción</h4><p>Rodaje con atención meticulosa al detalle cinematográfico.</p></li>
-            <li><h4>3. Post-Producción</h4><p>Edición, colorización y diseño sonoro original.</p></li>
-            <li><h4>4. Entrega</h4><p>Formatos de alta calidad para preservación de legados.</p></li>
+            <li><h4>1. Inmersión y entrevista</h4><p>Entrevistas, archivos disponibles y guion.</p></li>
+            <li><h4>2. Producción</h4><p>Rodaje y captura con estándar cinematográfico.</p></li>
+            <li><h4>3. Postproducción</h4><p>Edición, color y diseño sonoro.</p></li>
+            <li><h4>4. Entrega y preservación</h4><p>Entregables listos para conservar, compartir y proyectar.</p></li>
         </ol>
     </section>
 
     <section class="film-final-cta-section" id="contacto">
-        <h2 class="title-serif">Tu historia merece ser contada con luz.</h2>
-        <a href="/contacto" class="cta-button">Iniciar Conversación</a> 
+        <h2 class="title-serif">Tu historia merece un registro a la altura.</h2>
+        <a href="/contacto" class="cta-button">Solicitar evaluación</a> 
+        <p class="cta-microcopy">Privado · Respuesta en 48–72 h · Solo casos seleccionados</p>
     </section>
 </div>
 
@@ -191,13 +211,13 @@
         max-width: 850px; 
         padding: 20px; 
         z-index: 2; 
-        /* El header está encima; evita que el texto quede tapado */
         padding-top: var(--header-h);
         margin-top: 0;
     }
 
     .hero-content h1 { font-size: clamp(2.5rem, 8vw, 4rem); line-height: 1.1; margin-bottom: 0.5em; }
-    .hero-content h2 { font-size: clamp(1rem, 3vw, 1.4rem); font-weight: 300; color: #d0d0d0; margin-bottom: 2em; }
+    .hero-content h2 { font-size: clamp(1rem, 3vw, 1.4rem); font-weight: 300; color: #d0d0d0; margin-bottom: 1em; }
+    .hero-extra { font-size: 1rem; color: #aaa; margin-bottom: 2.5em; font-style: italic; }
 
     .cta-button {
         display: inline-block; padding: 16px 32px; background-color: var(--gold);
@@ -209,24 +229,52 @@
     .film-philosophy-section { padding: 120px 0; text-align: center; border-bottom: 1px solid #222; }
     .film-philosophy-section p { font-size: 1.25rem; color: #888; line-height: 1.8; max-width: 850px; margin: 0 auto; }
 
-    .projects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px; padding: 80px 0; }
-    .project-card { background: #111; border: 1px solid #222; overflow: hidden; display: flex; flex-direction: column; }
+    /* PROYECTOS */
+    .film-projects-section { padding: 80px 0; }
+    
+    .service-pitch {
+        text-align: center;
+        color: #888;
+        margin-bottom: 60px;
+        font-size: 1.1rem;
+        padding-bottom: 40px;
+        border-bottom: 1px solid #222;
+    }
+    .service-pitch a { color: var(--gold); text-decoration: underline; }
+
+    .section-title { text-align: center; margin-bottom: 10px; }
+    .section-micro { text-align: center; color: #666; font-size: 0.9rem; margin-bottom: 60px; text-transform: uppercase; letter-spacing: 1px; }
+
+    .projects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px; }
+    
+    .project-card { background: #111; border: 1px solid #222; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.3s; }
+    .project-card:hover { border-color: var(--gold); transform: translateY(-5px); }
+
     .card-image-container { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; }
     .card-image-container img { width: 100%; height: 100%; object-fit: cover; }
     
     .status-badge { 
-        position: absolute; top: 15px; right: 15px; background: var(--gold); color: #000; 
-        padding: 5px 12px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase;
+        position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.8); color: var(--gold); 
+        padding: 5px 12px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; border: 1px solid var(--gold);
     }
 
-    .card-info { padding: 30px; }
+    .card-info { padding: 30px; flex-grow: 1; display: flex; flex-direction: column; }
     .card-info h4 { font-size: 1.3rem; color: #fff; margin-bottom: 5px; }
-    .format-label { color: var(--gold); font-size: 0.8rem; text-transform: uppercase; margin-bottom: 15px; display: block; }
+    .format-label { color: #666; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 15px; display: block; letter-spacing: 0.05em; }
+    .card-info p { color: #999; margin-bottom: 20px; flex-grow: 1; }
 
-    .process-steps-list { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 40px; margin-bottom: 100px; }
+    .card-action { margin-top: auto; }
+    .project-link { color: var(--gold); font-weight: bold; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; cursor: pointer; }
+    .project-link.inactive { color: #444; cursor: default; }
+
+    /* METODOLOGÍA */
+    .process-steps-list { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 40px; margin-bottom: 100px; margin-top: 60px; }
     .process-steps-list li { border-top: 1px solid var(--gold); padding-top: 25px; }
-    .process-steps-list h4 { color: var(--gold); margin-bottom: 10px; }
+    .process-steps-list h4 { color: var(--gold); margin-bottom: 10px; font-size: 1.1rem; }
+    .process-steps-list p { font-size: 0.95rem; color: #aaa; }
 
     .film-final-cta-section { padding: 100px 0; text-align: center; border-top: 1px solid #222; }
+    .cta-microcopy { font-size: 0.8rem; color: #666; margin-top: 20px; }
+    
     .scroll-down-arrow { position: absolute; bottom: 30px; left: 50%; width: 1px; height: 50px; background: rgba(255,255,255,0.2); }
 </style>

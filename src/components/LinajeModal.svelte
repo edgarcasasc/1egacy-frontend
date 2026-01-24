@@ -1,173 +1,195 @@
 <script>
-	import { fade } from 'svelte/transition';
+    import { fade } from 'svelte/transition';
 
-	/**
-	 * @typedef {object} LinajeData
-	 * @property {string} id - The display name (e.g., "López")
-	 * @property {string} slug - The URL-friendly slug (e.g., "lopez") // This is needed
-	 * @property {string} [escudoUrl] - URL of the coat of arms image
-	 * @property {string} [introduccion] - Introduction text
-	 */
+    /**
+     * @typedef {object} LinajeData
+     * @property {string} id - El Apellido (ej. "López")
+     * @property {string} slug - El slug URL (ej. "lopez")
+     * @property {string} [escudoUrl] - URL de la imagen
+     * @property {string} [modalDescription] - Descripción corta (si existe)
+     */
 
-	/** @type {LinajeData} */
-	export let linaje = {}; // Default to empty object to avoid errors
-	export let onCerrar = () => {};
+    /** @type {LinajeData} */
+    export let linaje = {}; 
+    export let onCerrar = () => {};
 
-	// Derive values safely
-	$: apellido = linaje?.id || 'Linaje Desconocido'; // Use optional chaining and fallback
-	$: introduccion = linaje?.introduccion || 'Información no disponible.';
-	$: escudoUrl = linaje?.escudoUrl || '';
-	$: slug = linaje?.slug || ''; // <-- Obtenemos el slug
+    // --- VARIABLES DERIVADAS ---
+    $: apellido = linaje?.id || 'Linaje';
+    $: escudoUrl = linaje?.escudoUrl || '';
+    $: slug = linaje?.slug || '';
+    
+    // Detectamos si existe contenido real (si hay slug)
+    $: hasContent = !!slug;
+
+    // --- LÓGICA DE TEXTOS (COPYWRITING) ---
+    $: tituloEstado = hasContent 
+        ? (linaje?.modalDescription || 'Disponible en el Códice')
+        : 'Aún no está publicado';
+
+    $: descripcionEstado = hasContent
+        ? `Artículos y piezas relacionadas con el linaje ${apellido}.`
+        : 'Podemos priorizarlo para ti con una investigación a medida.';
 
 </script>
 
 <div
-	class="modal-background"
-	on:click={onCerrar}
-	on:keydown={(e) => { if (e.key === 'Escape' || e.key === 'Enter') onCerrar(); }}
-	role="button"
-	tabindex="0"
-	aria-label="Cerrar ventana modal"
-	transition:fade={{ duration: 300 }}>
+    class="modal-background"
+    on:click={onCerrar}
+    on:keydown={(e) => { if (e.key === 'Escape' || e.key === 'Enter') onCerrar(); }}
+    role="button"
+    tabindex="0"
+    aria-label="Cerrar ventana modal"
+    transition:fade={{ duration: 300 }}>
 
-<div class="modal-content" on:click|stopPropagation transition:fade={{ duration: 300, delay: 150 }}>
-	<h2>{apellido}</h2>
-	{#if escudoUrl}
-		<div class="escudo-wrapper">
-			<img src={escudoUrl} alt="Escudo de Armas de {apellido}" />
-		</div>
-	{/if}
-	<p class="introduccion">{introduccion}</p>
+    <div class="modal-content" on:click|stopPropagation transition:fade={{ duration: 300, delay: 150 }}>
+        
+        <h2>{apellido}</h2>
+        
+        {#if escudoUrl}
+            <div class="escudo-wrapper">
+                <img src={escudoUrl} alt="Escudo de Armas de {apellido}" />
+            </div>
+        {/if}
+        
+        <div class="info-block">
+            <p class="status-title">{tituloEstado}</p>
+            <p class="status-desc">{descripcionEstado}</p>
+        </div>
 
-	<div class="acciones">
-		{#if slug}
-			<a href="/origins/{slug}" class="cta-principal">Explorar Legado {apellido}</a>
-		{:else}
-			<button class="cta-principal" disabled>Enlace no disponible</button>
-		{/if}
-		<button class="cta-secundario" on:click={onCerrar}>Cerrar</button>
-	</div>
-</div>
+        <div class="acciones">
+            {#if hasContent}
+                <a href="/origins/{slug}" class="cta-principal">
+                    Abrir Códice de {apellido}
+                </a>
+                <button class="cta-secundario" on:click={onCerrar}>
+                    Cerrar
+                </button>
+            {:else}
+                <a href="/contacto?asunto=Investigacion%20{apellido}" class="cta-principal">
+                    Solicitar investigación
+                </a>
+                <button class="cta-secundario" on:click={onCerrar}>
+                    Ver apellidos disponibles
+                </button>
+            {/if}
+        </div>
+
+    </div>
 </div>
 
 <style>
-	/* --- Estilos sin cambios --- */
-	.modal-background {
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background-color: rgba(0, 0, 0, 0.9); /* Más oscuro para más drama */
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		z-index: 1000;
-	}
+    /* --- Estructura Modal --- */
+    .modal-background {
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        background-color: rgba(0, 0, 0, 0.92);
+        display: flex; justify-content: center; align-items: center;
+        z-index: 2000;
+        backdrop-filter: blur(4px);
+    }
 
-	.modal-content {
-		background-color: #1a1a1a;
-		padding: 2rem;
-		border: 1px solid #333;
-		max-width: 450px; /* Un poco más estrecho para un formato vertical */
-		width: 90%;
-		text-align: center;
-		border-radius: 8px; /* Añadido borde redondeado */
-	}
+    .modal-content {
+        background-color: #1a1a1a;
+        padding: 2.5rem 2rem;
+        border: 1px solid #333;
+        max-width: 480px;
+        width: 90%;
+        text-align: center;
+        border-radius: 8px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    }
 
-	/* NUEVOS ESTILOS PARA EL ESCUDO */
-	.escudo-wrapper {
-		margin: 0 auto 1.5rem auto;
-		width: 120px; /* Tamaño fijo */
-		height: auto; /* Altura automática basada en ancho */
-	}
+    /* --- Escudo --- */
+    .escudo-wrapper {
+        margin: 0 auto 1.5rem auto;
+        width: 130px;
+        height: auto;
+    }
+    .escudo-wrapper img {
+        width: 100%; height: auto;
+        object-fit: contain; display: block;
+        filter: drop-shadow(0 0 15px rgba(192, 160, 98, 0.15));
+    }
 
-	.escudo-wrapper img {
-		width: 100%;
-		height: auto; /* Cambiado de 100% a auto */
-		object-fit: contain; /* Asegura que el escudo se vea completo */
-		display: block; /* Evita espacio extra bajo la imagen */
-	}
+    /* --- Tipografía --- */
+    h2 {
+        font-size: 2.5rem;
+        font-weight: 400;
+        font-family: 'Playfair Display', serif;
+        color: #c0a062;
+        margin-bottom: 1rem;
+        margin-top: 0;
+    }
 
-	h2 {
-		font-size: 2.5rem;
-		font-weight: 300; /* Coincide con estilo global H1/H2 */
-		font-family: 'Playfair Display', serif; /* Coincide con estilo global H1/H2 */
-		color: #c0a062;
-		margin-bottom: 1rem;
-		margin-top: 0; /* Quitar margen superior */
-	}
+    /* --- Bloque de Información --- */
+    .info-block {
+        margin-bottom: 2rem;
+    }
+    .status-title {
+        color: #e0e0e0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        font-family: 'Source Sans 3', sans-serif;
+        line-height: 1.4;
+    }
+    .status-desc {
+        color: #b0b0b0;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin: 0;
+        font-family: 'Source Sans 3', sans-serif;
+    }
 
-	.introduccion {
-		line-height: 1.6;
-		margin-bottom: 2rem;
-		font-size: 0.95rem;
-		color: #b0b0b0;
-		max-height: 150px; /* Limitar altura si es mucho texto */
-		overflow-y: auto; /* Añadir scroll si excede */
-		padding-right: 5px; /* Espacio para el scrollbar */
-	}
+    /* --- Botones --- */
+    .acciones {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
 
- .acciones {
-		display: flex;
-		flex-direction: column; /* Cambiado a columna para mejor layout móvil */
-		gap: 1rem;
-		margin-top: 1.5rem; /* Añadir espacio sobre los botones */
-	}
+    .cta-principal, .cta-secundario {
+        display: block;
+        width: auto;
+        padding: 0.9rem 1.5rem;
+        text-align: center;
+        border-radius: 4px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        font-family: 'Source Sans 3', sans-serif;
+        border: 1px solid transparent;
+        text-decoration: none;
+        box-sizing: border-box;
+    }
 
-	/* Estilos comunes para botones */
-	.cta-principal, .cta-secundario {
-		display: block; /* Ocupan todo el ancho disponible */
-		width: auto; /* Ancho automático */
-		padding: 0.8rem 1.5rem; /* Ajustar padding */
-		text-align: center;
-		border-radius: 4px; /* Bordes redondeados consistentes */
-		font-size: 0.95rem; /* Ligeramente más pequeño */
-		font-weight: bold; /* Peso consistente */
-		cursor: pointer;
-		transition: all 0.3s ease;
-		text-transform: uppercase; /* MAYÚSCULAS */
-		font-family: 'Source Sans 3', sans-serif; /* Fuente estándar */
-		border: 1px solid transparent; /* Borde base transparente */
-	}
+    .cta-principal {
+        background-color: #c0a062;
+        color: #121212;
+        border-color: #c0a062;
+    }
+    .cta-principal:hover {
+        background-color: #fff;
+        color: #121212;
+        border-color: #fff;
+        box-shadow: 0 0 15px rgba(255,255,255,0.2);
+    }
 
-	.cta-principal {
-		background-color: #c0a062;
-		color: #121212;
-		border-color: #c0a062;
-		text-decoration: none; /* Asegurar que no haya subrayado */
-	}
-	.cta-principal:hover {
-		background-color: #ffffff;
-		color: #121212;
-		border-color: #ffffff;
-	}
-	.cta-principal:disabled { /* Estilo para botón deshabilitado */
-		background-color: #555;
-		border-color: #555;
-		color: #999;
-		cursor: not-allowed;
-	}
+    .cta-secundario {
+        background-color: transparent;
+        border: 1px solid #444;
+        color: #aaa;
+    }
+    .cta-secundario:hover {
+        background-color: #333;
+        border-color: #666;
+        color: #fff;
+    }
 
-
-	.cta-secundario {
-		background-color: transparent;
-		border: 1px solid #555;
-		color: #aaa;
-	}
-	.cta-secundario:hover {
-		background-color: #333;
-		border-color: #333;
-		color: #fff;
-	}
-
-	/* Media query para botones lado a lado en pantallas más grandes si se prefiere */
-	@media (min-width: 480px) {
-		.acciones {
-			flex-direction: row; /* Lado a lado en pantallas más anchas */
-		}
-		.cta-principal, .cta-secundario {
-			flex: 1; /* Ocupan espacio equitativamente */
-		}
-	}
+    @media (min-width: 480px) {
+        .acciones { flex-direction: row; }
+        .cta-principal, .cta-secundario { flex: 1; }
+    }
 </style>

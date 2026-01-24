@@ -54,7 +54,7 @@
     <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 </svelte:head>
 
-<a href="/" class="btn-volver-flotante" data-sveltekit-preload-data="off">
+<a href="https://somos1egacy.com/" class="btn-volver-flotante" data-sveltekit-preload-data="off">
     ← Volver a 1egacy
 </a>
 

@@ -11,15 +11,15 @@
     const canonicalUrl = `${safeBaseUrl}/blog/${post?.slug?.current || ''}`;
 
     // --- MEJORA SEO: Título e Imagen Dinámica ---
-    // Evita el error de "Título | 1egacy | 1egacy"
     $: pageTitle = post?.seoTitle?.includes('1egacy') 
         ? post.seoTitle 
         : `${post?.seoTitle || post?.title || 'Artículo'} | 1egacy`;
 
-    // Imagen para redes sociales: Prioriza la del post
-const ogImage = post?.mainImage?.url 
-    ? `${post.mainImage.url}?w=1200&h=630&fit=crop&auto=format` 
-    : `${safeBaseUrl}/1egacy-og-logo.jpg`;
+    // Imagen para redes sociales
+    const ogImage = post?.mainImage?.url 
+        ? `${post.mainImage.url}?w=1200&h=630&fit=crop&auto=format` 
+        : `${safeBaseUrl}/1egacy-og-logo.jpg`;
+    
     const components = {
         types: {
             image: SanityImage
@@ -98,12 +98,6 @@ const ogImage = post?.mainImage?.url
     }
 
     const schema = createConnectedSchema(post, safeBaseUrl);
-
-    function truncate(text, maxLength = 150) {
-        if (!text || text.length <= maxLength) return text;
-        const lastSpace = text.lastIndexOf(' ', maxLength);
-        return text.slice(0, lastSpace > 0 ? lastSpace : maxLength) + '...';
-    }
 </script>
 
 <svelte:head>
@@ -125,6 +119,7 @@ const ogImage = post?.mainImage?.url
         {@html `<script type="application/ld+json">${JSON.stringify(schema)}</script>`}
     {/if}
 </svelte:head>
+
 <div class="layout-container">
     {#if post}
         <article class="post-container">
@@ -153,10 +148,13 @@ const ogImage = post?.mainImage?.url
                     />
                 {/if}
             </header>
- <div class="cta-box">
-    <p>¿Quieres rastrear tu linaje hoy mismo?</p>
-    <a href="/origins" class="cta-button">Verificar mi Apellido</a>
-</div>
+
+            <div class="cta-box">
+                <p class="cta-heading">¿Quieres encontrar tu apellido en el Códice?</p>
+                <a href="/origins" class="cta-button">Buscar mi apellido</a>
+                <p class="cta-micro">Te mostramos artículos y legados relacionados.</p>
+            </div>
+
             <div class="post-content">
                 {#if post.body}
                     <PortableText value={post.body} {components} />
@@ -189,13 +187,19 @@ const ogImage = post?.mainImage?.url
                             <h3 class="author-name">{post.author.name}</h3>
                         {/if}
                         
-                        {#if post.author.bio}
-                            <p class="author-bio">{truncate(post.author.bio, 140)}</p>
-                        {/if}
+                        <p class="author-bio">
+                            {#if post.author.name.includes('Ovidio')}
+                                Soy Ovidio Casas. Después de una vida en las aulas, hoy escribo el Códice: guiones, guías y reflexiones para investigar la historia familiar y convertirla en legado.
+                            {:else}
+                                {post.author.bio || 'Investigador y custodio de historias en 1egacy.'}
+                            {/if}
+                        </p>
                         
                         <div class="author-actions">
                             {#if post.author.authorSlug}
-                                <a href="/autor/{post.author.authorSlug}" class="author-profile-button">Perfil Completo</a>
+                                <a href="/autor/{post.author.authorSlug}" class="author-profile-button">
+                                    Ver perfil
+                                </a>
                             {/if}
                             {#if post.author.socialLink}
                                 <a href={post.author.socialLink} target="_blank" rel="noopener noreferrer author" class="author-social">
@@ -213,6 +217,7 @@ const ogImage = post?.mainImage?.url
             <div class="sidebar-content">
                 {#if post.apellidosRelacionados?.length > 0}
                     <h3>Legados Mencionados</h3>
+                    <p class="sidebar-micro">Relacionado con este artículo</p>
                     <div class="anuncios-apellidos">
                         {#each post.apellidosRelacionados as apellido}
                             <a href="/origins/{apellido.slug}" class="anuncio-card">
@@ -227,9 +232,10 @@ const ogImage = post?.mainImage?.url
                     </div>
                 {:else}
                     <div class="anuncio-generico">
-                        <h3>Tu Apellido es un Testamento.</h3>
-                        <p>Llevas 500 años de historia en tu firma. Honra a los que vinieron antes.</p>
-                        <a href="/origins" class="boton-anuncio">Explorar Origins</a>
+                        <h3>Tu apellido es una herencia.</h3>
+                        <p>Si quieres precisión por rama familiar, inicia una investigación a medida en Origins.</p>
+                        <a href="/solicitar-consulta" class="boton-anuncio">Iniciar Origins</a>
+                        <p class="microcopy">Privado · 3 min · Te decimos el siguiente paso</p>
                     </div>
                 {/if}
             </div>
@@ -238,35 +244,45 @@ const ogImage = post?.mainImage?.url
 </div>
 
 <style>
+    /* --- CTA BOX (EN EL CONTENIDO) --- */
     .cta-box {
-    background: #1a1a1a;
-    border: 1px solid #c0a062;
-    padding: 1.5rem;
-    text-align: center;
-    border-radius: 8px;
-    margin: 2rem 0;
-}
-.cta-box p {
-    margin-bottom: 1rem;
-    font-weight: bold;
-    color: #fff;
-}
-.cta-button {
-    display: inline-block;
-    background: #c0a062;
-    color: #121212;
-    padding: 0.8rem 2rem;
-    text-decoration: none;
-    font-weight: 800;
-    text-transform: uppercase;
-    border-radius: 4px;
-    transition: 0.3s;
-}
-.cta-button:hover {
-    background: #fff;
-    transform: scale(1.05);
-}
-    /* --- MANTENEMOS TUS ESTILOS ORIGINALES --- */
+        background: #1a1a1a;
+        border: 1px solid #333;
+        border-left: 3px solid #c0a062; /* Acento dorado */
+        padding: 1.5rem;
+        text-align: center;
+        border-radius: 4px;
+        margin: 2rem 0;
+    }
+    .cta-heading {
+        margin-bottom: 1rem;
+        font-weight: 700;
+        color: #fff;
+        font-size: 1.1rem;
+    }
+    .cta-button {
+        display: inline-block;
+        background: #c0a062;
+        color: #121212;
+        padding: 0.8rem 2rem;
+        text-decoration: none;
+        font-weight: 800;
+        text-transform: uppercase;
+        border-radius: 4px;
+        transition: 0.3s;
+        margin-bottom: 0.8rem;
+    }
+    .cta-button:hover {
+        background: #fff;
+        transform: translateY(-2px);
+    }
+    .cta-micro {
+        font-size: 0.85rem;
+        color: #888;
+        margin: 0;
+    }
+
+    /* --- LAYOUT Y ESTILOS ORIGINALES --- */
     .layout-container {
         max-width: 1200px;
         margin: 0 auto;
@@ -304,12 +320,24 @@ const ogImage = post?.mainImage?.url
 
     .post-content { font-size: 1.1rem; line-height: 1.8; }
 
+    /* --- SIDEBAR --- */
     .sidebar { position: sticky; top: 120px; }
     .sidebar-content { background-color: #1a1a1a; padding: 1.5rem; border-radius: 8px; border: 1px solid #333; }
-    .sidebar h3 { text-align: center; margin-top: 0; margin-bottom: 1.5rem; }
+    .sidebar h3 { text-align: center; margin-top: 0; margin-bottom: 0.5rem; color: #c0a062; }
+    
+    .sidebar-micro {
+        text-align: center;
+        font-size: 0.85rem;
+        color: #888;
+        margin-top: 0;
+        margin-bottom: 1.5rem;
+        font-style: italic;
+    }
 
+    /* Anuncio Genérico */
     .anuncio-generico { text-align: center; }
-    .anuncio-generico p { font-size: 0.9rem; margin-bottom: 1.5rem; }
+    .anuncio-generico p { font-size: 0.95rem; margin-bottom: 1.5rem; color: #ccc; line-height: 1.5; }
+    
     .anuncio-generico .boton-anuncio {
         display: inline-block;
         text-decoration: none;
@@ -320,10 +348,19 @@ const ogImage = post?.mainImage?.url
         text-transform: uppercase;
         border-radius: 4px;
         transition: background-color 0.3s ease;
+        width: 100%;
+        box-sizing: border-box;
     }
-
     .anuncio-generico .boton-anuncio:hover { background-color: #ffffff; }
 
+    .microcopy {
+        font-size: 0.75rem;
+        color: #666;
+        margin-top: 0.8rem;
+        margin-bottom: 0;
+    }
+
+    /* Lista Apellidos */
     .anuncios-apellidos { display: flex; flex-direction: column; gap: 1rem; }
     .anuncio-card {
         display: flex;
@@ -334,8 +371,10 @@ const ogImage = post?.mainImage?.url
         transition: all 0.3s ease;
         text-decoration: none;
         color: inherit;
+        border-radius: 4px;
+        background: #111;
     }
-    .anuncio-card:hover { border-color: #c0a062; background-color: #222; }
+    .anuncio-card:hover { border-color: #c0a062; background-color: #222; transform: translateX(5px); }
     .anuncio-card img { width: 50px; height: 50px; flex-shrink: 0; object-fit: contain; }
     .anuncio-card span { font-weight: bold; }
     .escudo-placeholder { width: 50px; height: 50px; flex-shrink: 0; background-color: #333; border-radius: 4px; }
@@ -351,20 +390,24 @@ const ogImage = post?.mainImage?.url
     .author-name { margin: 0; color: #c0a062; font-size: 1.5rem; font-weight: 600; }
     .author-name-link { text-decoration: none; color: inherit; transition: color 0.2s ease; }
     .author-name-link:hover { color: #e0b87c; }
-    .author-bio { color: #b0b0b0; margin: 0; font-size: 0.9rem; line-height: 1.6; }
+    .author-bio { color: #b0b0b0; margin: 0; font-size: 0.95rem; line-height: 1.6; }
     .author-actions { display: flex; gap: 1rem; align-items: center; margin-top: 1rem; }
+    
     .author-profile-button {
         display: inline-block;
         padding: 0.6rem 1.2rem;
-        background-color: #c0a062;
-        color: #121212;
+        background-color: transparent;
+        border: 1px solid #c0a062;
+        color: #c0a062;
         text-decoration: none;
         border-radius: 4px;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         font-weight: bold;
-        transition: background-color 0.2s ease;
+        transition: all 0.2s ease;
+        text-transform: uppercase;
     }
-    .author-profile-button:hover { background-color: #e0b87c; }
+    .author-profile-button:hover { background-color: #c0a062; color: #121212; }
+    
     .author-social { font-weight: bold; font-size: 0.9rem; color: #a0a0a0; text-decoration: none; }
     .author-social:hover { text-decoration: underline; color: #c0a062; }
 
