@@ -3,6 +3,9 @@
     import SanityImage from '$lib/components/SanityImage.svelte';
     import FaqItem from '../../../components/FaqItem.svelte';
 
+    // --- NUEVO: Importamos el componente Tabla ---
+    import Table from '$lib/components/serializers/Table.svelte';
+
     export let data;
 
     // Extraemos datos y aseguramos la URL de producción
@@ -20,9 +23,11 @@
         ? `${post.mainImage.url}?w=1200&h=630&fit=crop&auto=format` 
         : `${safeBaseUrl}/1egacy-og-logo.jpg`;
     
+    // --- AQUÍ REGISTRAMOS LA TABLA ---
     const components = {
         types: {
-            image: SanityImage
+            image: SanityImage,
+            table: Table // <--- ¡Conectado!
         }
     };
 

@@ -187,7 +187,7 @@
                              
                              <div class="card-footer">
                                  <div class="product-price">
-                                     {product.price ? `$MXN ${product.price.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'Consultar'}
+                                     <span class="proximamente-tag">Próximamente</span>
                                  </div>
                                  <span class="btn-ver-pieza">Ver pieza</span>
                              </div>
@@ -282,7 +282,16 @@
         margin-top: auto;
     }
 
-    .product-price { font-size: 1.1em; font-weight: 700; color: #c0a062; }
+    .product-price { font-size: 1.1em; font-weight: 700; }
+    
+    /* Estilo gris para el tag de Próximamente */
+    .proximamente-tag {
+        color: #777;
+        font-size: 0.9em;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 400;
+    }
     
     .btn-ver-pieza {
         font-size: 0.8rem;

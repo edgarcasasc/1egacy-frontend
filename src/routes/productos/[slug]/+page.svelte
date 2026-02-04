@@ -117,6 +117,8 @@
     );
 
     function handleAddToCart() {
+        // LÓGICA DESACTIVADA TEMPORALMENTE (MODO CATÁLOGO)
+        /*
         isAdding = true;
         addToCart({
             id: product._id,
@@ -133,6 +135,7 @@
             showSuccess = true;
             setTimeout(() => showSuccess = false, 3500);
         }, 600);
+        */
     }
 </script>
 
@@ -202,7 +205,8 @@
             <h1 class="titulo-producto">{displayTitle}</h1>
 
             <div class="precio-block">
-                <span class="precio">$MXN {currentPrice.toLocaleString('es-MX')}</span>
+                <span class="precio" style="font-size: 1.5rem; opacity: 0.6; color: #888;">Colección Privada</span>
+
                 {#if selectedServiceLevel === 'bespoke'}
                     <span class="iva-tag">+ Ceremonia de Narración</span>
                 {/if}
@@ -261,15 +265,11 @@
             <button
                 class="boton-compra"
                 on:click={handleAddToCart}
-                disabled={isAdding}
+                disabled={true} 
             >
-                {#if isAdding} 
-                    Procesando... 
-                {:else} 
-                    Agregar al carrito — $MXN {currentPrice.toLocaleString('es-MX')} 
-                {/if}
+                Próximamente
             </button>
-            <p class="shipping-micro">Envío y tiempos se calculan en checkout.</p>
+            <p class="shipping-micro">Disponibilidad limitada por temporada.</p>
 
             {#if showSuccess}
                 <div in:fly={{ y: 10, duration: 400 }} out:fade={{ duration: 300 }} class="feedback-exito">
@@ -445,9 +445,11 @@
         transform: translateY(-2px);
     }
 
+    /* Estilo del botón desactivado (Gris) */
     .boton-compra:disabled {
         background: #1a1a1a;
         color: #444;
+        border: 1px solid #333;
         cursor: not-allowed;
     }
     
