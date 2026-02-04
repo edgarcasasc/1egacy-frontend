@@ -43,6 +43,20 @@
         }
         : null;
 
+    // --- NUEVO: FAQ Schema (JSON-LD) ---
+    $: faqSchema = linaje?.faqs?.length ? {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": linaje.faqs.map(faq => ({
+            "@type": "Question",
+            "name": faq.question,
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": faq.answer
+            }
+        }))
+    } : null;
+
     // --- LÓGICA DE INTERFAZ ---
     let relatedProducts = linaje?.relatedProducts || [];
     let mostrarDetallesEscudo = false;
@@ -68,6 +82,10 @@
 
     {#if breadcrumbJsonLd}
         {@html `<script type="application/ld+json">${JSON.stringify(breadcrumbJsonLd)}<\/script>`}
+    {/if}
+
+    {#if faqSchema}
+        {@html `<script type="application/ld+json">${JSON.stringify(faqSchema)}<\/script>`}
     {/if}
 </svelte:head>
 
@@ -164,6 +182,26 @@
                         </div>
                     </div>
                 {/if}
+
+                {#if linaje.faqs && linaje.faqs.length > 0}
+                    <div class="faq-seccion">
+                        <h3 class="subtitulo-seccion">Preguntas Frecuentes</h3>
+                        <div class="faq-list">
+                            {#each linaje.faqs as faq}
+                                <details class="faq-item">
+                                    <summary class="faq-question">
+                                        {faq.question}
+                                        <span class="faq-icon">+</span>
+                                    </summary>
+                                    <div class="faq-answer">
+                                        <p>{faq.answer}</p>
+                                    </div>
+                                </details>
+                            {/each}
+                        </div>
+                    </div>
+                {/if}
+
             </div> 
         </div> 
     {:else}
@@ -265,6 +303,16 @@
     .button-secondary-outline:hover { background-color: #c0a062; color: #121212; }
 
     .placeholder-image-article, .placeholder-image-origin { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background-color: #2a2a2a; color: #777; }
+
+    /* --- ESTILOS FAQs (NUEVO) --- */
+    .faq-list { display: flex; flex-direction: column; gap: 1rem; }
+    .faq-item { background-color: rgba(255, 255, 255, 0.03); border: 1px solid #333; border-radius: 8px; overflow: hidden; transition: all 0.3s ease; }
+    .faq-item[open] { border-color: #c0a062; background-color: rgba(255, 255, 255, 0.05); }
+    .faq-question { display: flex; justify-content: space-between; align-items: center; padding: 1.2rem; cursor: pointer; font-weight: 600; color: #e0e0e0; list-style: none; font-size: 1.1rem; }
+    .faq-question::-webkit-details-marker { display: none; }
+    .faq-icon { font-size: 1.5rem; color: #c0a062; transition: transform 0.3s ease; }
+    .faq-item[open] .faq-icon { transform: rotate(45deg); }
+    .faq-answer { padding: 0 1.2rem 1.2rem 1.2rem; color: #aaa; line-height: 1.6; border-top: 1px solid rgba(255, 255, 255, 0.05); margin-top: 0.5rem; padding-top: 1rem; }
 
     @media (max-width: 768px) {
         .linaje-container { padding: 100px 1rem 40px 1rem; }

@@ -36,18 +36,30 @@
         ? post.faqSection.filter((item) => item?.question && item?.answer)
         : [];
 
+    // --- DATOS DE AUTORIDAD (Hardcoded para E-E-A-T) ---
+    const AUTHOR_AUTHORITY = {
+        name: "Ovidio Casas Jr.",
+        jobTitle: "Historiador Genealógico",
+        url: "https://edgar.casascamarillo.com/",
+        sameAs: [
+            "https://www.linkedin.com/in/edgar-ovidio-camarillo-camarillo/",
+            "https://x.com/EdyKzaz"
+        ]
+    };
+
     // --- CONSTRUCCIÓN DEL GRAPH CONECTADO ---
     function createConnectedSchema(postData, domain) {
         if (!postData) return {};
 
         const currentUrl = `${domain}/blog/${postData.slug?.current || ''}`;
-        const authorData = postData.author || {};
         
+        // ID Identificadores (Nodos del Grafo)
         const orgId = `${domain}/#organization`;
         const websiteId = `${domain}/#website`;
         const webpageId = `${currentUrl}#webpage`;
         const articleId = `${currentUrl}#article`;
-        const personId = `${domain}/autor/${authorData.authorSlug || 'studio'}#person`;
+        // ID Estático para consolidar autoridad en una sola entidad
+        const personId = `${domain}/#ovidio-casas`; 
 
         return {
             "@context": "https://schema.org",
@@ -55,10 +67,10 @@
                 {
                     "@type": "Person",
                     "@id": personId,
-                    "name": authorData.name || '1egacy Studio',
-                    ...(authorData.image && { "image": authorData.image }),
-                    ...(authorData.bio && { "description": authorData.bio }),
-                    ...(authorData.socialLink && { "sameAs": [authorData.socialLink] }),
+                    "name": AUTHOR_AUTHORITY.name,
+                    "jobTitle": AUTHOR_AUTHORITY.jobTitle,
+                    "url": AUTHOR_AUTHORITY.url,
+                    "sameAs": AUTHOR_AUTHORITY.sameAs,
                     "worksFor": { "@id": orgId }
                 },
                 {
@@ -72,13 +84,13 @@
                     "inLanguage": "es-MX"
                 },
                 {
-                    "@type": "Article",
+                    "@type": "BlogPosting", // Más específico que Article para blogs
                     "@id": articleId,
                     "mainEntityOfPage": { "@id": webpageId },
                     "headline": postData.title,
                     "description": postData.seoDescription || postData.subtitle,
                     ...(postData.mainImage?.url && { "image": postData.mainImage.url }),
-                    "author": { "@id": personId },
+                    "author": { "@id": personId }, // Referencia a la entidad Ovidio
                     "publisher": { "@id": orgId },
                     "datePublished": postData.publishedAt,
                     "dateModified": postData._updatedAt,
@@ -102,20 +114,27 @@
         };
     }
 
-    const schema = createConnectedSchema(post, safeBaseUrl);
+    // Reactividad para regenerar schema si cambian los datos
+    $: schema = createConnectedSchema(post, safeBaseUrl);
 </script>
 
 <svelte:head>
     <title>{pageTitle}</title>
     <meta name="description" content={post?.seoDescription || post?.subtitle || ''} />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <meta name="content-length" content="2500-3500 palabras">
+    <meta name="author" content="Ovidio Casas Jr.">
     
     <meta property="og:type" content="article" />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={post?.seoDescription || post?.subtitle || ''} />
     <meta property="og:image" content={ogImage} />
+    <meta property="og:url" content={canonicalUrl} />
     <meta property="article:published_time" content={post.publishedAt} />
-    <meta property="article:author" content={post.author?.name || '1egacy Studio'} />
+    <meta property="article:author" content="Ovidio Casas Jr." />
 
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={post?.seoDescription || post?.subtitle || ''} />
     <meta name="twitter:image" content={ogImage} />
@@ -137,9 +156,7 @@
                     Publicado el {new Date(post.publishedAt).toLocaleDateString('es-MX', {
                         year: 'numeric', month: 'long', day: 'numeric'
                     })}
-                    {#if post.author?.name && post.author.name !== '1egacy Studio'}
-                        por {post.author.name}
-                    {/if}
+                    por {AUTHOR_AUTHORITY.name}
                 </p>
                 {#if post.mainImage?.url}
                     <img
@@ -177,44 +194,33 @@
                 </section>
             {/if}
 
-            {#if post.author && post.author.name !== '1egacy Studio'}
-                <section class="author-bio-box">
-                    {#if post.author.image}
-                        <img src={post.author.image} alt={post.author.name} class="author-image" />
-                    {/if}
-                    <div class="author-info">
-                        <p class="author-label">Escrito por</p>
-                        {#if post.author.authorSlug}
-                            <a href="/autor/{post.author.authorSlug}" class="author-name-link">
-                                <h3 class="author-name">{post.author.name}</h3>
-                            </a>
-                        {:else}
-                            <h3 class="author-name">{post.author.name}</h3>
-                        {/if}
-                        
-                        <p class="author-bio">
-                            {#if post.author.name.includes('Ovidio')}
-                                Soy Ovidio Casas. Después de una vida en las aulas, hoy escribo el Códice: guiones, guías y reflexiones para investigar la historia familiar y convertirla en legado.
-                            {:else}
-                                {post.author.bio || 'Investigador y custodio de historias en 1egacy.'}
-                            {/if}
-                        </p>
-                        
-                        <div class="author-actions">
-                            {#if post.author.authorSlug}
-                                <a href="/autor/{post.author.authorSlug}" class="author-profile-button">
-                                    Ver perfil
-                                </a>
-                            {/if}
-                            {#if post.author.socialLink}
-                                <a href={post.author.socialLink} target="_blank" rel="noopener noreferrer author" class="author-social">
-                                    Conectar
-                                </a>
-                            {/if}
-                        </div>
+            <section class="author-bio-box">
+                {#if post.author?.image}
+                     <img src={post.author.image} alt={AUTHOR_AUTHORITY.name} class="author-image" />
+                {:else}
+                     <div class="author-image-placeholder" style="width: 80px; height: 80px; background: #333; border-radius: 50%;"></div>
+                {/if}
+                
+                <div class="author-info">
+                    <p class="author-label">Escrito por</p>
+                    <a href={AUTHOR_AUTHORITY.url} target="_blank" class="author-name-link">
+                        <h3 class="author-name">{AUTHOR_AUTHORITY.name}</h3>
+                    </a>
+                    
+                    <p class="author-bio">
+                        Soy Ovidio Casas. Después de una vida en las aulas, hoy escribo el Códice: guiones, guías y reflexiones para investigar la historia familiar y convertirla en legado.
+                    </p>
+                    
+                    <div class="author-actions">
+                        <a href={AUTHOR_AUTHORITY.url} target="_blank" class="author-profile-button">
+                            Ver perfil
+                        </a>
+                        <a href={AUTHOR_AUTHORITY.sameAs[0]} target="_blank" rel="noopener noreferrer author" class="author-social">
+                            Conectar
+                        </a>
                     </div>
-                </section>
-            {/if}
+                </div>
+            </section>
            
         </article>
 
