@@ -20,23 +20,49 @@
         })
         : [];
 
-    // --- 2) SCHEMA (SEO) ---
+    // --- 2) SCHEMA (SEO AVANZADO) ---
+    // P1: Mejora semántica con 'BlogPosting' dentro del ItemList
     $: staticSchemaItems = topics
         .flatMap(t => t.posts)
         .slice(0, 10)
         .map((post, i) => ({
             "@type": "ListItem",
             "position": i + 1,
-            "url": `${safeBaseUrl}/blog/${post.slug}`,
-            "name": post.title
+            "item": {
+                "@type": "BlogPosting",
+                "@id": `${safeBaseUrl}/blog/${post.slug}`,
+                "url": `${safeBaseUrl}/blog/${post.slug}`,
+                "headline": post.title,
+                "description": post.excerpt || "Un artículo del Códice de 1egacy.",
+                "image": post.mainImageUrl || ogImage
+            }
         }));
 
+    // P1: Graph cerrado y autosuficiente (WebSite + Organization definidos aquí)
     $: fullSchema = {
         "@context": "https://schema.org",
         "@graph": [
             {
+                "@type": "Organization",
+                "@id": `${safeBaseUrl}/#organization`,
+                "name": "1egacy",
+                "url": safeBaseUrl,
+                "logo": {
+                    "@type": "ImageObject",
+                    "url": `${safeBaseUrl}/logo.png`
+                }
+            },
+            {
+                "@type": "WebSite",
+                "@id": `${safeBaseUrl}/#website`,
+                "url": safeBaseUrl,
+                "name": "1egacy",
+                "publisher": { "@id": `${safeBaseUrl}/#organization` },
+                "inLanguage": "es-MX"
+            },
+            {
                 "@type": "CollectionPage",
-                "@id": `${safeBaseUrl}/blog/#webpage`,
+                "@id": `${canonicalUrl}/#webpage`,
                 "url": canonicalUrl,
                 "name": "El Códice: Sabiduría y Linaje | 1egacy",
                 "isPartOf": { "@id": `${safeBaseUrl}/#website` },
@@ -50,7 +76,7 @@
             },
             {
                 "@type": "BreadcrumbList",
-                "@id": `${safeBaseUrl}/blog/#breadcrumb`,
+                "@id": `${canonicalUrl}/#breadcrumb`,
                 "itemListElement": [
                     { "@type": "ListItem", "position": 1, "name": "Inicio", "item": safeBaseUrl },
                     { "@type": "ListItem", "position": 2, "name": "El Códice", "item": canonicalUrl }
@@ -64,13 +90,28 @@
     <title>El Códice: Sabiduría y Linaje | 1egacy</title>
     <meta name="description" content="Un archivo vivo de linajes, heráldica y cultura: investigación editorial para preservar lo que importa." />
 
+    <link rel="canonical" href={canonicalUrl} />
+
+    <meta name="robots" content="index,follow,max-image-preview:large" />
+
     <link rel="alternate" hreflang="es-MX" href={canonicalUrl} />
-    <link rel="alternate" hreflang="es" href={canonicalUrl} />
+    <link rel="alternate" hreflang="x-default" href={canonicalUrl} />
     
+    <meta property="og:site_name" content="1egacy" />
     <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:locale" content="es_MX" />
     <meta property="og:title" content="El Códice: Sabiduría y Linaje | 1egacy" />
     <meta property="og:description" content="Un archivo vivo de linajes, heráldica y cultura." />
     <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="El Códice de 1egacy" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="El Códice: Sabiduría y Linaje | 1egacy" />
+    <meta name="twitter:description" content="Un archivo vivo de linajes, heráldica y cultura." />
+    <meta name="twitter:image" content={ogImage} />
 
     {@html `<script type="application/ld+json">${JSON.stringify(fullSchema)}<\/script>`}
 </svelte:head>
@@ -85,6 +126,7 @@
                 <div class="search-input-wrapper">
                     <input 
                         type="text" 
+                        name="q"
                         bind:value={searchTerm} 
                         placeholder="Escribe tu apellido (ej. Aguilar, Soto, Balam)" 
                         aria-label="Buscar" 

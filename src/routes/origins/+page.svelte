@@ -84,21 +84,49 @@
         return () => window.removeEventListener('resize', handleResize);
     });
 
-    // --- SCHEMA SEO ---
+    // --- SCHEMA SEO AVANZADO (@graph) ---
+    // Arquitectura de grafo: Conecta Organización -> Sitio Web -> Página de Colección
     $: schema = {
         "@context": "https://schema.org",
-        "@type": "CollectionPage",
-        "name": "Constelación de Linajes | 1egacy Origins",
-        "url": canonicalUrl,
-        "description": "Explora el mapa estelar de la heráldica y el origen de los apellidos.",
-        "mainEntity": {
-            "@type": "ItemList",
-            "itemListElement": (data.linajes || []).map((l, i) => ({
-                "@type": "ListItem",
-                "position": i + 1,
-                "url": `${safeBaseUrl}/origins/${l.slug}`
-            }))
-        }
+        "@graph": [
+            {
+                "@type": "Organization",
+                "@id": `${safeBaseUrl}/#organization`,
+                "name": "1egacy",
+                "url": safeBaseUrl,
+                "logo": `${safeBaseUrl}/logo.png`
+            },
+            {
+                "@type": "WebSite",
+                "@id": `${safeBaseUrl}/#website`,
+                "url": safeBaseUrl,
+                "name": "1egacy",
+                "publisher": { "@id": `${safeBaseUrl}/#organization` },
+                "potentialAction": {
+                    "@type": "SearchAction",
+                    "target": `${safeBaseUrl}/origins?q={search_term_string}`,
+                    "query-input": "required name=search_term_string"
+                }
+            },
+            {
+                "@type": ["SearchResultsPage", "CollectionPage"],
+                "@id": `${canonicalUrl}/#webpage`,
+                "url": canonicalUrl,
+                "name": "Constelación de Linajes | 1egacy Origins",
+                "isPartOf": { "@id": `${safeBaseUrl}/#website` },
+                "description": "Explora el mapa estelar de la heráldica y el origen de los apellidos.",
+                "mainEntity": {
+                    "@type": "ItemList",
+                    "numberOfItems": (data.linajes || []).length,
+                    "itemListElement": (data.linajes || []).map((l, i) => ({
+                        "@type": "ListItem",
+                        "position": i + 1,
+                        "url": `${safeBaseUrl}/origins/${l.slug}`,
+                        "name": l.id // CRÍTICO: Identifica el apellido explícitamente para el buscador
+                    }))
+                }
+            }
+        ]
     };
 </script>
 
@@ -106,10 +134,20 @@
     <title>Constelación de Linajes | 1egacy Origins</title>
     <meta name="description" content="Explora la historia y el legado de tu apellido en nuestra constelación estelar de linajes. Descubre el origen, escudo y narrativa de tu familia." />
     
+    <link rel="canonical" href={canonicalUrl} />
+
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    
     <meta property="og:title" content="Constelación de Linajes | 1egacy" />
     <meta property="og:description" content="Busca tu apellido en el mapa estelar del legado familiar." />
     <meta property="og:image" content="{safeBaseUrl}/og-origins.jpg" />
     <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Constelación de Linajes | 1egacy Origins" />
+    <meta name="twitter:description" content="Busca tu apellido en el mapa estelar del legado familiar." />
+    <meta name="twitter:image" content="{safeBaseUrl}/og-origins.jpg" />
 
     {@html `<script type="application/ld+json">${JSON.stringify(schema)}<\/script>`}
 </svelte:head>
@@ -121,15 +159,23 @@
     </header>
 
     <div class="buscador-wrapper">
-        <input 
-            type="text" 
-            placeholder="Escribe tu apellido (ej. Mendez, López, Garza)" 
-            bind:value={terminoBusqueda} 
-        />
-        <p class="helper-text">
-            Si tu apellido aún no está publicado, puedes solicitar una investigación a medida.
-        </p>
-    </div>
+    <label class="sr-only" for="apellido-search">Buscar apellido en la constelación</label>
+    
+    <input 
+        id="apellido-search"
+        name="q" 
+        type="text" 
+        placeholder="Escribe tu apellido (ej. Mendez, López, Garza)" 
+        bind:value={terminoBusqueda}
+        autocomplete="family-name"
+        spellcheck="false"
+        aria-controls="constelacion-svg"
+    />
+    
+    <p class="helper-text" id="search-helper">
+        Si tu apellido aún no está publicado, puedes solicitar una investigación a medida.
+    </p>
+</div>
 
     {#if data.linajes && linajesFiltrados.length > 0}
         <div class="constelacion-wrapper">
