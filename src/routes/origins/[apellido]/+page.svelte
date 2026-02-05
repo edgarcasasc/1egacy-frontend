@@ -7,10 +7,7 @@
 
     // --- HELPERS DE LIMPIEZA SEO ---
     const cleanText = (s = '') =>
-        s
-            .replace(/\s+/g, ' ')
-            .replace(/[“”"]/g, '') 
-            .trim();
+        s.replace(/\s+/g, ' ').replace(/[“”"]/g, '').trim();
 
     const truncate = (s, max = 160) => {
         const t = cleanText(s);
@@ -43,7 +40,7 @@
         }
         : null;
 
-    // --- NUEVO: FAQ Schema (JSON-LD) ---
+    // --- FAQ Schema (JSON-LD) ---
     $: faqSchema = linaje?.faqs?.length ? {
         "@context": "https://schema.org",
         "@type": "FAQPage",
@@ -56,6 +53,26 @@
             }
         }))
     } : null;
+
+    // --- LÓGICA DE VIDEO YOUTUBE (Soporte SHORTS + Standard) ---
+    function getYouTubeId(url) {
+        if (!url) return null;
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|shorts\/)([^#&?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    }
+
+    $: videoSchema = linaje?.videos?.length ? linaje.videos.map(video => ({
+        "@context": "https://schema.org",
+        "@type": "VideoObject",
+        "name": video.title,
+        "description": video.description,
+        "thumbnailUrl": [ video.thumbnailUrl ],
+        "uploadDate": video.uploadDate || new Date().toISOString(),
+        "duration": video.duration || "PT1M00S", 
+        "embedUrl": `https://www.youtube.com/embed/${getYouTubeId(video.youtubeUrl)}`,
+        "contentUrl": video.youtubeUrl
+    })) : null;
 
     // --- LÓGICA DE INTERFAZ ---
     let relatedProducts = linaje?.relatedProducts || [];
@@ -86,6 +103,12 @@
 
     {#if faqSchema}
         {@html `<script type="application/ld+json">${JSON.stringify(faqSchema)}<\/script>`}
+    {/if}
+
+    {#if videoSchema}
+        {#each videoSchema as schema}
+            {@html `<script type="application/ld+json">${JSON.stringify(schema)}</script>`}
+        {/each}
     {/if}
 </svelte:head>
 
@@ -132,6 +155,7 @@
             </div>
 
             <div class="contenido-columna">
+                
                 {#if linaje.articulosRelacionados && linaje.articulosRelacionados.length > 0}
                     <div class="articulos-seccion">
                         <h3 class="subtitulo-seccion">El Códice de {linaje.title}</h3>
@@ -180,6 +204,31 @@
                         <div class="ver-mas-productos">
                             <a href="/productos?linaje={linaje.slug}" class="button-secondary-outline">Ver todos los productos {linaje.title}</a>
                         </div>
+                    </div>
+                {/if}
+
+                {#if linaje.videos && linaje.videos.length > 0}
+                    <div class="videos-seccion">
+                        {#each linaje.videos as video}
+                            {@const videoId = getYouTubeId(video.youtubeUrl)}
+                            {#if videoId}
+                                <div class="video-card">
+                                    <div class="video-responsive">
+                                        <iframe 
+                                            src={`https://www.youtube.com/embed/${videoId}`} 
+                                            title={video.title}
+                                            frameborder="0" 
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                            allowfullscreen>
+                                        </iframe>
+                                    </div>
+                                    <div class="video-info">
+                                        <h3>{video.title}</h3>
+                                        <p>{video.description}</p>
+                                    </div>
+                                </div>
+                            {/if}
+                        {/each}
                     </div>
                 {/if}
 
@@ -265,8 +314,10 @@
         border-bottom-color: #fff;
     }
 
-    /* --- ESTILOS GENERALES --- */
-    .linaje-container { max-width: 1100px; margin: 0 auto; padding: 120px 2rem 60px 2rem; }
+    /* --- ESTILOS GENERALES (ESPACIADO CORREGIDO) --- */
+    /* Se redujo padding-top de 120px a 40px */
+    .linaje-container { max-width: 1100px; margin: 0 auto; padding: 40px 2rem 60px 2rem; }
+    
     .apellido-titulo { font-size: clamp(3rem, 8vw, 4.5rem); font-weight: 700; text-align: center; color: #c0a062; margin-bottom: 3rem; text-transform: capitalize; }
     .linaje-contenido { display: grid; grid-template-columns: 300px 1fr; gap: 4rem; align-items: start; }
     .subtitulo-seccion { font-size: 1.8rem; font-weight: 600; border-bottom: 1px solid #333; padding-bottom: 0.8rem; margin-bottom: 2rem; color: #e0e0e0; font-family: 'Source Sans 3', sans-serif; }
@@ -304,7 +355,7 @@
 
     .placeholder-image-article, .placeholder-image-origin { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background-color: #2a2a2a; color: #777; }
 
-    /* --- ESTILOS FAQs (NUEVO) --- */
+    /* --- ESTILOS FAQs --- */
     .faq-list { display: flex; flex-direction: column; gap: 1rem; }
     .faq-item { background-color: rgba(255, 255, 255, 0.03); border: 1px solid #333; border-radius: 8px; overflow: hidden; transition: all 0.3s ease; }
     .faq-item[open] { border-color: #c0a062; background-color: rgba(255, 255, 255, 0.05); }
@@ -314,8 +365,64 @@
     .faq-item[open] .faq-icon { transform: rotate(45deg); }
     .faq-answer { padding: 0 1.2rem 1.2rem 1.2rem; color: #aaa; line-height: 1.6; border-top: 1px solid rgba(255, 255, 255, 0.05); margin-top: 0.5rem; padding-top: 1rem; }
 
+    /* --- ESTILOS DE VIDEO (VERTICAL 9:16) --- */
+    .videos-seccion {
+        margin-bottom: 3rem;
+        display: flex;
+        flex-direction: row; /* Para que se alineen a la izquierda si hay varios */
+        flex-wrap: wrap;
+        gap: 2rem;
+    }
+
+    .video-card {
+        background: #1a1a1a;
+        border: 1px solid #333;
+        border-radius: 8px;
+        overflow: hidden;
+        /* Restricción de ancho para formato móvil/vertical */
+        width: 100%;
+        max-width: 320px; /* Ancho típico de móvil para que no se estire */
+        flex-shrink: 0;
+    }
+
+    .video-responsive {
+        position: relative;
+        width: 100%;
+        /* Aspect Ratio 9:16 (Vertical) */
+        padding-bottom: 177.77%; 
+        height: 0;
+        overflow: hidden;
+    }
+
+    .video-responsive iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .video-info {
+        padding: 1.5rem;
+    }
+
+    .video-info h3 {
+        color: #c0a062;
+        margin-top: 0;
+        margin-bottom: 0.5rem;
+        font-size: 1.2rem;
+    }
+
+    .video-info p {
+        color: #aaa;
+        font-size: 0.95rem;
+        margin: 0;
+        line-height: 1.5;
+    }
+
     @media (max-width: 768px) {
-        .linaje-container { padding: 100px 1rem 40px 1rem; }
+        /* Padding en móvil también reducido a 40px */
+        .linaje-container { padding: 40px 1rem 40px 1rem; }
         .apellido-titulo { font-size: clamp(2.5rem, 10vw, 3.5rem); }
         .linaje-contenido { grid-template-columns: 1fr; gap: 2rem; }
         .escudo-columna { order: 1; position: static; margin-bottom: 2rem; }

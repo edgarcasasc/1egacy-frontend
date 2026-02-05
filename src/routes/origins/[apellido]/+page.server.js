@@ -23,12 +23,23 @@ export async function load({ params }) {
         // Texto plano limpio para Meta Description (fundamental)
         "blasonTexto": pt::text(blason),
 
-        // --- NUEVO: FAQs ---
+        // --- FAQs ---
         faqs[] {
             question,
             answer
         },
-        // ------------------
+
+        // --- NUEVO: VIDEOS ---
+        videos[] {
+            title,
+            description,
+            youtubeUrl,
+            uploadDate,
+            duration,
+            // Dereferenciamos el asset para obtener la URL directa de la imagen
+            "thumbnailUrl": thumbnail.asset->url
+        },
+        // ---------------------
 
         articulosRelacionados[]->{
             title,
