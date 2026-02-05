@@ -11,15 +11,24 @@
     // En el Home, la canónica es siempre la raíz
     $: canonical = SITE_URL;
 
-    const schemaOrg = {
+    // --- DATOS DEL SERVIDOR (Productos) ---
+    export let data;
+    $: featuredProducts = data?.featuredProducts || [];
+
+    // --- SCHEMA.ORG ENRIQUECIDO (REACTIVO) ---
+    $: schemaOrg = {
         "@context": "https://schema.org",
         "@graph": [
+            // 1. ORGANIZACIÓN
             {
                 "@type": "Organization",
-                "@id": "https://somos1egacy.com/#organization",
+                "@id": `${SITE_URL}/#organization`,
                 "name": "1egacy",
                 "url": SITE_URL,
-                "logo": `${SITE_URL}/logo1egacy.svg`,
+                "logo": {
+                    "@type": "ImageObject",
+                    "url": `${SITE_URL}/logo1egacy.svg`
+                },
                 "sameAs": [
                     "https://www.instagram.com/somos1egacy/",
                     "https://x.com/somos1egacy",
@@ -27,19 +36,40 @@
                     "https://www.tiktok.com/@somos1egacy"
                 ]
             },
+            // 2. WEBSITE
             {
                 "@type": "WebSite",
-                "@id": "https://somos1egacy.com/#website",
+                "@id": `${SITE_URL}/#website`,
                 "url": SITE_URL,
                 "name": "1egacy",
-                "publisher": { "@id": "https://somos1egacy.com/#organization" }
-            }
+                "publisher": { "@id": `${SITE_URL}/#organization` },
+                "inLanguage": "es-US"
+            },
+            // 3. WEBPAGE
+            {
+                "@type": "WebPage",
+                "@id": `${SITE_URL}/#webpage`,
+                "url": SITE_URL,
+                "name": "1egacy | Tu Linaje convertido en Legado",
+                "description": "Investigación genealógica y diseño heráldico para conservar, compartir y heredar tu historia.",
+                "isPartOf": { "@id": `${SITE_URL}/#website` },
+                "about": { "@id": `${SITE_URL}/#organization` },
+                "inLanguage": "es-US"
+            },
+            // 4. ITEMLIST (Productos Destacados)
+            ...(featuredProducts.length > 0 ? [{
+                "@type": "ItemList",
+                "@id": `${SITE_URL}/#featured-products`,
+                "name": "Colección y Derivados",
+                "itemListElement": featuredProducts.map((product, index) => ({
+                    "@type": "ListItem",
+                    "position": index + 1,
+                    "url": `${SITE_URL}/productos/${product.slug}`,
+                    "name": product.title
+                }))
+            }] : [])
         ]
     };
-
-    // --- DATOS DEL SERVIDOR (Productos) ---
-    export let data;
-    $: featuredProducts = data?.featuredProducts || [];
 
     // --- UI LOGIC (Testimonios) ---
     let expandedStates = {}; 
@@ -139,12 +169,17 @@
 <svelte:head>
     <title>1egacy | Tu Linaje convertido en Legado</title>
     <meta name="description" content="Estudio creativo de alta gama. Investigamos y curamos la historia de tu familia para convertirla en un Códice digital y heráldica contemporánea." />
+    
     <meta name="robots" content="index,follow,max-image-preview:large" />
 
     <link rel="canonical" href={canonical} />
 
     <meta property="og:site_name" content="1egacy" />
     <meta property="og:type" content="website" />
+    
+    <meta property="og:locale" content="es_US" />
+    <meta property="og:locale:alternate" content="es_MX" />
+
     <meta property="og:title" content="1egacy | Tu Linaje convertido en Legado" />
     <meta property="og:description" content="Investigación genealógica y diseño heráldico para conservar, compartir y heredar tu historia." />
     <meta property="og:url" content={canonical} />
@@ -155,7 +190,11 @@
     <meta property="og:image:height" content="630" />
 
     <meta name="twitter:card" content="summary_large_image" />
+    
+    <meta name="twitter:site" content="@somos1egacy" />
     <meta name="twitter:title" content="1egacy | Tu Linaje convertido en Legado" />
+    <meta name="twitter:description" content="Investigación genealógica y diseño heráldico para conservar, compartir y heredar tu historia." />
+    
     <meta name="twitter:image" content={DEFAULT_OG_IMAGE} />
 
     <link rel="preconnect" href="https://cdn.sanity.io" crossorigin>
@@ -195,11 +234,10 @@
 
            <div class="hero-actions">
                 <a href="/origins" class="button-primary">Iniciar Origins</a>
+                
                 <a 
-                   href="/el-codice/casas?k=3ff94e4a-6803-485a-b188-1ad168904b0f" 
+                   href="/demo" 
                    class="button-text"
-                   target="_blank" 
-                   rel="noopener noreferrer"
                 >
                    Ver ejemplo del Códice &rarr;
                 </a>
@@ -332,8 +370,10 @@
         --text-muted: #b0b0b0;
     }
 
+    /* FIX #1: El Banner sube arriba */
     :global(#main-content) { padding-top: 0 !important; }
 
+    /* FIX #2: Forzar que el Menú esté SIEMPRE encima del Banner */
     :global(.site-header), :global(header) {
         z-index: 1000 !important;
         position: relative; 
