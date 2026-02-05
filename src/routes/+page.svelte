@@ -3,14 +3,46 @@
     import { browser } from '$app/environment';
     import { gsap } from 'gsap';
     import { MotionPathPlugin } from 'gsap/MotionPathPlugin';
+    
+    // --- SEO CONFIG PARA HOME ---
+    const SITE_URL = 'https://somos1egacy.com';
+    const DEFAULT_OG_IMAGE = `${SITE_URL}/og-default.jpg`;
+    
+    // En el Home, la canónica es siempre la raíz
+    $: canonical = SITE_URL;
 
-    // *** Importar datos del servidor ***
+    const schemaOrg = {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "Organization",
+                "@id": "https://somos1egacy.com/#organization",
+                "name": "1egacy",
+                "url": SITE_URL,
+                "logo": `${SITE_URL}/logo1egacy.svg`,
+                "sameAs": [
+                    "https://www.instagram.com/somos1egacy/",
+                    "https://x.com/somos1egacy",
+                    "https://www.youtube.com/@somos1egacy",
+                    "https://www.tiktok.com/@somos1egacy"
+                ]
+            },
+            {
+                "@type": "WebSite",
+                "@id": "https://somos1egacy.com/#website",
+                "url": SITE_URL,
+                "name": "1egacy",
+                "publisher": { "@id": "https://somos1egacy.com/#organization" }
+            }
+        ]
+    };
+
+    // --- DATOS DEL SERVIDOR (Productos) ---
     export let data;
     $: featuredProducts = data?.featuredProducts || [];
 
-    // --- DATOS LOCALES ---
+    // --- UI LOGIC (Testimonios) ---
     let expandedStates = {}; 
-    
     const testimonials = [
         { 
             id: 'ana', 
@@ -38,7 +70,7 @@
     testimonials.forEach(t => expandedStates[t.id] = false);
     function toggleExpand(id) { expandedStates[id] = !expandedStates[id]; }
 
-    // --- LÓGICA SPOTLIGHT ---
+    // --- ANIMACIONES (Spotlight & GSAP) ---
     function handleMouseMove(e) {
         if (!browser) return;
         const cards = document.getElementsByClassName('spotlight-card');
@@ -51,10 +83,8 @@
         }
     }
 
-    // --- ANIMACIONES GSAP ---
     onMount(() => {
         let animationTimeoutId; 
-
         if (browser) {
             const container = document.querySelector('.testimonial-carousel-wrapper');
             if (container) container.addEventListener('mousemove', handleMouseMove);
@@ -65,56 +95,31 @@
                 try {
                     const hiloPathElement = document.querySelector('#hilo-path');
                     if (hiloPathElement) {
-                        // 1. Contenedor flotante
-                        gsap.to('.hilo-destino-container', {
-                            y: 10, duration: 7, repeat: -1, yoyo: true, ease: 'sine.inOut' 
-                        });
+                        gsap.to('.hilo-destino-container', { y: 10, duration: 7, repeat: -1, yoyo: true, ease: 'sine.inOut' });
 
-                        // 2. Partículas individuales
                         const particulasSingle = gsap.utils.toArray('.particle-single');
                         if (particulasSingle.length > 0) {
                             particulasSingle.forEach((particle, i) => {
                                 gsap.to(particle, {
-                                    motionPath: {
-                                        path: hiloPathElement,
-                                        align: hiloPathElement,
-                                        alignOrigin: [0.5, 0.5]
-                                    },
-                                    duration: 12 + Math.random() * 5,
-                                    delay: i * 0.8,
-                                    repeat: -1,
-                                    ease: 'linear',
-                                    opacity: 0,
+                                    motionPath: { path: hiloPathElement, align: hiloPathElement, alignOrigin: [0.5, 0.5] },
+                                    duration: 12 + Math.random() * 5, delay: i * 0.8, repeat: -1, ease: 'linear', opacity: 0,
                                     onStart: () => gsap.to(particle, { opacity: 1, duration: 1.5 }),
-                                    onRepeat: () => {
-                                        gsap.set(particle, { opacity: 0 });
-                                        gsap.to(particle, { opacity: 1, duration: 1.5, delay: 0.1 });
-                                    }
+                                    onRepeat: () => { gsap.set(particle, { opacity: 0 }); gsap.to(particle, { opacity: 1, duration: 1.5, delay: 0.1 }); }
                                 });
                             });
                         }
 
-                        // 3. Enjambre / Cardumen
                         const enjambreContainer = document.querySelector('.enjambre-container');
                         if (enjambreContainer) {
                             gsap.to(enjambreContainer, {
-                                motionPath: {
-                                    path: hiloPathElement,
-                                    align: hiloPathElement,
-                                    alignOrigin: [0.5, 0.5],
-                                    start: 0.1, end: 0.9 
-                                },
+                                motionPath: { path: hiloPathElement, align: hiloPathElement, alignOrigin: [0.5, 0.5], start: 0.1, end: 0.9 },
                                 duration: 25, repeat: -1, yoyo: true, ease: 'sine.inOut' 
                             });
-
                             const particulasEnjambre = gsap.utils.toArray('.particle-enjambre');
                             particulasEnjambre.forEach((particle) => {
                                 gsap.to(particle, {
-                                    x: () => Math.random() * 40 - 20,
-                                    y: () => Math.random() * 40 - 20,
-                                    scale: () => 0.6 + Math.random() * 0.6,
-                                    duration: 1.5 + Math.random() * 1.5,
-                                    repeat: -1, yoyo: true, ease: 'sine.inOut'
+                                    x: () => Math.random() * 40 - 20, y: () => Math.random() * 40 - 20, scale: () => 0.6 + Math.random() * 0.6,
+                                    duration: 1.5 + Math.random() * 1.5, repeat: -1, yoyo: true, ease: 'sine.inOut'
                                 });
                             });
                         }
@@ -132,15 +137,33 @@
 </script>
 
 <svelte:head>
-  <title>1egacy | Tu Linaje convertido en Legado</title>
-  <meta name="description" content="Estudio creativo de alta gama. Investigamos y curamos la historia de tu familia para convertirla en un Códice digital y heráldica contemporánea." />
-  <meta property="og:title" content="1egacy | Tu Linaje convertido en Legado" />
-  <meta property="og:description" content="Investigación genealógica y diseño heráldico para conservar, compartir y heredar tu historia." />
-  <meta property="og:image" content="https://somos1egacy.com/og-default.jpg" />
+    <title>1egacy | Tu Linaje convertido en Legado</title>
+    <meta name="description" content="Estudio creativo de alta gama. Investigamos y curamos la historia de tu familia para convertirla en un Códice digital y heráldica contemporánea." />
+    <meta name="robots" content="index,follow,max-image-preview:large" />
+
+    <link rel="canonical" href={canonical} />
+
+    <meta property="og:site_name" content="1egacy" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="1egacy | Tu Linaje convertido en Legado" />
+    <meta property="og:description" content="Investigación genealógica y diseño heráldico para conservar, compartir y heredar tu historia." />
+    <meta property="og:url" content={canonical} />
+    
+    <meta property="og:image" content={DEFAULT_OG_IMAGE} />
+    <meta property="og:image:secure_url" content={DEFAULT_OG_IMAGE} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="1egacy | Tu Linaje convertido en Legado" />
+    <meta name="twitter:image" content={DEFAULT_OG_IMAGE} />
+
+    <link rel="preconnect" href="https://cdn.sanity.io" crossorigin>
+
+    {@html `<script type="application/ld+json">${JSON.stringify(schemaOrg)}</script>`}
 </svelte:head>
 
 <div class="page-wrapper">
-    
     <section class="home-container">
         <div class="animated-background">
             <div class="nebula nebula-blue"></div>
@@ -171,17 +194,16 @@
             </p>
 
            <div class="hero-actions">
-    <a href="/origins" class="button-primary">Iniciar Origins</a>
-    
-    <a 
-       href="/el-codice/casas?k=3ff94e4a-6803-485a-b188-1ad168904b0f" 
-       class="button-text"
-       target="_blank" 
-       rel="noopener noreferrer"
-    >
-       Ver ejemplo del Códice &rarr;
-    </a>
-</div>
+                <a href="/origins" class="button-primary">Iniciar Origins</a>
+                <a 
+                   href="/el-codice/casas?k=3ff94e4a-6803-485a-b188-1ad168904b0f" 
+                   class="button-text"
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                >
+                   Ver ejemplo del Códice &rarr;
+                </a>
+            </div>
             
             <p class="microcopy">
                 <small>Toma 3 minutos. Te diremos si tu caso es elegible y cuál es el siguiente paso.</small>
@@ -301,7 +323,6 @@
 </div>
 
 <style>
-    /* --- VARIABLES & BASE --- */
     :global(:root) {
         --gold: #c0a062;
         --gold-light: #e6c88a;
@@ -311,11 +332,8 @@
         --text-muted: #b0b0b0;
     }
 
-    /* FIX #1: El Banner sube arriba */
     :global(#main-content) { padding-top: 0 !important; }
 
-    /* FIX #2: Forzar que el Menú esté SIEMPRE encima del Banner */
-    /* Esto soluciona que el menú desaparezca al pasar sobre los botones */
     :global(.site-header), :global(header) {
         z-index: 1000 !important;
         position: relative; 
@@ -335,7 +353,6 @@
         text-align: center; padding: 0 1.5rem;
     }
     
-    /* FIX #3: El contenido del Hero tiene Z-Index 5 (menor que el Header que pusimos en 1000) */
     .hero-content { position: relative; z-index: 5; max-width: 900px; width: 100%; margin: 0 auto; }
     
     .hero-content h1 { font-size: clamp(2.2rem, 5vw, 4rem); margin-bottom: 1.5rem; font-weight: 700; color: #f5f5f5; text-shadow: 0 4px 20px rgba(0,0,0,0.5); }

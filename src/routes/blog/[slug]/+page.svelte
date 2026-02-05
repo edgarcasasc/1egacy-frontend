@@ -1,42 +1,32 @@
 <script>
     import { PortableText } from '@portabletext/svelte';
     import SanityImage from '$lib/components/SanityImage.svelte';
-    import FaqItem from '../../../components/FaqItem.svelte';
-
-    // --- NUEVO: Importamos el componente Tabla ---
     import Table from '$lib/components/serializers/Table.svelte';
+    
+    // CORRECCIÓN: Usamos la ruta relativa original para encontrar el archivo
+    import FaqItem from '../../../components/FaqItem.svelte'; 
 
     export let data;
+    const { post, baseUrl } = data; 
 
-    // Extraemos datos y aseguramos la URL de producción
-    const { post } = data;
-    const safeBaseUrl = 'https://somos1egacy.com'; 
-    const canonicalUrl = `${safeBaseUrl}/blog/${post?.slug?.current || ''}`;
-
-    // --- MEJORA SEO: Título e Imagen Dinámica ---
-    $: pageTitle = post?.seoTitle?.includes('1egacy') 
-        ? post.seoTitle 
-        : `${post?.seoTitle || post?.title || 'Artículo'} | 1egacy`;
-
-    // Imagen para redes sociales
-    const ogImage = post?.mainImage?.url 
-        ? `${post.mainImage.url}?w=1200&h=630&fit=crop&auto=format` 
-        : `${safeBaseUrl}/1egacy-og-logo.jpg`;
+    // --- 1. CONFIGURACIÓN TÉCNICA ---
+    const safeBaseUrl = baseUrl || 'https://somos1egacy.com';
     
-    // --- AQUÍ REGISTRAMOS LA TABLA ---
-    const components = {
-        types: {
-            image: SanityImage,
-            table: Table // <--- ¡Conectado!
-        }
-    };
+    // URL Canónica
+    $: currentSlug = post?.slug?.current;
+    $: permalink = currentSlug ? `${safeBaseUrl}/blog/${currentSlug}` : `${safeBaseUrl}/blog`;
 
-    // Preparación de FAQs
-    const validFaqsForTemplate = Array.isArray(post?.faqSection)
-        ? post.faqSection.filter((item) => item?.question && item?.answer)
-        : [];
+    // Título SEO
+    $: pageTitle = post?.seoTitle 
+        ? (post.seoTitle.includes('1egacy') ? post.seoTitle : `${post.seoTitle} | 1egacy`)
+        : `${post?.title || 'Artículo'} | 1egacy`;
 
-    // --- DATOS DE AUTORIDAD (Hardcoded para E-E-A-T) ---
+    // Imagen OG
+    $: ogImage = post?.mainImage?.url 
+        ? `${post.mainImage.url}?w=1200&h=630&fit=crop&auto=format` 
+        : `${safeBaseUrl}/og-default.jpg`;
+
+    // --- 2. DATOS DE AUTORIDAD (E-E-A-T) ---
     const AUTHOR_AUTHORITY = {
         name: "Ovidio Casas Jr.",
         jobTitle: "Historiador Genealógico",
@@ -47,100 +37,142 @@
         ]
     };
 
-    // --- CONSTRUCCIÓN DEL GRAPH CONECTADO ---
-    function createConnectedSchema(postData, domain) {
-        if (!postData) return {};
+    // --- 3. PROCESAMIENTO DE FAQs ---
+    $: validFaqsForTemplate = (post && Array.isArray(post.faqSection))
+        ? post.faqSection.filter((item) => item?.question && item?.answer)
+        : [];
 
-        const currentUrl = `${domain}/blog/${postData.slug?.current || ''}`;
-        
-        // ID Identificadores (Nodos del Grafo)
-        const orgId = `${domain}/#organization`;
-        const websiteId = `${domain}/#website`;
-        const webpageId = `${currentUrl}#webpage`;
-        const articleId = `${currentUrl}#article`;
-        // ID Estático para consolidar autoridad en una sola entidad
-        const personId = `${domain}/#ovidio-casas`; 
+    // --- 4. SCHEMA.ORG BLINDADO (El arreglo del crash) ---
+    $: jsonLd = (() => {
+        if (!post) return null; // <--- ESTO EVITA EL ERROR CRÍTICO
 
         return {
             "@context": "https://schema.org",
             "@graph": [
                 {
-                    "@type": "Person",
-                    "@id": personId,
-                    "name": AUTHOR_AUTHORITY.name,
-                    "jobTitle": AUTHOR_AUTHORITY.jobTitle,
-                    "url": AUTHOR_AUTHORITY.url,
-                    "sameAs": AUTHOR_AUTHORITY.sameAs,
-                    "worksFor": { "@id": orgId }
+                    "@type": "Organization",
+                    "@id": `${safeBaseUrl}/#organization`,
+                    "name": "1egacy",
+                    "url": safeBaseUrl,
+                    "logo": {
+                        "@type": "ImageObject",
+                        "url": `${safeBaseUrl}/logo1egacy.svg`
+                    },
+                    "sameAs": AUTHOR_AUTHORITY.sameAs
                 },
                 {
-                    "@type": "WebPage",
-                    "@id": webpageId,
-                    "url": currentUrl,
-                    "name": pageTitle,
-                    "isPartOf": { "@id": websiteId },
-                    "about": { "@id": orgId },
-                    "description": postData.seoDescription || postData.subtitle,
+                    "@type": "WebSite",
+                    "@id": `${safeBaseUrl}/#website`,
+                    "url": safeBaseUrl,
+                    "name": "1egacy",
+                    "publisher": { "@id": `${safeBaseUrl}/#organization` },
                     "inLanguage": "es-MX"
                 },
                 {
-                    "@type": "BlogPosting", // Más específico que Article para blogs
-                    "@id": articleId,
-                    "mainEntityOfPage": { "@id": webpageId },
-                    "headline": postData.title,
-                    "description": postData.seoDescription || postData.subtitle,
-                    ...(postData.mainImage?.url && { "image": postData.mainImage.url }),
-                    "author": { "@id": personId }, // Referencia a la entidad Ovidio
-                    "publisher": { "@id": orgId },
-                    "datePublished": postData.publishedAt,
-                    "dateModified": postData._updatedAt,
+                    "@type": "BreadcrumbList",
+                    "@id": `${permalink}/#breadcrumb`,
+                    "itemListElement": [
+                        { "@type": "ListItem", "position": 1, "name": "Inicio", "item": safeBaseUrl },
+                        { "@type": "ListItem", "position": 2, "name": "El Códice", "item": `${safeBaseUrl}/blog` },
+                        { "@type": "ListItem", "position": 3, "name": post.title, "item": permalink }
+                    ]
+                },
+                {
+                    "@type": "WebPage",
+                    "@id": `${permalink}/#webpage`,
+                    "url": permalink,
+                    "name": pageTitle,
+                    "isPartOf": { "@id": `${safeBaseUrl}/#website` },
+                    "about": { "@id": `${safeBaseUrl}/#organization` },
+                    "inLanguage": "es-MX",
+                    "description": post.seoDescription || post.subtitle,
+                    "breadcrumb": { "@id": `${permalink}/#breadcrumb` },
+                    "datePublished": post.publishedAt,
+                    "dateModified": post._updatedAt
+                },
+                {
+                    "@type": "BlogPosting",
+                    "@id": `${permalink}/#article`,
+                    "mainEntityOfPage": { "@id": `${permalink}/#webpage` },
+                    "headline": post.title,
+                    "description": post.seoDescription || post.subtitle,
+                    "image": post.mainImage?.url ? {
+                        "@type": "ImageObject",
+                        "url": post.mainImage.url,
+                        "width": post.mainImage.asset?.metadata?.dimensions?.width || 1200,
+                        "height": post.mainImage.asset?.metadata?.dimensions?.height || 630
+                    } : undefined,
+                    "author": {
+                        "@type": "Person",
+                        "@id": `${safeBaseUrl}/#ovidio-casas`,
+                        "name": AUTHOR_AUTHORITY.name,
+                        "url": AUTHOR_AUTHORITY.url,
+                        "sameAs": AUTHOR_AUTHORITY.sameAs,
+                        "worksFor": { "@id": `${safeBaseUrl}/#organization` }
+                    },
+                    "publisher": { "@id": `${safeBaseUrl}/#organization` },
+                    "datePublished": post.publishedAt,
+                    "dateModified": post._updatedAt,
                     "inLanguage": "es-MX"
                 },
                 ...(validFaqsForTemplate.length > 0 ? [{
                     "@type": "FAQPage",
-                    "@id": `${currentUrl}#faq`,
+                    "@id": `${permalink}/#faq`,
                     "mainEntity": validFaqsForTemplate.map(faq => ({
                         "@type": "Question",
                         "name": faq.question,
                         "acceptedAnswer": {
                             "@type": "Answer",
-                            "text": Array.isArray(faq.answer)
-                                ? faq.answer.map(b => (b.children || []).map(c => c.text).join('')).join('\n\n')
+                            "text": Array.isArray(faq.answer) 
+                                ? faq.answer.map(b => (b.children || []).map(c => c.text).join('')).join('\n') 
                                 : String(faq.answer || '')
                         }
                     }))
                 }] : [])
             ]
         };
-    }
+    })();
 
-    // Reactividad para regenerar schema si cambian los datos
-    $: schema = createConnectedSchema(post, safeBaseUrl);
+    // --- 5. COMPONENTES ---
+    const components = {
+        types: {
+            image: SanityImage,
+            table: Table
+        }
+    };
 </script>
 
 <svelte:head>
     <title>{pageTitle}</title>
     <meta name="description" content={post?.seoDescription || post?.subtitle || ''} />
-    <link rel="canonical" href={canonicalUrl} />
-
-    <meta name="content-length" content="2500-3500 palabras">
-    <meta name="author" content="Ovidio Casas Jr.">
     
+    <meta name="robots" content="index,follow,max-image-preview:large" />
+    <link rel="canonical" href={permalink} />
+
+    <meta name="author" content={AUTHOR_AUTHORITY.name}>
+
+    <meta property="og:site_name" content="1egacy" />
+    <meta property="og:locale" content="es_MX" />
     <meta property="og:type" content="article" />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={post?.seoDescription || post?.subtitle || ''} />
+    <meta property="og:url" content={permalink} />
     <meta property="og:image" content={ogImage} />
-    <meta property="og:url" content={canonicalUrl} />
-    <meta property="article:published_time" content={post.publishedAt} />
-    <meta property="article:author" content="Ovidio Casas Jr." />
+    
+    {#if post}
+        <meta property="article:published_time" content={post.publishedAt} />
+        <meta property="article:modified_time" content={post._updatedAt} />
+        <meta property="og:updated_time" content={post._updatedAt} />
+    {/if}
+    <meta property="article:author" content={AUTHOR_AUTHORITY.url} />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={post?.seoDescription || post?.subtitle || ''} />
     <meta name="twitter:image" content={ogImage} />
 
-    {#if post && schema}
-        {@html `<script type="application/ld+json">${JSON.stringify(schema)}</script>`}
+    {#if jsonLd}
+        {@html `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script>`}
     {/if}
 </svelte:head>
 
@@ -152,21 +184,25 @@
                 {#if post.subtitle}
                     <p class="subtitle">{post.subtitle}</p>
                 {/if}
+                
                 <p class="meta">
                     Publicado el {new Date(post.publishedAt).toLocaleDateString('es-MX', {
                         year: 'numeric', month: 'long', day: 'numeric'
                     })}
                     por {AUTHOR_AUTHORITY.name}
                 </p>
+
                 {#if post.mainImage?.url}
                     <img
                         class="featured-image"
                         src={post.mainImage.url}
                         alt={post.mainImage.alt || post.title}
-                        width={post.mainImage.dimensions?.width}
-                        height={post.mainImage.dimensions?.height}
-                        style={post.mainImage.dimensions?.aspectRatio ? `aspect-ratio: ${post.mainImage.dimensions.aspectRatio}` : ''}
-                        loading="eager" 
+                        width={post.mainImage.asset?.metadata?.dimensions?.width}
+                        height={post.mainImage.asset?.metadata?.dimensions?.height}
+                        style={post.mainImage.asset?.metadata?.dimensions?.aspectRatio ? `aspect-ratio: ${post.mainImage.asset.metadata.dimensions.aspectRatio}` : ''}
+                        fetchpriority="high"
+                        loading="eager"
+                        decoding="async"
                     />
                 {/if}
             </header>
@@ -215,7 +251,7 @@
                         <a href={AUTHOR_AUTHORITY.url} target="_blank" class="author-profile-button">
                             Ver perfil
                         </a>
-                        <a href={AUTHOR_AUTHORITY.sameAs[0]} target="_blank" rel="noopener noreferrer author" class="author-social">
+                        <a href={AUTHOR_AUTHORITY.sameAs[1]} target="_blank" rel="noopener noreferrer author" class="author-social">
                             Conectar
                         </a>
                     </div>
@@ -327,6 +363,7 @@
         margin-bottom: 3rem;
         display: block;
         background-color: #eee;
+        object-fit: cover; /* Asegura que la imagen llene el contenedor */
     }
 
     .post-content { font-size: 1.1rem; line-height: 1.8; }

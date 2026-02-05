@@ -86,15 +86,17 @@
     <title>{linaje?.title || 'Linaje'} | 1egacy Origins</title>
     <meta name="description" content={seoDescription} />
 
-    <meta property="og:title" content={`${linaje?.title || 'Linaje'} | 1egacy Origins`} />
+    <meta property="og:title" content={`Apellido ${linaje?.title || 'Linaje'}: origen, significado y escudo | 1egacy`} />
     <meta property="og:description" content={seoDescription} />
     <meta property="og:type" content="website" />
+    
     {#if linaje?.escudoUrl}
         <meta property="og:image" content={linaje.escudoUrl} />
+        <meta property="og:image:alt" content={`Escudo del apellido ${linaje?.title || 'Linaje'}`} />
         <meta name="twitter:image" content={linaje.escudoUrl} />
     {/if}
 
-    <meta name="twitter:title" content={`${linaje?.title || 'Linaje'} | 1egacy Origins`} />
+    <meta name="twitter:title" content={`Apellido ${linaje?.title || 'Linaje'}: origen, significado y escudo | 1egacy`} />
     <meta name="twitter:description" content={seoDescription} />
 
     {#if breadcrumbJsonLd}
@@ -115,7 +117,7 @@
 <div class="linaje-container">
     {#if linaje}
         <div class="linaje-header">
-            <h1 class="apellido-titulo">{linaje.title}</h1>
+            <h1 class="apellido-titulo">Apellido {linaje.title}: origen, significado y escudo | 1egacy</h1>
         </div>
 
         <div class="linaje-contenido">
