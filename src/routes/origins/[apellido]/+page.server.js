@@ -29,7 +29,7 @@ export async function load({ params }) {
             answer
         },
 
-        // --- NUEVO: VIDEOS ---
+        // --- VIDEOS ---
         videos[] {
             title,
             description,
@@ -39,7 +39,6 @@ export async function load({ params }) {
             // Dereferenciamos el asset para obtener la URL directa de la imagen
             "thumbnailUrl": thumbnail.asset->url
         },
-        // ---------------------
 
         articulosRelacionados[]->{
             title,
@@ -59,7 +58,6 @@ export async function load({ params }) {
        const linajeData = await client.fetch(query, { slug });
 
        if (!linajeData) {
-           // Un 404 controlado ahora que tienes el archivo +error.svelte
            throw error(404, `El linaje '${params.apellido}' no está en nuestros registros aún.`);
        }
 
@@ -72,19 +70,16 @@ export async function load({ params }) {
                ...linajeData,
                blasonTexto: cleanSEOList
            },
-           // ESTÁNDAR 2026: Velocidad máxima. 
-           // Si el servidor tarda, sirve la versión vieja mientras se actualiza.
+           // Cache-Control para Vercel/CDN
            headers: {
                'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=3600'
            }
        };
 
     } catch (err) {
-       // Si es 404, lo lanzamos para que lo atrape +error.svelte
        if (err.status === 404) throw err;
        
        console.error(`CRITICAL 5xx Origins [${slug}]:`, err);
-       // Evitamos el 500. Usamos 503 para que Google no nos penalice el ranking.
        throw error(503, 'La Bóveda de Linajes está temporalmente saturada.');
     }
 }

@@ -62,13 +62,16 @@
         return (match && match[2].length === 11) ? match[2] : null;
     }
 
+    // --- FIX GOOGLE SEARCH CONSOLE: Zona Horaria ---
+    // Convertimos la fecha a objeto Date y luego a string ISO (que incluye la 'Z' de UTC).
     $: videoSchema = linaje?.videos?.length ? linaje.videos.map(video => ({
         "@context": "https://schema.org",
         "@type": "VideoObject",
         "name": video.title,
         "description": video.description,
         "thumbnailUrl": [ video.thumbnailUrl ],
-        "uploadDate": video.uploadDate || new Date().toISOString(),
+        // ✅ CORRECCIÓN APLICADA AQUÍ:
+        "uploadDate": video.uploadDate ? new Date(video.uploadDate).toISOString() : new Date().toISOString(),
         "duration": video.duration || "PT1M00S", 
         "embedUrl": `https://www.youtube.com/embed/${getYouTubeId(video.youtubeUrl)}`,
         "contentUrl": video.youtubeUrl
