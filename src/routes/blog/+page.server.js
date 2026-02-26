@@ -1,6 +1,11 @@
 import { client } from '$lib/sanityClient';
 
-export const prerender = true; 
+export const prerender = true;
+export const config = {
+    isr: {
+        expiration: 600 // Se actualiza automáticamente cada 10 minutos (600 segundos)
+    }
+};
 
 export async function load() {
     // 1. Consulta para Clústeres (Lo que se ve al inicio)
@@ -21,7 +26,7 @@ export async function load() {
     const mostReadQuery = `*[_type == "post"] | order(publishedAt desc)[0...5]{
         title,
         "slug": slug.current,
-        "topicTitle": topics[0]->title
+        "topicTitle": topic->title
     }`;
 
     // 3. NUEVA: Consulta Global para el Buscador (Index de búsqueda liviano)
@@ -31,7 +36,7 @@ export async function load() {
         "slug": slug.current,
         "mainImageUrl": mainImage.asset->url,
         "apellidos": apellidosRelacionados[]->title,
-        "topicTitle": topics[0]->title
+        "topicTitle": topic->title
     }`;
 
     try {
