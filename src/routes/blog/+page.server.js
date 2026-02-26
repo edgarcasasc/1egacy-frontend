@@ -3,7 +3,7 @@ import { client } from '$lib/sanityClient';
 export const prerender = true;
 export const config = {
     isr: {
-        expiration: 600 // Se actualiza automáticamente cada 10 minutos (600 segundos)
+        expiration: 604800 // Se actualiza automáticamente cada 604800 segundos = 7 días
     }
 };
 
