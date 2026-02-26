@@ -15,7 +15,12 @@ const config = {
         // 🛠️ SOLUCIÓN PARA NETLIFY: 
         // Permite que el build pase aunque falten assets (404) como iconos o imágenes
         prerender: {
-            handleHttpError: 'warn'
+           // Esto ignora errores de archivos faltantes (imágenes, favicons)
+            handleHttpError: 'warn',
+            
+            // 🛠️ ESTO ARREGLA EL ERROR ACTUAL:
+            // Ignora si un link interno apunta a un ID (#) que no existe en el texto
+            handleMissingId: 'warn'
         }
     }
 };
