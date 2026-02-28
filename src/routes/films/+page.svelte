@@ -14,7 +14,8 @@
             description: 'Un poema visual sobre la memoria y la conexión humana. Explora cómo los recuerdos más pequeños pueden definir una vida entera.', 
             image: 'articulos/instantes.webp',
             videoUrl: 'https://www.youtube-nocookie.com/embed/tP4V5myfKI0?rel=0&modestbranding=1',
-            status: 'available'
+            status: 'available',
+            uploadDate: '2026-02-15T08:00:00-06:00'
         },
         { 
             id: 'receta-abuela', 
@@ -59,6 +60,7 @@
     "description": "Un poema visual sobre la memoria y la conexión humana.",
     "thumbnailUrl": ["https://somos1egacy.com/instantes-og.jpg"],
     "embedUrl": "https://www.youtube-nocookie.com/embed/tP4V5myfKI0",
+    "uploadDate": "2026-02-15T08:00:00-06:00",
     "publisher": {
       "@type": "Organization",
       "name": "1egacy",
@@ -140,6 +142,13 @@
                                 <span class="project-link inactive">Ver sinopsis</span>
                             {/if}
                         </div>
+                        {#if project.uploadDate}
+                            <footer class="card-footer">
+                                <time datetime={project.uploadDate}>
+                                    Publicado: {new Date(project.uploadDate).toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}
+                                </time>
+                            </footer>
+                        {/if}
                     </div>
                 </div>
             {/each}
@@ -266,6 +275,8 @@
     .card-action { margin-top: auto; }
     .project-link { color: var(--gold); font-weight: bold; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; cursor: pointer; }
     .project-link.inactive { color: #444; cursor: default; }
+
+    .card-footer { margin-top: 15px; padding-top: 15px; border-top: 1px solid #222; font-size: 0.75rem; color: #666; text-transform: uppercase; letter-spacing: 1px; }
 
     /* METODOLOGÍA */
     .process-steps-list { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 40px; margin-bottom: 100px; margin-top: 60px; }
