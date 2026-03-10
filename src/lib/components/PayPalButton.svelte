@@ -1,11 +1,12 @@
 <script>
     import { onMount } from 'svelte';
-    import { loadScript } from "@paypal/paypal-js";
     import { cart } from '$lib/stores/cart'; // Importamos el carrito para saber qué compró
 
     export let amount;
 
     onMount(async () => {
+        const { loadScript } = await import("@paypal/paypal-js");
+
         let paypal;
         try {
             paypal = await loadScript({ 
