@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model carts {
+  id            String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  user_id       String?   @db.Uuid
+  session_token String?   @db.VarChar(255)
+  items         Json      @default("[]")
+  updated_at    DateTime? @default(now()) @db.Timestamptz(6)
+  users         users?    @relation(fields: [user_id], references: [id], onUpdate: NoAction)
+
+  @@index([session_token], map: "idx_cart_session")
+}
+
+model orders {
+  id                       String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  user_id                  String            @db.Uuid
+  stripe_payment_intent_id String            @unique @db.VarChar(255)
+  total_amount             Int
+  currency                 String?           @default("MXN") @db.VarChar(3)
+  status                   order_status?     @default(pending_payment)
+  logistics_type           product_logistics
+  customization_level      service_level
+  items_snapshot           Json
+  shipping_address         Json?
+  tracking_number          String?           @db.VarChar(255)
+  bespoke_data_filled      Boolean?          @default(false)
+  guardian_credits         Int?              @default(0)
+  created_at               DateTime?         @default(now()) @db.Timestamptz(6)
+  updated_at               DateTime?         @default(now()) @db.Timestamptz(6)
+  users                    users             @relation(fields: [user_id], references: [id], onUpdate: NoAction)
+}
+
+model users {
+  id                 String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  email              String    @unique @db.VarChar(255)
+  full_name          String?   @db.VarChar(255)
+  password_hash      String?   @db.VarChar(255)
+  is_verified        Boolean?  @default(false)
+  is_guest           Boolean?  @default(true)
+  stripe_customer_id String?   @db.VarChar(255)
+  created_at         DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime? @default(now()) @db.Timestamptz(6)
+  carts              carts[]
+  orders             orders[]
+}
+
+enum order_status {
+  pending_payment
+  paid
+  processing
+  shipped
+  completed
+  cancelled
+}
+
+enum orderstatus {
+  pending_payment
+  paid
+  processing
+  shipped
+  completed
+  cancelled
+}
+
+enum product_logistics {
+  digital
+  physical
+  hybrid
+}
+
+enum productlogistics {
+  digital
+  physical
+  hybrid
+}
+
+enum service_level {
+  standard
+  bespoke
+}
+
+enum servicelevel {
+  standard
+  bespoke
+}
+
+// -----------------------------------------------------
+// 🛡️ MODELO: PROSPECTO (LEAD) PARA EL CÓDICE LINAJES
+// -----------------------------------------------------
+model leads {
+  id                String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  email             String    @unique @db.VarChar(255)
+  role              String?   @default("prospect") @db.VarChar(50)
+  marketing_consent Boolean?  @default(false)
+  source            String?   @db.VarChar(100)
+  created_at        DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime? @default(now()) @db.Timestamptz(6)
+  magic_link_token  String?   @db.VarChar(255)
+  is_verified       Boolean?  @default(false)
+}

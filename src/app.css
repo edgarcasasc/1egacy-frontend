@@ -3,15 +3,15 @@
   --gold: #c0a062;
   --bg: #121212;
   --header-h: 80px;
-  /* El offset base que usan todas las páginas por defecto */
-  --main-offset: calc(var(--header-h) + 2rem);
+  /* El offset base que usan todas las páginas por defecto (sin espacio extra) */
+  --main-offset: var(--header-h);
 }
 
 /* Ajustes Responsivos para Móvil */
 @media (max-width: 768px) {
   :root { 
     --header-h: 70px; 
-    --main-offset: calc(var(--header-h) + 1rem);
+    --main-offset: var(--header-h);
   }
 }
 
@@ -39,8 +39,9 @@ body {
 
 #main-content {
   flex: 1;
-  /* El padding-top obedece estrictamente a la variable dinámica */
-  padding-top: var(--main-offset);
+  /* El navbar es position: sticky y ocupa su espacio (80px),
+     no necesitamos sumarle padding-top adicional */
+  padding-top: 0;
   padding-bottom: 80px;
   transition: padding-top 0.3s ease;
 }
@@ -78,7 +79,7 @@ body.route-films .site-header.is-scrolled{
 h1, h2, h3 {
   font-family: 'Playfair Display', serif;
   color: var(--gold);
-  margin: 0 0 1rem 0;
+  margin: 0 0 1rem 0; /* Aseguramos que el margin-top sea explícitamente 0 para que no empuje el contenido hacia abajo */
 }
 
 p { margin: 0 0 1.5rem 0; color: #b0b0b0; }

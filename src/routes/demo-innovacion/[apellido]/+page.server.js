@@ -1,12 +1,13 @@
 import { client } from '$lib/sanityClient.js';
 import { error } from '@sveltejs/kit';
 
-// ISR 2026: Velocidad de estático con actualización automática
-export const prerender = false; // Desactivado para habilitar form actions de prospectos
+export const prerender = false; // Desactivamos prerender para habilitar 'actions' de formulario
 
 export async function load({ params, setHeaders, cookies }) {
    try {
         const slug = params.apellido?.toLowerCase() || '';
+        
+        // Revisamos si el usuario ya desbloqueó el Códice globalmente
         const isUnlocked = cookies.get('legado_unlocked') === 'true';
 
         const query = `*[_type == "linaje" && slug.current == $slug][0]{
@@ -14,32 +15,23 @@ export async function load({ params, setHeaders, cookies }) {
             title,
             "slug": slug.current,
             introduccion,
-            // Traemos el escudo con metadatos de dimensiones para el SEO Social
             "escudoUrl": escudo.asset->url,
             "escudoMeta": escudo.asset->metadata.dimensions,
-            
-            // Texto rico para el diseño
             blason, 
-            origen,
+            origen, 
             historia,
-            
-            // --- FAQs ---
             faqs[] {
                 question,
                 answer
             },
-
-            // --- VIDEOS ---
             videos[] {
                 title,
                 description,
                 youtubeUrl,
                 uploadDate,
                 duration,
-                // Dereferenciamos el asset para obtener la URL directa de la imagen
                 "thumbnailUrl": thumbnail.asset->url
             },
-
             articulosRelacionados[]->{
                 title,
                 "slug": slug.current,
@@ -60,17 +52,14 @@ export async function load({ params, setHeaders, cookies }) {
             throw error(404, `El linaje '${params.apellido}' no está en nuestros registros aún.`);
         }
 
-        // Extracción segura del texto plano localmente en lugar de GROQ pt::text()
-        const cleanSEOList = linajeData.blason && Array.isArray(linajeData.blason)
-            ? linajeData.blason
+        const cleanSEOList = linajeData.origen && Array.isArray(linajeData.origen)
+            ? linajeData.origen
                 .map(block => block.children ? block.children.map(child => child.text).join('') : '')
                 .join(' ')
                 .replace(/\n/g, ' ')
                 .trim()
             : '';
 
-        // Configuramos los headers reales para SvelteKit / Vercel
-        // Cache más largo (1 hora CDN) ya que son orígenes históricos estáticos
         setHeaders({
             'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400'
         });
@@ -80,13 +69,11 @@ export async function load({ params, setHeaders, cookies }) {
                 ...linajeData,
                 blasonTexto: cleanSEOList
             },
-            isUnlocked
+            isUnlocked // Pasamos el booleano al frontend
         };
 
     } catch (err) {
         if (err.status === 404) throw err;
-        
-        // Evitamos que 'slug' rompa el catch si falló antes de definirse
         const errorSlug = params.apellido || 'desconocido';
         console.error(`CRITICAL 5xx Origins [${errorSlug}]:`, err);
         throw error(503, 'La Bóveda de Linajes está temporalmente saturada.');
@@ -99,6 +86,8 @@ import { Resend } from 'resend';
 
 const prisma = new PrismaClient();
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+// ... existing code ...
 
 export const actions = {
     unlockStory: async ({ request, url }) => {
@@ -114,11 +103,11 @@ export const actions = {
             // Generamos un token criptográfico seguro de 32 caracteres (hex)
             const magicToken = crypto.randomBytes(16).toString('hex');
             
-            // Guardamos el token en PostgreSQL
+            // Guardamos directamente en tu base de datos de DigitalOcean
             const newLead = await prisma.leads.upsert({
                 where: { email: email.toString() },
                 update: {
-                    source: `origins_linaje_${lastNameTitle}`,
+                    source: `demo_linaje_${lastNameTitle}`,
                     marketing_consent: consent,
                     magic_link_token: magicToken,
                     is_verified: false,
@@ -126,7 +115,7 @@ export const actions = {
                 },
                 create: {
                     email: email.toString(),
-                    source: `origins_linaje_${lastNameTitle}`,
+                    source: `demo_linaje_${lastNameTitle}`,
                     marketing_consent: consent,
                     magic_link_token: magicToken,
                     is_verified: false
@@ -167,7 +156,6 @@ export const actions = {
             } catch (emailError) {
                 console.error('[RESEND_ERROR] Falló el envío del correo:', emailError);
             }
-
         } catch (dbError) {
             console.error('[POSTGRES_ERROR] Error al guardar el prospecto:', dbError);
         }

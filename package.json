@@ -16,6 +16,7 @@
 		"@sveltejs/kit": "^2.43.2",
 		"@sveltejs/vite-plugin-svelte": "^6.2.0",
 		"@types/d3": "^7.4.3",
+		"prisma": "^5.19.1",
 		"svelte": "^5.39.5",
 		"svelte-check": "^4.3.2",
 		"typescript": "^5.9.2",
@@ -25,12 +26,14 @@
 		"@google/generative-ai": "^0.24.1",
 		"@paypal/paypal-js": "^9.0.1",
 		"@portabletext/svelte": "^3.0.1",
+		"@prisma/client": "^5.19.1",
 		"@sanity/client": "^7.13.1",
 		"@sanity/image-url": "^1.2.0",
 		"@stripe/stripe-js": "^8.5.3",
 		"chart.js": "^4.5.1",
 		"d3": "^7.9.0",
 		"gsap": "^3.13.0",
+		"resend": "^6.9.3",
 		"stripe": "^20.0.0",
 		"svelte-meta-tags": "^4.4.1"
 	}
