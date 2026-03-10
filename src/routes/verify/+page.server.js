@@ -47,7 +47,7 @@ export async function load({ url, cookies }) {
                 path: '/',
                 maxAge: 60 * 60 * 24 * 365,
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
+                secure: process.env.NODE_ENV === 'production' || url.protocol === 'https:',
                 sameSite: 'lax'
             });
 
