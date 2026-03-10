@@ -72,6 +72,7 @@
 
 <svelte:head>
     <title>La Crónica del Linaje Casas | 1egacy</title>
+    <meta name="robots" content="noindex, nofollow" />
     <script src="https://cdn.tailwindcss.com"></script>
 </svelte:head>
 

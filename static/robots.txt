@@ -9,5 +9,6 @@ Disallow: /api/
 Disallow: /carrito/
 Disallow: /pedido/
 Disallow: /test-sanity/
+Disallow: /demo-innovacion/
 
 Sitemap: https://somos1egacy.com/sitemap.xml

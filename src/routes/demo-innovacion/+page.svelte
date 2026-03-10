@@ -68,6 +68,7 @@
 
 <svelte:head>
     <title>Demo Innovación | 1egacy</title>
+    <meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
 <div class="demo-wrapper">

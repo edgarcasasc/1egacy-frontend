@@ -48,7 +48,11 @@
 </script>
 
 <svelte:head>
-    <title>{linaje?.title || 'Linaje'} | Demo Innovación</title>
+    <title>{linaje?.title || 'Linaje'} | DEMO V2</title>
+    <meta name="description" content="[VISTA PREVIA DE INNOVACIÓN]" />
+    <meta name="robots" content="noindex, nofollow" />
+
+    <meta property="og:title" content={`BETA TEST - Familia ${linaje?.title || 'Linaje'} | 1egacy`} />
 </svelte:head>
 
 <!-- BARRA AVISO DEMO -->
