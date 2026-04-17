@@ -6,7 +6,9 @@ export const prerender = 'auto';
 // Generación estática para rendimiento máximo en builds
 export async function entries() {
     const slugs = await client.fetch(`*[_type == "post" && defined(slug.current)].slug.current`);
-    return slugs.map(slug => ({ slug }));
+    return slugs
+        .filter(slug => slug && typeof slug === 'string' && slug.trim() !== '' && slug.trim() !== '/')
+        .map(slug => ({ slug: slug.trim().replace(/^\/+|\/+$/g, '') }));
 }
 
 export async function load({ params }) {

@@ -40,6 +40,13 @@ export async function load({ params, setHeaders, cookies }) {
                 "thumbnailUrl": thumbnail.asset->url
             },
 
+            // --- HITOS (LINEA DE TIEMPO) ---
+            hitos[] {
+                year,
+                title,
+                description
+            },
+
             articulosRelacionados[]->{
                 title,
                 "slug": slug.current,

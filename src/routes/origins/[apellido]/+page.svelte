@@ -111,6 +111,24 @@
     function toggleEscudoDetails() {
         mostrarDetallesEscudo = !mostrarDetallesEscudo;
     }
+
+    // --- TIMELINE DESDE SANITY ---
+    $: timelineEvents = linaje?.hitos?.map(h => ({
+        year: h.year || 'Fecha Desconocida',
+        title: h.title || 'Evento Histórico',
+        text: h.description || ''
+    })) || [];
+    
+    // Fallback si no hay hitos registrados
+    $: if (timelineEvents.length === 0) {
+        timelineEvents.push({
+            year: 'En Proceso', 
+            title: 'Archivo en Investigación', 
+            text: `El departamento de historia está recopilando los hitos del linaje ${linaje?.title || ''}.`
+        });
+    }
+
+    $: publicTimeline = timelineEvents.slice(0, 2);
 </script>
 
 <svelte:head>
@@ -256,163 +274,187 @@
                 {/if}
 
                 {#if linaje.historia}
-                    <div class="historia-seccion historia-premium-bg">
+                    <div class="historia-seccion historia-premium-bg" style="margin-bottom: 2rem;">
                         <h3 class="subtitulo-seccion">
                             Historia Completa del Linaje
                         </h3>
-
-                        {#if data.isUnlocked || form?.success}
-                            <!-- ESTADO 3: DESBLOQUEADO GLOBALMENTE -->
-                            {#if form?.success}
-                                <div class="success-message">
-                                    <div class="icon-success">✨</div>
-                                    <h4>¡Identidad Confirmada!</h4>
-                                    <p>
-                                        El candado del Códice se ha abierto.
-                                        Este dispositivo recordando tu acceso
-                                        para toda la colección.
-                                    </p>
-                                </div>
-                            {/if}
-                            <div class="texto-rico-base desbloqueado">
-                                <PortableText value={linaje.historia} />
-                            </div>
-                        {:else if form?.pendingVerification}
-                            <!-- ESTADO 2: ESPERANDO VERIFICACIÓN DE CORREO -->
-                            <div class="historia-bloqueada">
-                                <div class="fade-out-text">
-                                    <p>
-                                        A lo largo de los siglos, los portadores
-                                        del nombre {linaje.title} han dejado una
-                                        marca indeleble en la historia...
-                                    </p>
-                                </div>
-                                <div class="lead-capture-box verification-mode">
-                                    <div class="icon-mail">✉️</div>
-                                    <h4>Revisa tu Bandeja</h4>
-                                    <p>
-                                        Hemos enviado un enlace sellado a <strong
-                                            >{form.email}</strong
-                                        >. <br />{form.message}
-                                    </p>
-                                </div>
-                            </div>
-                        {:else}
-                            <!-- ESTADO 1: BLOQUEADO (LEAD GEN) -->
-                            <div class="historia-bloqueada">
-                                <!-- Texto simulado desvaneciéndose (teaser) -->
-                                <div class="fade-out-text">
-                                    <p>
-                                        A lo largo de los siglos, los portadores
-                                        del nombre {linaje.title} han dejado una
-                                        marca indeleble en la historia. Los primeros
-                                        registros de este linaje se remontan a las
-                                        antiguas crónicas donde se describe cómo
-                                        sus fundadores participaron en...
-                                    </p>
-                                </div>
-
-                                <div class="lead-capture-box">
-                                    <div class="lock-header">
-                                        <div class="lock-icon">
-                                            {#if submitting}
-                                                <div class="spinner"></div>
-                                            {:else}
-                                                <svg
-                                                    viewBox="0 0 24 24"
-                                                    width="24"
-                                                    height="24"
-                                                    fill="currentColor"
-                                                    ><path
-                                                        d="M12 2C9.243 2 7 4.243 7 7v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7c0-2.757-2.243-5-5-5zM9 7c0-1.654 1.346-3 3-3s3 1.346 3 3v3H9V7zm9 13H6v-8h12v8z"
-                                                    /><circle
-                                                        cx="12"
-                                                        cy="15"
-                                                        r="1.5"
-                                                    /></svg
-                                                >
-                                            {/if}
-                                        </div>
-                                        <h4>Desbloquea el Legado</h4>
-                                    </div>
-                                    <p style="margin-bottom: 15px;">
-                                        Ingresa tu correo para leer la <strong
-                                            >historia completa</strong
-                                        >
-                                        de la familia {linaje.title} (sin costo).
-                                    </p>
-
-                                    <!-- Formulario SvelteKit Mejorado -->
-                                    <form
-                                        method="POST"
-                                        action="?/unlockStory"
-                                        use:enhance={() => {
-                                            submitting = true;
-                                            return async ({ update }) => {
-                                                submitting = false;
-                                                update();
-                                            };
-                                        }}
-                                        class="unlock-form"
-                                    >
-                                        <input
-                                            type="hidden"
-                                            name="linaje"
-                                            value={linaje.slug}
-                                        />
-                                        <input
-                                            type="hidden"
-                                            name="titulo"
-                                            value={linaje.title}
-                                        />
-                                        <input
-                                            type="email"
-                                            name="email"
-                                            required
-                                            placeholder="tu@correo.com"
-                                            class="email-input"
-                                            disabled={submitting}
-                                        />
-
-                                        <!-- Casilla de Consentimiento (Obligatoria) -->
-                                        <label class="consent-label">
-                                            <input
-                                                type="checkbox"
-                                                name="consent"
-                                                bind:checked={consentChecked}
-                                                required
-                                                disabled={submitting}
-                                                class="consent-checkbox"
-                                            />
-                                            <span
-                                                >Acepto recibir la historia en
-                                                mi correo y comunicaciones
-                                                esporádicas del legado familiar.
-                                                Entiendo que puedo darme de baja
-                                                en cualquier momento.</span
-                                            >
-                                        </label>
-
-                                        <button
-                                            type="submit"
-                                            class="cta-unlock"
-                                            disabled={submitting ||
-                                                !consentChecked}
-                                        >
-                                            {submitting
-                                                ? "Abriendo Códice..."
-                                                : "Ver historia completa →"}
-                                        </button>
-                                    </form>
-                                    <p class="micro-note">
-                                        Tus datos están seguros con nosotros.
-                                        Solo historia, cero spam.
-                                    </p>
-                                </div>
-                            </div>
-                        {/if}
+                        <div class="texto-rico-base">
+                            <PortableText value={linaje.historia} />
+                        </div>
                     </div>
                 {/if}
+
+                <!-- NUEVA SECCION LÍNEA DE TIEMPO / CÓDICE AMPLIADO -->
+                <div class="historia-seccion historia-premium-bg">
+                    <h3 class="subtitulo-seccion">Cronología Extendida</h3>
+
+                    {#if data.isUnlocked || form?.success}
+                        <!-- ESTADO 3: DESBLOQUEADO GLOBALMENTE -->
+                        {#if form?.success}
+                            <div class="success-message">
+                                <div class="icon-success">✨</div>
+                                <h4>¡Cronología Confirmada!</h4>
+                                <p>
+                                    El Códice ampliado se ha desbloqueado. Ahora puedes ver la evolución completa de la familia.
+                                </p>
+                            </div>
+                        {/if}
+                        <div class="texto-rico-base desbloqueado">
+                            <div class="timeline-list">
+                                {#each timelineEvents as event}
+                                    <div class="timeline-node">
+                                        <h4 class="node-year">{event.year}</h4>
+                                        <h5 class="node-title">{event.title}</h5>
+                                        <p class="node-text">{event.text}</p>
+                                    </div>
+                                {/each}
+                            </div>
+                        </div>
+                    {:else if form?.pendingVerification}
+                        <!-- ESTADO 2: ESPERANDO VERIFICACIÓN DE CORREO -->
+                        <div class="historia-bloqueada">
+                            <div class="timeline-list">
+                                {#each publicTimeline as event}
+                                    <div class="timeline-node">
+                                        <h4 class="node-year">{event.year}</h4>
+                                        <h5 class="node-title">{event.title}</h5>
+                                        <p class="node-text">{event.text}</p>
+                                    </div>
+                                {/each}
+                            </div>
+                            <div class="fade-out-text">
+                                <div class="timeline-node fade-node">
+                                    <h4 class="node-year">1521</h4>
+                                    <h5 class="node-title">Cruce del Atlántico</h5>
+                                    <p class="node-text">Se registran los primeros viajes de portadores del apellido hacia América...</p>
+                                </div>
+                            </div>
+                            <div class="lead-capture-box verification-mode">
+                                <div class="icon-mail">✉️</div>
+                                <h4>Revisa tu Bandeja</h4>
+                                <p>
+                                    Hemos enviado la cronología completa a <strong
+                                        >{form.email}</strong
+                                    >. <br />{form.message}
+                                </p>
+                            </div>
+                        </div>
+                    {:else}
+                        <!-- ESTADO 1: BLOQUEADO (LEAD GEN) -->
+                        <div class="historia-bloqueada">
+                            <div class="timeline-list">
+                                {#each publicTimeline as event}
+                                    <div class="timeline-node">
+                                        <h4 class="node-year">{event.year}</h4>
+                                        <h5 class="node-title">{event.title}</h5>
+                                        <p class="node-text">{event.text}</p>
+                                    </div>
+                                {/each}
+                            </div>
+
+                            <!-- Texto simulado desvaneciéndose (teaser) -->
+                            <div class="fade-out-text">
+                                <div class="timeline-node fade-node">
+                                    <h4 class="node-year">1521</h4>
+                                    <h5 class="node-title">Cruce del Atlántico</h5>
+                                    <p class="node-text">Se registran los primeros viajes de portadores del apellido hacia América...</p>
+                                </div>
+                            </div>
+
+                            <div class="lead-capture-box">
+                                <div class="lock-header">
+                                    <div class="lock-icon">
+                                        {#if submitting}
+                                            <div class="spinner"></div>
+                                        {:else}
+                                            <svg
+                                                viewBox="0 0 24 24"
+                                                width="24"
+                                                height="24"
+                                                fill="currentColor"
+                                                ><path
+                                                    d="M12 2C9.243 2 7 4.243 7 7v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7c0-2.757-2.243-5-5-5zM9 7c0-1.654 1.346-3 3-3s3 1.346 3 3v3H9V7zm9 13H6v-8h12v8z"
+                                                /><circle
+                                                    cx="12"
+                                                    cy="15"
+                                                    r="1.5"
+                                                /></svg
+                                            >
+                                        {/if}
+                                    </div>
+                                    <h4>Desbloquea el Códice</h4>
+                                </div>
+                                <p style="margin-bottom: 15px;">
+                                    Ingresa tu correo para recibir el <strong>Dossier Ampliado</strong> con la cronología completa.
+                                </p>
+
+                                <!-- Formulario SvelteKit Mejorado -->
+                                <form
+                                    method="POST"
+                                    action="?/unlockStory"
+                                    use:enhance={() => {
+                                        submitting = true;
+                                        return async ({ update }) => {
+                                            submitting = false;
+                                            update();
+                                        };
+                                    }}
+                                    class="unlock-form"
+                                >
+                                    <input
+                                        type="hidden"
+                                        name="linaje"
+                                        value={linaje.slug}
+                                    />
+                                    <input
+                                        type="hidden"
+                                        name="titulo"
+                                        value={linaje.title}
+                                    />
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        required
+                                        placeholder="tu@correo.com"
+                                        class="email-input"
+                                        disabled={submitting}
+                                    />
+
+                                    <!-- Casilla de Consentimiento (Obligatoria) -->
+                                    <label class="consent-label">
+                                        <input
+                                            type="checkbox"
+                                            name="consent"
+                                            bind:checked={consentChecked}
+                                            required
+                                            disabled={submitting}
+                                            class="consent-checkbox"
+                                        />
+                                        <span
+                                            >Acepto explorar el legado y recibir
+                                            comunicaciones esporádicas. Puedo darme
+                                            de baja siempre.</span
+                                        >
+                                    </label>
+
+                                    <button
+                                        type="submit"
+                                        class="cta-unlock"
+                                        disabled={submitting ||
+                                            !consentChecked}
+                                    >
+                                        {submitting
+                                            ? "Abriendo Códice..."
+                                            : "Desbloquear Cronología →"}
+                                    </button>
+                                </form>
+                                <p class="micro-note">
+                                    Tus datos están protegidos.
+                                </p>
+                            </div>
+                        </div>
+                    {/if}
+                </div>
 
                 {#if relatedProducts.length > 0}
                     <div class="productos-seccion">
@@ -838,6 +880,19 @@
         padding: 2.5rem 2rem;
         box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
     }
+    
+    /* --- TIMELINE STYLES --- */
+    .timeline-list { display: flex; flex-direction: column; gap: 1.5rem; margin-top: 1.5rem; }
+    .timeline-node { border-left: 2px solid #C0A062; padding-left: 1.5rem; position: relative; margin-bottom: 5px; }
+    .timeline-node::before {
+        content: ''; position: absolute; left: -8px; top: 6px; width: 14px; height: 14px; border-radius: 50%; background: #C0A062;
+    }
+    .node-year { color: #C0A062 !important; font-size: 1rem !important; margin: 0 0 5px 0 !important; font-family: "Source Sans 3", sans-serif !important; letter-spacing: 1px; }
+    .node-title { color: #fff; font-size: 1.25rem !important; margin: 0 0 5px 0 !important; font-family: "Palatino Linotype", serif !important; }
+    .node-text { color: #bbb; line-height: 1.6; margin: 0; font-size: 1.05rem; }
+    .fade-node { border-left-color: #444; }
+    .fade-node::before { background: #444; }
+    
     .historia-bloqueada {
         position: relative;
         margin-top: 1rem;
