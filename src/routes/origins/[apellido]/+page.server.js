@@ -76,11 +76,8 @@ export async function load({ params, setHeaders, cookies }) {
                 .trim()
             : '';
 
-        // Configuramos los headers reales para SvelteKit / Vercel
-        // Cache más largo (1 hora CDN) ya que son orígenes históricos estáticos
-        setHeaders({
-            'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400'
-        });
+        // No usamos Cache-Control public aquí porque la página depende de una cookie (legado_unlocked).
+        // Si la cacheamos globalmente, el estado desbloqueado se filtraría a otros usuarios o modo incógnito.
 
         return {
             linaje: {
