@@ -1,6 +1,7 @@
-// src/lib/sanityClient.js (VERSIÓN FINAL CON CDN FORZADO)
+// src/lib/sanityClient.js (VERSIÓN FINAL CON CDN DINÁMICO)
 
 import { createClient } from '@sanity/client';
+import { building } from '$app/environment';
 
 // 1. Lee las variables de entorno de Vite/SvelteKit
 const projectId = import.meta.env.VITE_SANITY_PROJECT_ID;
@@ -22,13 +23,11 @@ export const client = createClient({
   dataset,
   apiVersion,
 
-  // 4. LÓGICA DE CDN CORREGIDA (¡ESTE ES EL CAMBIO!)
-  
-  // Forzamos el uso del CDN (true) para velocidad.
-  // Sanity es lo suficientemente inteligente como para usar el token 
-  // para la autenticación incluso si el CDN está activado.
-  // Esto nos da lo mejor de ambos mundos: velocidad y acceso.
-  useCdn: true, // <--- ¡AQUÍ ESTÁ EL CAMBIO! (Antes era !token)
+  // 4. LÓGICA DE CDN CORREGIDA
+  // Desactivamos el CDN (false) durante el build en Netlify (!building)
+  // para forzar la lectura de datos frescos (bypass cache).
+  // Durante la navegación real (SSR o cliente), usamos el CDN (true) para velocidad.
+  useCdn: !building,
   
   token: token,   // Seguimos pasando el token
 });
